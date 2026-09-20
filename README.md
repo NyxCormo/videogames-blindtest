@@ -72,6 +72,7 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 ## Stack technique
 
 - **Backend** : Spring Boot 4 (Java 21), API REST, dans [`backend/`](backend/).
+- **Base de données** : SQLite, accès via Spring Data JPA (Hibernate), schéma géré par Flyway.
 - **Frontend** : React 19 et TypeScript, construit avec Vite, dans [`frontend/`](frontend/).
 
 ## Contexte
