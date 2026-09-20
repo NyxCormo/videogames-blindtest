@@ -1,4 +1,4 @@
-package fr.insalan.blindtest.web;
+package fr.insalan.blindtest.controller;
 
 import java.util.Map;
 
