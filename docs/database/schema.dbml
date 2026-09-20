@@ -1,0 +1,78 @@
+Table franchise {
+  id integer [primary key]
+  name text [not null]
+}
+
+Table game {
+  id integer [primary key]
+  name text [not null]
+  franchise_id integer [not null]
+}
+
+Table track {
+  id integer [primary key]
+  name text [not null]
+  game_id integer [not null]
+
+  khinsider_link text
+  youtube_link text
+
+  audio_link text
+  audio_link_resolved_at datetime
+
+  duration integer
+  preferred_start integer
+}
+
+Table listener {
+  id integer [primary key]
+  name text [not null]
+}
+
+Table knowledge {
+  listener_id integer
+  track_id integer
+  knows boolean [not null]
+
+  indexes {
+    (listener_id, track_id) [pk]
+  }
+}
+
+Table tag {
+  id integer [primary key]
+  name text [not null]
+  type_id integer [not null]
+
+  indexes {
+    (type_id, name) [unique]
+  }
+}
+
+Table tag_type {
+  id integer [primary key]
+  name text [not null]
+
+  indexes {
+    name [unique]
+  }
+}
+
+Table track_tag {
+  track_id integer
+  tag_id integer
+
+  indexes {
+    (track_id, tag_id) [pk]
+  }
+}
+
+Ref: game.franchise_id > franchise.id
+Ref: track.game_id > game.id
+
+Ref: knowledge.listener_id > listener.id
+Ref: knowledge.track_id > track.id
+
+Ref: tag.type_id > tag_type.id
+Ref: track_tag.track_id > track.id
+Ref: track_tag.tag_id > tag.id
