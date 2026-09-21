@@ -46,7 +46,7 @@ public class SchemaTests {
     void gameRequiresExistingFranchise() {
         //Spring ne traduit pas les erreurs SQLite, donc on catch l'exception et on vérifie le message
         assertThrows(DataAccessException.class, () -> {
-            jdbc.update("insert into game (name, franchise_id) values (?, ?)", "Zelda", 999);
+            jdbc.update("insert into game (name, franchise_id) values (?, ?)", "Stellar Blade", 999);
         });
     }
 }
