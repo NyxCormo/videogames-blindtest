@@ -79,6 +79,16 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 - **Base de données** : SQLite, accès via Spring Data JPA (Hibernate), schéma géré par Flyway.
 - **Frontend** : React 19 et TypeScript, construit avec Vite, dans [`frontend/`](frontend/).
 
+## Lancer le projet
+
+Prérequis : Java 21 et Node 22
+
+- **Backend**: `cd backend && ./mvnw spring-boot:run` (http://localhost:4673).
+- **Frontend**: `cd frontend && npm install && npm run dev` (http://localhost:4672).
+- **Importer le Google Sheet**: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--import=../docs/ost-insalan-base.csv`.
+  Le format du fichier est décrit dans [`docs/import-gsheet.md`](docs/import-gsheet.md).
+
+
 ## Contexte
 
 Projet réalisé dans le cadre de l'association InsaLan afin d'apporter de nouvelles activités à l'association tout en progressant individuellement.
