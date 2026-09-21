@@ -8,5 +8,7 @@ public record ImportReport(
     int franchisesCreated, 
     int gamesCreated, 
     int tracksCreated, 
+    int listenersCreated,
+    int votesCreated,
     int rowsIgnored
 ){}
