@@ -17,14 +17,14 @@ public class Franchise {
     private String name;
 
     public Franchise() {
-        // Default constructor for JPA
+        // JPA
     }
 
     public Franchise(String name) {
         this.name = name;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

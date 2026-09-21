@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BlindtestApplication {
 
 	public static void main(String[] args) throws IOException {
-		// SQLite creates .db file automatically, but not data/
+		// SQLite créé automatiquement le ficiher .db, mais pas le dossier data/
 		Files.createDirectories(Path.of("data"));
 		SpringApplication.run(BlindtestApplication.class, args);
 	}

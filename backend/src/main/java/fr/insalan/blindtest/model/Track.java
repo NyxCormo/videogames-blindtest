@@ -40,7 +40,7 @@ public class Track {
 	private Integer preferredStart;
 
 	protected Track() {
-		// Default constructor for JPA
+		// JPA
 	}
 
 	public Track(String name, Game game) {

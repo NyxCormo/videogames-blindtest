@@ -24,7 +24,7 @@ public class Game {
 	private Franchise franchise;
 
 	protected Game() {
-        // Default constructor for JPA
+        // JPA
 	}
 
 	public Game(String name, Franchise franchise) {
