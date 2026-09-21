@@ -22,7 +22,7 @@ L'idée est de garder le Google Sheet comme point de départ et de construire un
 
 - **Une webapp** pour gérer la base et lancer des blindtests.
 - **Une version installable** sur Windows et Linux, pour pouvoir héberger l'application en local. Cet aspect-là n'est pas vraiment primordial et est surtout là dans un but d'apprentissage.
-- **Importer les données du Google Sheet** (la version modèle à jour du 20/09/26 est disponible dans [`docs/`](docs/ost-insalan-base.xlsx)).
+- **Importer les données du Google Sheet** (la version modèle à jour du 21/09/26 est disponible dans [`docs/`](docs/ost-insalan-base.csv), la correspondance des colonnes est décrite dans [`docs/import-gsheet.md`](docs/import-gsheet.md)).
 - Apprendre différentes techniques au passage (base de données, architecture, packaging, etc.).
 
 ## D'où viennent les musiques ?
@@ -32,6 +32,8 @@ Les musiques viennent de [KHInsider](https://downloads.khinsider.com/) quand ell
 Le projet stocke donc le lien de la page KHInsider de chaque musique et retrouve le lien audio à la demande. Le dernier lien trouvé est gardé en cache dans la base (`audio_link`, avec sa date `audio_link_resolved_at`). 
 
 > Si une musique n'est pas sur KHInsider, on utilise un lien YouTube à la place.
+
+Les liens audio du Google Sheet ne sont pas repris à l'import, car aucun n'est fiable : seuls les liens YouTube le sont. `audio_link` n'est rempli qu'à partir des pages KHInsider.
 
 Pour l'instant, les fichiers audio ne sont pas téléchargés ni stockés. Ça pourrait venir plus tard, mais ce n'est pas la priorité.
 
@@ -61,6 +63,7 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 - Implémentation de la difficulté
 - Implémentation du système de vote
 - Création d'un système d'ajout de musiques
+- Création d'un système de suggestion de jeux sans musique : proposer un jeu sans encore avoir de bande originale, et lister tous les jeux de la base avec leur nombre de musiques pour savoir où chercher de nouvelles musiques
 
 ### Pour aller plus loin
 - Implémentation du système de tags
@@ -68,6 +71,7 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 - Création d'un système d'utilisateurs
 - Création d'un système d'uniformisation et de complétion des données par les utilisateurs
 - Création de playlists personnalisées et personnalisables (ajout des tables `playlist` et `user_preferred_tags` dans la DB)
+- Ajout des noms valides (réponses acceptées) de chaque musique, colonne « Noms Valides » du Google Sheet non importée pour l'instant
 
 ## Stack technique
 
