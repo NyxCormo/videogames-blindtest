@@ -67,6 +67,34 @@ Table track_tag {
   }
 }
 
+Table blindtest {
+  id integer [primary key]
+  name text [not null]
+  difficulty integer [not null]
+  created_at datetime [not null]
+}
+
+Table blindtest_track {
+  blindtest_id integer
+  track_id integer
+  position integer [not null]
+
+  indexes {
+    (blindtest_id, position) [pk]
+  }
+}
+
+Table blindtest_score {
+  blindtest_id integer
+  listener_id integer
+  good_answers integer [not null]
+  tracks_heard integer [not null]
+
+  indexes {
+    (blindtest_id, listener_id) [pk]
+  }
+}
+
 Ref: game.franchise_id > franchise.id
 Ref: track.game_id > game.id
 
@@ -76,3 +104,9 @@ Ref: knowledge.track_id > track.id
 Ref: tag.type_id > tag_type.id
 Ref: track_tag.track_id > track.id
 Ref: track_tag.tag_id > tag.id
+
+Ref: blindtest_track.blindtest_id > blindtest.id
+Ref: blindtest_track.track_id > track.id
+
+Ref: blindtest_score.blindtest_id > blindtest.id
+Ref: blindtest_score.listener_id > listener.id
