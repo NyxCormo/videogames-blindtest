@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import type { Track } from '../../api/tracks'
-import { TrackTable } from '../TrackTable/TrackTable'
+import { TrackTable } from './TrackTable'
 
 const dawn: Track = {
   id: 1,
@@ -10,12 +10,13 @@ const dawn: Track = {
   franchiseName: 'Stellar Blade',
   khinsiderLink: 'https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024/62.%2520Dawn.mp3',
   youtubeLink: null,
+  audioLink: 'https://jetta.vgmtreasurechest.com/soundtracks/stellar-blade-soundtrack-2024/ybomulwy/62.%20Dawn.mp3',
 }
-const raven: Track = { ...dawn, id: 2, name: 'Raven', khinsiderLink: null }
+const raven: Track = { ...dawn, id: 2, name: 'Raven', khinsiderLink: null, audioLink: null }
 
 describe('TrackTable', () => {
   it('affiche une ligne par musique', () => {
-    const html = renderToStaticMarkup(<TrackTable tracks={[dawn, raven]} />)
+    const html = renderToStaticMarkup(<TrackTable tracks={[dawn, raven]} onPlay={() => {}} />)
 
     expect(html.match(/<tr/g)).toHaveLength(3) // l'en-tête et deux musiques
     expect(html).toContain('Dawn')
@@ -23,7 +24,7 @@ describe('TrackTable', () => {
   })
 
   it('affiche un lien externe sûr quand la musique a une source', () => {
-    const html = renderToStaticMarkup(<TrackTable tracks={[dawn]} />)
+    const html = renderToStaticMarkup(<TrackTable tracks={[dawn]} onPlay={() => {}} />)
 
     expect(html).toContain(`href="${dawn.khinsiderLink}"`)
     expect(html).toContain('target="_blank"')
@@ -32,9 +33,27 @@ describe('TrackTable', () => {
   })
 
   it('affiche « Aucune » quand la musique n’a pas de source', () => {
-    const html = renderToStaticMarkup(<TrackTable tracks={[raven]} />)
+    const html = renderToStaticMarkup(<TrackTable tracks={[raven]} onPlay={() => {}} />)
 
     expect(html).toContain('Aucune')
     expect(html).not.toContain('KHInsider')
+  })
+
+  it('affiche un bouton de lecture quand la musique a un lien audio', () => {
+    const html = renderToStaticMarkup(<TrackTable tracks={[dawn]} onPlay={() => {}} />)
+
+    expect(html).toContain('aria-label="Écouter Dawn"')
+  })
+
+  it('n’affiche pas de bouton de lecture sans lien audio résolu', () => {
+    const html = renderToStaticMarkup(<TrackTable tracks={[raven]} onPlay={() => {}} />)
+
+    expect(html).not.toContain('aria-label="Écouter Raven"')
+  })
+
+  it('affiche le bouton de pause pour la musique en cours de lecture', () => {
+    const html = renderToStaticMarkup(<TrackTable tracks={[dawn]} onPlay={() => {}} playingTrackId={dawn.id} />)
+
+    expect(html).toContain('⏸')
   })
 })

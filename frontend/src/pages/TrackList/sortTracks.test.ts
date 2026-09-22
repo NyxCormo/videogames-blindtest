@@ -3,7 +3,7 @@ import type { Track } from '../../api/tracks'
 import { sortTracks } from './sortTracks'
 
 function track(id: number, franchiseName: string, gameName: string, name: string): Track {
-  return { id, name, gameName, franchiseName, khinsiderLink: null, youtubeLink: null }
+  return { id, name, gameName, franchiseName, khinsiderLink: null, youtubeLink: null, audioLink: null }
 }
 
 describe('sortTracks', () => {

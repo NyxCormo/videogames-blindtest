@@ -9,6 +9,7 @@ const dawn: Track = {
   franchiseName: 'Stellar Blade',
   khinsiderLink: 'https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024/62.%2520Dawn.mp3',
   youtubeLink: null,
+  audioLink: null
 }
 const raven: Track = { ...dawn, id: 2, name: 'Raven', khinsiderLink: null }
 const shael: Track = { ...dawn, id: 3, name: 'Shaël' }

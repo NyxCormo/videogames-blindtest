@@ -1,7 +1,13 @@
 import { hasSource, type Track } from '../../api/tracks'
 import './TrackTable.css'
 
-export function TrackTable({ tracks }: { tracks: Track[] }) {
+type Props = {
+  tracks: Track[]
+  onPlay: (track: Track) => void
+  playingTrackId?: number
+}
+
+export function TrackTable({ tracks, onPlay, playingTrackId }: Props) {
   return (
     <div className="table-wrap">
       <table>
@@ -11,6 +17,7 @@ export function TrackTable({ tracks }: { tracks: Track[] }) {
             <th>Jeu</th>
             <th>Musique</th>
             <th>Source</th>
+            <th>Écouter</th>
           </tr>
         </thead>
         <tbody>
@@ -21,6 +28,13 @@ export function TrackTable({ tracks }: { tracks: Track[] }) {
               <td>{track.name}</td>
               <td>
                 <Sources track={track} />
+              </td>
+              <td>
+                {track.audioLink && (
+                  <button type="button" aria-label={`Écouter ${track.name}`} onClick={() => onPlay(track)}>
+                    {track.id === playingTrackId ? '⏸' : '▶'}
+                  </button>
+                )}
               </td>
             </tr>
           ))}
