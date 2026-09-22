@@ -52,17 +52,19 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 ## Roadmap
 
 ### Création d'une appli de blindtests
-- Conception du projet
-- Création de la DB
-- Import du GSheet dans la DB
-- Mise en place du cache des liens audios
-- Mise en place de la lecture des audios
+- ~~Conception du projet~~
+- ~~Création de la DB~~
+- ~~Import du GSheet dans la DB~~
+- ~~Mise en place du cache des liens audios~~
+- ~~Mise en place de la lecture des audios~~
 - Création des blindtests
+- Ajout de la lecture des liens YouTube
 
 ### Enrichissement de l'appli
 - Implémentation de la difficulté
 - Implémentation du système de vote
 - Création d'un système d'ajout de musiques
+- Amélioration du système d'ajout de musique pour permettre l'ajout en lot : choisir une franchise, un ou plusieurs jeux pour cette franchise, puis un nombre de musiques par jeu, ce qui fait apparaître automatiquement autant de lignes à remplir plutôt que d'ajouter les musiques une par une
 - Création d'un système de suggestion de jeux sans musique : proposer un jeu sans encore avoir de bande originale, et lister tous les jeux de la base avec leur nombre de musiques pour savoir où chercher de nouvelles musiques
 
 ### Pour aller plus loin
@@ -75,7 +77,7 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 
 ## Stack technique
 
-- **Backend** : Spring Boot 4 (Java 21), API REST, dans [`backend/`](backend/).
+- **Backend** : Spring Boot 4 (Java 21), API REST, Jsoup, Apache Commons CSV dans [`backend/`](backend/).
 - **Base de données** : SQLite, accès via Spring Data JPA (Hibernate), schéma géré par Flyway.
 - **Frontend** : React 19 et TypeScript, construit avec Vite, dans [`frontend/`](frontend/).
 
@@ -87,6 +89,8 @@ Prérequis : Java 21 et Node 22
 - **Frontend**: `cd frontend && npm install && npm run dev` (http://localhost:4672).
 - **Importer le Google Sheet**: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--import=../docs/ost-insalan-base.csv`.
   Le format du fichier est décrit dans [`docs/import-gsheet.md`](docs/import-gsheet.md).
+- **Rafraîchir les liens audio à la main**: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--refresh-links`. Sinon, ça tourne tout seul une fois par semaine.
+- **Tests**: `cd backend && ./mvnw test` et `cd frontend && npm test`.
 
 
 ## Contexte
