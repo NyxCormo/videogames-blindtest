@@ -1,0 +1,20 @@
+.audio-player {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  background: Canvas;
+  border-top: 1px solid var(--border);
+}
+
+.audio-player-title {
+  font-weight: 600;
+}
+
+.audio-player audio {
+  flex: 1 1 16rem;
+}

@@ -6,6 +6,7 @@ export type Track = {
   franchiseName: string
   khinsiderLink: string | null
   youtubeLink: string | null
+  audioLink: string | null
 }
 
 export async function fetchTracks(signal?: AbortSignal): Promise<Track[]> {

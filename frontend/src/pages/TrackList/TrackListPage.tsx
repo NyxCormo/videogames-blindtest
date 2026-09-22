@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useMemo, useState } from 'react'
 import { fetchTracks, hasSource, type Track } from '../../api/tracks'
+import { AudioPlayer } from '../../components/AudioPlayer/AudioPlayer'
 import { TrackTable } from '../../components/TrackTable/TrackTable'
 import { filterTracks, type SourceFilter } from './filterTracks'
 import { sortTracks } from './sortTracks'
@@ -10,6 +11,9 @@ export function TrackListPage() {
   const [error, setError] = useState(false)
   const [query, setQuery] = useState('')
   const [source, setSource] = useState<SourceFilter>('all')
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -29,6 +33,25 @@ export function TrackListPage() {
     [tracks, query, source],
   )
   const withoutSource = useMemo(() => (tracks ?? []).filter((track) => !hasSource(track)).length, [tracks])
+
+  // Le .play() est appelé directement ici, dans le clic : c'est ce qui compte comme une
+  // interaction utilisateur pour le navigateur (une mise à jour de state React, elle, serait trop tardive).
+  function handlePlay(track: Track) {
+    const audio = audioRef.current
+    if (!audio || !track.audioLink) return
+
+    if (currentTrack?.id === track.id) {
+      if (audio.paused) audio.play()
+      else audio.pause()
+      return
+    }
+
+    audio.src = track.audioLink
+    audio.play()
+    setCurrentTrack(track)
+  }
+
+
 
   return (
     <>
@@ -62,9 +85,18 @@ export function TrackListPage() {
             {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}, dont{' '}
             {withoutSource} sans source audio dans toute la base.
           </p>
-          {shown.length > 0 ? <TrackTable tracks={shown} /> : <p>Aucune musique ne correspond.</p>}
+          {shown.length > 0 ? (
+            <TrackTable
+              tracks={shown}
+              onPlay={handlePlay}
+              playingTrackId={isPlaying ? currentTrack?.id : undefined}
+            />
+          ) : (
+            <p>Aucune musique ne correspond.</p>
+          )}
         </>
       )}
+      <AudioPlayer ref={audioRef} track={currentTrack} onPlayingChange={setIsPlaying} />
     </>
   )
 }
