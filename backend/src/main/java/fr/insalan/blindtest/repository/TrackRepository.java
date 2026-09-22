@@ -21,4 +21,6 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
     List<Track> findAllWithGameAndFranchise();
 
     Optional<Track> findByGameAndName(Game game, String name);
+
+    List<Track> findByKhinsiderLinkIsNotNull();
 }

@@ -29,7 +29,7 @@ L'idée est de garder le Google Sheet comme point de départ et de construire un
 
 Les musiques viennent de [KHInsider](https://downloads.khinsider.com/) quand elles sont disponibles. Le problème, c'est que les liens audio directs expirent assez souvent. 
 
-Le projet stocke donc le lien de la page KHInsider de chaque musique et retrouve le lien audio à la demande. Le dernier lien trouvé est gardé en cache dans la base (`audio_link`, avec sa date `audio_link_resolved_at`). 
+Le projet stocke donc le lien de la page KHInsider de chaque musique et vérifie périodiquement, en tâche de fond, que le lien audio en cache répond encore (`audio_link`, avec sa date `audio_link_resolved_at`). Si besoin seulement, il va rechercher un nouveau lien sur la page KHInsider.
 
 > Si une musique n'est pas sur KHInsider, on utilise un lien YouTube à la place.
 
