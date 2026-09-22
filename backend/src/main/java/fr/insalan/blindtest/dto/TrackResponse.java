@@ -8,7 +8,8 @@ public record TrackResponse (
     String gameName,
     String franchiseName,
     String khinsiderLink,
-    String youtubeLink
+    String youtubeLink,
+    String audioLink
 )
 {
     public static TrackResponse from(Track track) {
@@ -18,7 +19,8 @@ public record TrackResponse (
             track.getGame().getName(),
             track.getGame().getFranchise().getName(),
             track.getKhinsiderLink(),
-            track.getYoutubeLink()
+            track.getYoutubeLink(),
+            track.getAudioLink()
         );
     }
     

@@ -72,6 +72,7 @@ class TrackControllerTests {
 		Game game = games.save(new Game("Stellar Blade", stellar));
 		Track dawn = new Track("Dawn", game);
 		dawn.setKhinsiderLink("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024/62.%2520Dawn.mp3");
+		dawn.setAudioLink("https://jetta.vgmtreasurechest.com/soundtracks/stellar-blade-soundtrack-2024/ybomulwy/62.%20Dawn.mp3");
 		tracks.save(dawn);
 		tracks.save(new Track("Raven", game));
 
@@ -80,8 +81,11 @@ class TrackControllerTests {
 				.andExpect(jsonPath("$[0].name").value("Dawn"))
 				.andExpect(jsonPath("$[0].khinsiderLink").value(dawn.getKhinsiderLink()))
 				.andExpect(jsonPath("$[0].youtubeLink").doesNotExist())
+				.andExpect(jsonPath("$[0].audioLink").value(dawn.getAudioLink()))
 				.andExpect(jsonPath("$[1].name").value("Raven"))
-				.andExpect(jsonPath("$[1].khinsiderLink").doesNotExist());
-	}
+				.andExpect(jsonPath("$[1].khinsiderLink").doesNotExist())
+				.andExpect(jsonPath("$[1].audioLink").doesNotExist());
+ 	}
+
 
 }
