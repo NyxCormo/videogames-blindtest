@@ -1,0 +1,20 @@
+:root {
+  color-scheme: light dark;
+  --border: color-mix(in srgb, CanvasText 20%, transparent);
+  --muted: color-mix(in srgb, CanvasText 60%, transparent);
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+h1 {
+  margin: 0 0 1rem;
+}

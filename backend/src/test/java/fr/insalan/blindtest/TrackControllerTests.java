@@ -65,4 +65,23 @@ class TrackControllerTests {
 				.andExpect(jsonPath("$[0].franchiseName").value("Stellar Blade"))
 				.andExpect(jsonPath("$[1].name").value("Trailer"));
 	}
+
+	@Test
+	void returnsTheLinksOfEachTrack() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = new Track("Dawn", game);
+		dawn.setKhinsiderLink("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024/62.%2520Dawn.mp3");
+		tracks.save(dawn);
+		tracks.save(new Track("Raven", game));
+
+		mockMvc.perform(get("/api/tracks"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].name").value("Dawn"))
+				.andExpect(jsonPath("$[0].khinsiderLink").value(dawn.getKhinsiderLink()))
+				.andExpect(jsonPath("$[0].youtubeLink").doesNotExist())
+				.andExpect(jsonPath("$[1].name").value("Raven"))
+				.andExpect(jsonPath("$[1].khinsiderLink").doesNotExist());
+	}
+
 }
