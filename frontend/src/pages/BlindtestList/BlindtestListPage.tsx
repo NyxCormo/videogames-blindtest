@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { fetchBlindtests, type Blindtest } from '../../api/blindtests'
 import './BlindtestListPage.css'
 
@@ -22,6 +23,7 @@ export function BlindtestListPage() {
   return (
     <>
       <h1>Blindtests</h1>
+      <p><Link to="/blindtests/new">Créer un blindtest</Link></p>
       {error && <p role="alert">Impossible de charger les blindtests. Le backend est-il lancé ?</p>}
       {!error && blindtests === null && <p>Chargement...</p>}
       {blindtests !== null && blindtests.length === 0 && <p>Aucun blindtest pour l'instant.</p>}
