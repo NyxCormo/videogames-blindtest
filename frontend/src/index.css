@@ -3,6 +3,8 @@
   --border: color-mix(in srgb, CanvasText 20%, transparent);
   --muted: color-mix(in srgb, CanvasText 60%, transparent);
   font-family: system-ui, sans-serif;
+  justify-content: space-between;
+  align-items: center;
 }
 
 body {
@@ -26,6 +28,11 @@ nav a {
   color: inherit;
   text-decoration: none;
   font-weight: 600;
+}
+
+.nav-links{
+  display: flex;
+  gap: 1rem;
 }
 
 h1 {
