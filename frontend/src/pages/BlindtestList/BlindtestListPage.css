@@ -1,0 +1,26 @@
+.blindtest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.blindtest-list li {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.blindtest-list .name {
+  font-weight: 600;
+}
+
+.blindtest-list .difficulty,
+.blindtest-list .date {
+  color: var(--muted);
+}

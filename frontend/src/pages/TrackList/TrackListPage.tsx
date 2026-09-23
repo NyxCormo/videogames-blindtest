@@ -3,6 +3,7 @@ import { fetchTracks, hasSource, type Track } from '../../api/tracks'
 import { AudioPlayer } from '../../components/AudioPlayer/AudioPlayer'
 import { TrackTable } from '../../components/TrackTable/TrackTable'
 import { filterTracks, type SourceFilter } from './filterTracks'
+import { nextTrack, randomTrack } from './playback'
 import { sortTracks } from './sortTracks'
 import './TrackListPage.css'
 
@@ -13,6 +14,7 @@ export function TrackListPage() {
   const [source, setSource] = useState<SourceFilter>('all')
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [shuffle, setShuffle] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
@@ -33,9 +35,23 @@ export function TrackListPage() {
     [tracks, query, source],
   )
   const withoutSource = useMemo(() => (tracks ?? []).filter((track) => !hasSource(track)).length, [tracks])
+  // "Suivant" et le mode aléatoire ne portent que sur les musiques affichées (recherche + filtre
+  // en cours) et effectivement jouables maintenant : avoir un lien KHInsider ou YouTube ne suffit
+  // pas, il faut que audio_link ait déjà été résolu.
+  const playable = useMemo(() => shown.filter((track) => track.audioLink !== null), [shown])
 
-  // Le .play() est appelé directement ici, dans le clic : c'est ce qui compte comme une
-  // interaction utilisateur pour le navigateur (une mise à jour de state React, elle, serait trop tardive).
+  // Le .play() est appelé directement dans un clic : c'est ce qui compte comme une interaction
+  // utilisateur pour le navigateur (une mise à jour de state React, elle, serait trop tardive).
+  function playTrack(track: Track) {
+    const audio = audioRef.current
+    if (!audio || !track.audioLink) return
+    audio.src = track.audioLink
+    // Un clic rapide sur "suivant" pendant qu'une lecture précédente démarre encore annule
+    // cette dernière : c'est un AbortError normal, pas une vraie erreur à remonter.
+    audio.play().catch(() => {})
+    setCurrentTrack(track)
+  }
+
   function handlePlay(track: Track) {
     const audio = audioRef.current
     if (!audio || !track.audioLink) return
@@ -46,12 +62,27 @@ export function TrackListPage() {
       return
     }
 
-    audio.src = track.audioLink
-    audio.play()
-    setCurrentTrack(track)
+    playTrack(track)
   }
 
+  // "Suivant" prend la musique suivante dans l'ordre, sauf en mode aléatoire où il en tire une au
+  // hasard : c'est le même bouton qui change de comportement, pas deux boutons séparés.
+  function handleNext() {
+    const track = shuffle
+      ? randomTrack(playable, currentTrack?.id)
+      : nextTrack(playable, currentTrack?.id)
+    if (track) playTrack(track)
+  }
 
+  function handleToggleShuffle() {
+    const enabling = !shuffle
+    setShuffle(enabling)
+    // Activer le mode aléatoire alors que rien ne joue encore sert aussi à démarrer l'écoute.
+    if (enabling && !currentTrack) {
+      const track = randomTrack(playable, undefined)
+      if (track) playTrack(track)
+    }
+  }
 
   return (
     <>
@@ -80,6 +111,14 @@ export function TrackListPage() {
               <option value="with">Avec source</option>
               <option value="without">Sans source</option>
             </select>
+            <button
+              type="button"
+              disabled={playable.length === 0}
+              aria-pressed={shuffle}
+              onClick={handleToggleShuffle}
+            >
+              🔀 Lecture aléatoire {shuffle && '(activée)'}
+            </button>
           </div>
           <p className="summary">
             {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}, dont{' '}
@@ -96,7 +135,7 @@ export function TrackListPage() {
           )}
         </>
       )}
-      <AudioPlayer ref={audioRef} track={currentTrack} onPlayingChange={setIsPlaying} />
+      <AudioPlayer ref={audioRef} track={currentTrack} onPlayingChange={setIsPlaying} onNext={handleNext} />
     </>
   )
 }

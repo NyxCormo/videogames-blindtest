@@ -1,0 +1,22 @@
+.leaderboard {
+  list-style: decimal;
+  margin: 1rem 0 0;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.leaderboard li {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.leaderboard .name {
+  font-weight: 600;
+}
+
+.leaderboard .progress {
+  color: var(--muted);
+}
