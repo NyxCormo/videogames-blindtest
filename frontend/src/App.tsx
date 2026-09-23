@@ -4,6 +4,7 @@ import { ListenerBanner } from './components/ListenerBanner/ListenerBanner'
 import { CurrentListenerProvider } from './context/CurrentListenerContext'
 import { BlindtestCreatePage } from './pages/BlindtestCreate/BlindtestCreatePage'
 import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
+import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
 import { TrackListPage } from './pages/TrackList/TrackListPage'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<TrackListPage />} />
             <Route path="/blindtests" element={<BlindtestListPage />} />
             <Route path="/blindtests/new" element={<BlindtestCreatePage />} />
+            <Route path="/blindtests/:id/play" element={<BlindtestPlayPage />} />
           </Routes>
         </main>
       </BrowserRouter>
