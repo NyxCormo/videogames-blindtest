@@ -8,7 +8,6 @@ import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestScore;
 import fr.insalan.blindtest.model.BlindtestScoreId;
 import fr.insalan.blindtest.model.BlindtestTrack;
-import fr.insalan.blindtest.model.BlindtestTrackId;
 import fr.insalan.blindtest.model.Knowledge;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
@@ -52,8 +51,8 @@ public class BlindtestPlayer {
     // Si la partie est finie : vide.
     @Transactional
     public Optional<Track> currentTrack(Integer blindtestId, Integer listenerId) {
-        BlindtestScore score = scoreOf(blindtestId, listenerId);
-        return blindtestTrackRepository.findById(new BlindtestTrackId(blindtestId, score.getTracksHeard()))
+        BlindtestScore score = score(blindtestId, listenerId);
+        return blindtestTrackRepository.findWithTrackByBlindtestIdAndPosition(blindtestId, score.getTracksHeard())
             .map(BlindtestTrack::getTrack);
     }
 
@@ -62,7 +61,7 @@ public class BlindtestPlayer {
     // Mauvaise réponse : rien ne change (nombre d'essais infini).
     @Transactional
     public Optional<Track> guess(Integer blindtestId, Integer listenerId, String guess) {
-        BlindtestScore score = scoreOf(blindtestId, listenerId);
+        BlindtestScore score = score(blindtestId, listenerId);
         Track track = trackAt(blindtestId, score.getTracksHeard());
 
         boolean correct = track.getGame().getName().strip().equalsIgnoreCase(guess.strip());
@@ -80,7 +79,7 @@ public class BlindtestPlayer {
     // Le joueur passe : la musique est révélée et comptée comme non connue, mais compte quand même comme écoutée.
     @Transactional
     public Track pass(Integer blindtestId, Integer listenerId) {
-        BlindtestScore score = scoreOf(blindtestId, listenerId);
+        BlindtestScore score = score(blindtestId, listenerId);
         Track track = trackAt(blindtestId, score.getTracksHeard());
 
         recordKnowledge(listenerId, track, false);
@@ -103,12 +102,13 @@ public class BlindtestPlayer {
     }
 
     private Track trackAt(Integer blindtestId, int position) {
-        return blindtestTrackRepository.findById(new BlindtestTrackId(blindtestId, position))
+        return blindtestTrackRepository.findWithTrackByBlindtestIdAndPosition(blindtestId, position)
             .map(BlindtestTrack::getTrack)
             .orElseThrow(() -> new IllegalStateException("Ce blindtest est déjà terminé pour ce joueur"));
     }
 
-    private BlindtestScore scoreOf(Integer blindtestId, Integer listenerId) {
+    // Score courant du joueur pour ce blindtest (créé à la volée s'il n'existe pas encore).
+    public BlindtestScore score(Integer blindtestId, Integer listenerId) {
         return blindtestScoreRepository.findById(new BlindtestScoreId(blindtestId, listenerId))
             .orElseGet(() -> {
                 Blindtest blindtest = blindtestRepository.findById(blindtestId).orElseThrow();
