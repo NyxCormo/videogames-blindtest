@@ -147,6 +147,42 @@ class BlindtestGameControllerTests {
         assertKnowsDawn(listener, dawn);
     }
 
+    @Test
+    void leaderboardIsSortedByGoodAnswers() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = tracks.save(new Track("Dawn", game));
+        dawn.setAudioLink("https://example.org/dawn");
+        tracks.save(dawn);
+        Track raven = tracks.save(new Track("Raven", game));
+        raven.setAudioLink("https://example.org/raven");
+        tracks.save(raven);
+        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50));
+        blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
+        blindtestTracks.save(new BlindtestTrack(blindtest, raven, 1));
+        Listener bonneReponse = listeners.save(new Listener("BonneReponse"));
+        Listener mauvaiseReponse = listeners.save(new Listener("MauvaiseReponse"));
+
+        GuessRequest rightGuess = new GuessRequest("stellar blade");
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
+                .param("listenerId", bonneReponse.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(rightGuess)))
+            .andExpect(jsonPath("$.correct").value(true));
+
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/pass")
+                .param("listenerId", mauvaiseReponse.getId().toString()))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/leaderboard"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].listenerName").value("BonneReponse"))
+            .andExpect(jsonPath("$[0].goodAnswers").value(1))
+            .andExpect(jsonPath("$[0].tracksHeard").value(1))
+            .andExpect(jsonPath("$[1].listenerName").value("MauvaiseReponse"))
+            .andExpect(jsonPath("$[1].goodAnswers").value(0));
+    }
+
     private void assertKnowsDawn(Listener listener, Track dawn) {
         boolean knows = knowledge.findById(new KnowledgeId(listener.getId(), dawn.getId())).orElseThrow().isKnows();
         assertTrue(knows);

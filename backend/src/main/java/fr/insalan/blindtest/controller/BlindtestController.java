@@ -19,6 +19,7 @@ import fr.insalan.blindtest.dto.BlindtestSessionResponse;
 import fr.insalan.blindtest.dto.CreateBlindtestRequest;
 import fr.insalan.blindtest.dto.GuessRequest;
 import fr.insalan.blindtest.dto.GuessResponse;
+import fr.insalan.blindtest.dto.LeaderboardEntryResponse;
 import fr.insalan.blindtest.dto.RevealResponse;
 import fr.insalan.blindtest.game.BlindtestGenerator;
 import fr.insalan.blindtest.game.BlindtestPlayer;
@@ -26,6 +27,7 @@ import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestScore;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.BlindtestRepository;
+import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
 
 @RestController 
@@ -34,17 +36,20 @@ public class BlindtestController {
     
     private final BlindtestRepository blindtestRepository;
     private final BlindtestTrackRepository blindtestTrackRepository;
+    private final BlindtestScoreRepository blindtestScoreRepository;
     private final BlindtestGenerator blindtestGenerator;
     private final BlindtestPlayer blindtestPlayer;
 
     public BlindtestController(
         BlindtestRepository blindtestRepository, 
         BlindtestTrackRepository blindtestTrackRepository,
+        BlindtestScoreRepository blindtestScoreRepository,
         BlindtestGenerator blindtestGenerator,
         BlindtestPlayer blindtestPlayer
     ){
         this.blindtestRepository = blindtestRepository;
         this.blindtestTrackRepository = blindtestTrackRepository;
+        this.blindtestScoreRepository = blindtestScoreRepository;
         this.blindtestGenerator = blindtestGenerator;
         this.blindtestPlayer = blindtestPlayer;
     }
@@ -122,5 +127,12 @@ public class BlindtestController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void knowAnyway(@RequestParam Integer listenerId, @RequestParam Integer trackId) {
         blindtestPlayer.knowAnyway(listenerId, trackId);
+    }
+
+    @GetMapping("/{id}/leaderboard")
+    public List<LeaderboardEntryResponse> leaderboard(@PathVariable Integer id) {
+        return blindtestScoreRepository.findWithListenerByBlindtestId(id).stream()
+            .map(LeaderboardEntryResponse::from)
+            .toList();
     }
 }
