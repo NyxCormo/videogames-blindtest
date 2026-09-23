@@ -91,3 +91,18 @@ export async function submitKnowAnyway(blindtestId: number, listenerId: number, 
     throw new Error(`Erreur ${response.status}`)
   }
 }
+
+// Forme du JSON renvoyé par GET /api/blindtests/{id}/leaderboard (voir LeaderboardEntryResponse côté backend)
+export type LeaderboardEntry = {
+  listenerName: string
+  goodAnswers: number
+  tracksHeard: number
+}
+
+export async function fetchLeaderboard(blindtestId: number, signal?: AbortSignal): Promise<LeaderboardEntry[]> {
+  const response = await fetch(`/api/blindtests/${blindtestId}/leaderboard`, { signal })
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}`)
+  }
+  return response.json()
+}

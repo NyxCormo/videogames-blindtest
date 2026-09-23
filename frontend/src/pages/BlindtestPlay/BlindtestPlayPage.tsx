@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import {
   fetchSession,
   submitGuess,
@@ -86,6 +86,9 @@ export function BlindtestPlayPage() {
         <h1>Partie terminée</h1>
         <p>
           {session.goodAnswers} / {session.totalTracks} bonnes réponses.
+        </p>
+        <p>
+          <Link to={`/blindtests/${blindtestId}/leaderboard`}>Voir le classement</Link>
         </p>
       </>
     )
