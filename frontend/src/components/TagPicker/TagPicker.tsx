@@ -10,7 +10,7 @@ export function TagPicker({ onPick }: Props) {
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<Tag[]>([])
     const [tagTypes, setTagTypes] = useState<TagType[]>([])
-    const [typeName, setTypeName] = useState('')
+    const [typeId, setTypeId] = useState('')
     const [creating, setCreating] = useState(false)
     const [createError, setCreateError] = useState<string | null>(null)
 
@@ -46,18 +46,18 @@ export function TagPicker({ onPick }: Props) {
         onPick(tag)
         setQuery('')
         setResults([])
-        setTypeName('')
+        setTypeId('')
         setCreateError(null)
     }
 
     function handleCreate() {
-        if (typeName.trim().length === 0) {
+        if (typeId === '') {
             setCreateError('Le type est obligatoire pour créer un tag')
             return
         }
         setCreateError(null)
         setCreating(true)
-        createTag(typeName.trim(), query.trim())
+        createTag(Number(typeId), query.trim())
             .then(select)
             .catch((err: Error) => setCreateError(err.message))
             .finally(() => setCreating(false))
@@ -85,19 +85,18 @@ export function TagPicker({ onPick }: Props) {
             )}
             {query.trim().length >= 2 && (
                 <div className="tag-picker-create">
-                    <input
-                        list="tag-type-options"
-                        type="text"
-                        placeholder="Type (PS4, Gameboy, RPG, Metroidvania, ...)"
+                    <select
                         aria-label="Type du nouveau tag"
-                        value={typeName}
-                        onChange={(event) => setTypeName(event.target.value)}
-                    />
-                    <datalist id="tag-type-options">
+                        value={typeId}
+                        onChange={(event) => setTypeId(event.target.value)}
+                    >
+                        <option value="">Choisir un type</option>
                         {tagTypes.map((type) => (
-                            <option key={type.id} value={type.name} />
+                            <option key={type.id} value={type.id}>
+                                {type.name}
+                            </option>
                         ))}
-                    </datalist>
+                    </select>
                     <button type="button" onClick={handleCreate} disabled={creating}>
                         Créer « {query.trim()} »
                     </button>

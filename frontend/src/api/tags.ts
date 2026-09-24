@@ -19,11 +19,11 @@ export async function searchTags(search: string, signal?: AbortSignal): Promise<
     return response.json()
 }
 
-export async function createTag(typeName: string, tagName: string): Promise<Tag> {
+export async function createTag(typeId: number, tagName: string): Promise<Tag> {
     const response = await fetch('/api/tags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ typeName, tagName }),
+        body: JSON.stringify({ typeId, tagName }),
     })
     if (!response.ok) {
         const body = await response.json()
