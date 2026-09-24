@@ -61,9 +61,9 @@ class TagControllerTests {
 
     @AfterEach
     void cleanDatabase() {
+        // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
         trackTags.deleteAll();
         tags.deleteAll();
-        tagTypes.deleteAll();
         tracks.deleteAll();
         games.deleteAll();
         franchises.deleteAll();
@@ -71,7 +71,7 @@ class TagControllerTests {
 
     @Test
     void searchFindsExistingTagWithItsType() throws Exception {
-        TagType genre = tagTypes.save(new TagType("genre"));
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
         tags.save(new Tag("Action", genre));
 
         mockMvc.perform(get("/api/tags").param("search", "act"))
@@ -81,8 +81,9 @@ class TagControllerTests {
     }
 
     @Test
-    void createsTypeAndTagWhenNeitherExists() throws Exception {
-        CreateTagRequest request = new CreateTagRequest("ambiance", "Épique");
+    void createsTagUnderAnExistingType() throws Exception {
+        TagType ambiance = tagTypes.findByName("ambiance").orElseThrow();
+        CreateTagRequest request = new CreateTagRequest(ambiance.getId(), "Épique");
 
         mockMvc.perform(post("/api/tags")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -90,28 +91,37 @@ class TagControllerTests {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value("Épique"))
             .andExpect(jsonPath("$.typeName").value("ambiance"));
-
-        mockMvc.perform(get("/api/tag-types"))
-            .andExpect(jsonPath("$[0].name").value("ambiance"));
     }
 
     @Test
-    void reusesExistingTypeInsteadOfDuplicating() throws Exception {
-        tagTypes.save(new TagType("genre"));
-        CreateTagRequest request = new CreateTagRequest("genre", "Aventure");
+    void reusesExistingTagInsteadOfDuplicating() throws Exception {
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
+        tags.save(new Tag("Aventure", genre));
+        CreateTagRequest request = new CreateTagRequest(genre.getId(), "Aventure");
 
         mockMvc.perform(post("/api/tags")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/api/tag-types"))
+        mockMvc.perform(get("/api/tags/all"))
             .andExpect(jsonPath("$.length()").value(1));
     }
 
     @Test
     void rejectsBlankTagName() throws Exception {
-        CreateTagRequest request = new CreateTagRequest("genre", " ");
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
+        CreateTagRequest request = new CreateTagRequest(genre.getId(), " ");
+
+        mockMvc.perform(post("/api/tags")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rejectsUnknownTypeId() throws Exception {
+        CreateTagRequest request = new CreateTagRequest(999999, "Action");
 
         mockMvc.perform(post("/api/tags")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +131,7 @@ class TagControllerTests {
 
     @Test
     void allReturnsEveryTagRegardlessOfUsage() throws Exception {
-        TagType genre = tagTypes.save(new TagType("genre"));
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
         tags.save(new Tag("Action", genre));
         tags.save(new Tag("Aventure", genre));
 
@@ -136,7 +146,7 @@ class TagControllerTests {
         Game game = games.save(new Game("Stellar Blade", franchise));
         Track dawn = tracks.save(new Track("Dawn", game));
         Track raven = tracks.save(new Track("Raven", game));
-        TagType genre = tagTypes.save(new TagType("genre"));
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
         Tag action = tags.save(new Tag("Action", genre));
         Tag aventure = tags.save(new Tag("Aventure", genre));
         trackTags.save(new TrackTag(dawn, action));

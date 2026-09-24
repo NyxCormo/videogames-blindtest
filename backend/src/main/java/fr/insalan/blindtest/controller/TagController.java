@@ -41,13 +41,17 @@ public class TagController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TagResponse create(@RequestBody CreateTagRequest request) {
-        if (request.typeName() == null || request.typeName().isBlank()) {
+        if (request.typeId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le type est obligatoire");
         }
         if (request.tagName() == null || request.tagName().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom du tag est obligatoire");
         }
-        return TagResponse.from(tagService.findOrCreate(request.typeName(), request.tagName()));
+        try {
+            return TagResponse.from(tagService.create(request.typeId(), request.tagName()));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     // Exemples : les tags les plus utilisés dans toute la base.

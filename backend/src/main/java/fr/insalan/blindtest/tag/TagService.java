@@ -32,9 +32,9 @@ public class TagService {
     }
 
     @Transactional
-    public Tag findOrCreate(String typeName, String tagName) {
-        TagType type = tagTypeRepository.findByName(typeName)
-            .orElseGet(() -> tagTypeRepository.save(new TagType(typeName)));
+    public Tag create(Integer typeId, String tagName) {
+        TagType type = tagTypeRepository.findById(typeId)
+            .orElseThrow(() -> new IllegalArgumentException("Type de tag inconnu"));
         return tagRepository.findByTypeAndName(type, tagName)
             .orElseGet(() -> tagRepository.save(new Tag(tagName, type)));
     }

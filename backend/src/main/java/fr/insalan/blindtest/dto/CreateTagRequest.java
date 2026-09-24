@@ -1,7 +1,7 @@
 package fr.insalan.blindtest.dto;
 
 public record CreateTagRequest(
-    String typeName,
+    Integer typeId,
     String tagName
 ) {
 }

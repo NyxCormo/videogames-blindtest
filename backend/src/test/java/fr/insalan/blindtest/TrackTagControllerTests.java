@@ -61,9 +61,9 @@ class TrackTagControllerTests {
 
     @AfterEach
     void cleanDatabase() {
+        // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
         trackTags.deleteAll();
         tags.deleteAll();
-        tagTypes.deleteAll();
         tracks.deleteAll();
         games.deleteAll();
         franchises.deleteAll();
@@ -74,7 +74,7 @@ class TrackTagControllerTests {
         Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
         Game game = games.save(new Game("Stellar Blade", franchise));
         Track dawn = tracks.save(new Track("Dawn", game));
-        TagType genre = tagTypes.save(new TagType("genre"));
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
         Tag action = tags.save(new Tag("Action", genre));
 
         mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/tags")
@@ -99,7 +99,7 @@ class TrackTagControllerTests {
         Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
         Game game = games.save(new Game("Stellar Blade", franchise));
         Track dawn = tracks.save(new Track("Dawn", game));
-        TagType genre = tagTypes.save(new TagType("genre"));
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
         Tag action = tags.save(new Tag("Action", genre));
         AddTagRequest request = new AddTagRequest(action.getId());
 
@@ -121,7 +121,7 @@ class TrackTagControllerTests {
         Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
         Game game = games.save(new Game("Stellar Blade", franchise));
         Track dawn = tracks.save(new Track("Dawn", game));
-        TagType genre = tagTypes.save(new TagType("genre"));
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
         Tag action = tags.save(new Tag("Action", genre));
 
         mockMvc.perform(delete("/api/tracks/" + dawn.getId() + "/tags/" + action.getId()))
