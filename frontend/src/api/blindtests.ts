@@ -17,12 +17,14 @@ export async function fetchBlindtests(signal?: AbortSignal): Promise<Blindtest[]
 export async function createBlindtest(
     name: string,
     trackCount: number,
-    difficulty: number
+    difficulty: number,
+    tagIds: number[],
+    matchAllTags: boolean
 ): Promise<Blindtest> {
     const response = await fetch(`/api/blindtests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, trackCount, difficulty }),
+    body: JSON.stringify({ name, trackCount, difficulty, tagIds, matchAllTags }),
     })
     if (!response.ok) {
         const body = await response.json()
