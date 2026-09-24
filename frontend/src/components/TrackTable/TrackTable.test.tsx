@@ -7,6 +7,7 @@ import { TrackTable } from './TrackTable'
 const dawn: Track = {
   id: 1,
   name: 'Dawn',
+  gameId: 1,
   gameName: 'Stellar Blade',
   franchiseName: 'Stellar Blade',
   khinsiderLink: 'https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024/62.%2520Dawn.mp3',

@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
+import { applyTagToGame, fetchGameTracks } from '../../api/games'
 import { fetchAllTags, fetchMostUsedTags, type Tag, type TagUsage } from '../../api/tags'
 import { addTrackTag, fetchTrack, fetchTrackTags, removeTrackTag, type Track } from '../../api/tracks'
 import { TagPicker } from '../../components/TagPicker/TagPicker'
 import { filterTags } from './filterTags'
 import './TrackDetailPage.css'
+
+// Tags inhérents au jeu (pas à la musique elle-même) : seuls ceux-là peuvent s'appliquer à tout le jeu d'un coup.
+const GAME_LEVEL_TYPES = ['genre', 'plateforme']
 
 export function TrackDetailPage() {
     const { id } = useParams()
@@ -17,6 +21,9 @@ export function TrackDetailPage() {
     const [showAllTags, setShowAllTags] = useState(false)
     const [allTags, setAllTags] = useState<Tag[] | null>(null)
     const [allTagsFilter, setAllTagsFilter] = useState('')
+    const [gameTracks, setGameTracks] = useState<Track[] | null>(null)
+    const [selectedTrackIds, setSelectedTrackIds] = useState<Set<number>>(new Set())
+    const [gameTagMessage, setGameTagMessage] = useState<string | null>(null)
 
     useEffect(() => {
         const controller = new AbortController()
@@ -41,6 +48,15 @@ export function TrackDetailPage() {
             .catch(() => {})
         return () => controller.abort()
     }, [])
+
+    useEffect(() => {
+        if (track === null) return
+        const controller = new AbortController()
+        fetchGameTracks(track.gameId, controller.signal)
+            .then((tracks) => setGameTracks(tracks.filter((other) => other.id !== track.id)))
+            .catch(() => {})
+        return () => controller.abort()
+    }, [track])
 
     function handleShowAllTags() {
         setShowAllTags(true)
@@ -70,9 +86,44 @@ export function TrackDetailPage() {
 
     const alreadyTaggedIds = new Set(tags.map((tag) => tag.id))
     const filteredAllTags = allTags ? filterTags(allTags, allTagsFilter) : []
+    const gameId = track.gameId
+
+    function handleApplyToGame(tag: Tag) {
+        if (!window.confirm(`Ajouter le tag « ${tag.name} » à toutes les musiques de ce jeu ?`)) {
+            return
+        }
+        applyTagToGame(gameId, tag.id).then(() => {
+            setGameTagMessage(`« ${tag.name} » ajouté à toutes les musiques du jeu.`)
+        })
+    }
+
+    function toggleTrackSelection(id: number) {
+        setSelectedTrackIds((current) => {
+            const next = new Set(current)
+            if (next.has(id)) {
+                next.delete(id)
+            } else {
+                next.add(id)
+            }
+            return next
+        })
+    }
+
+    function handlePushTag(tag: Tag) {
+        if (selectedTrackIds.size === 0) return
+        Promise.all([...selectedTrackIds].map((selectedId) => addTrackTag(selectedId, tag.id)))
+    }
+
+    function toggleSelectAll() {
+        if (gameTracks === null) return
+        setSelectedTrackIds((current) =>
+            current.size === gameTracks.length ? new Set() : new Set(gameTracks.map((gameTrack) => gameTrack.id)),
+        )
+    }
 
     return (
-        <>
+        <div className="track-detail">
+        <div className="track-detail-main">
             <h1>{track.name}</h1>
             <p className="track-info">
                 {track.gameName} — {track.franchiseName}
@@ -80,15 +131,23 @@ export function TrackDetailPage() {
 
             <h2>Tags</h2>
             {tags.length === 0 && <p>Aucun tag pour l'instant.</p>}
+            {gameTagMessage && <p>{gameTagMessage}</p>}
             <ul className="tag-list">
                 {tags.map((tag) => (
                     <li key={tag.id}>
             <span>
               {tag.name} <span className="tag-type">({tag.typeName})</span>
             </span>
-                        <button type="button" onClick={() => handleRemove(tag.id)}>
-                            Retirer
-                        </button>
+                        <div className="tag-list-actions">
+                            {GAME_LEVEL_TYPES.includes(tag.typeName) && (
+                                <button type="button" onClick={() => handleApplyToGame(tag)}>
+                                    Appliquer au jeu
+                                </button>
+                            )}
+                            <button type="button" onClick={() => handleRemove(tag.id)}>
+                                Retirer
+                            </button>
+                        </div>
                     </li>
                 ))}
             </ul>
@@ -137,6 +196,56 @@ export function TrackDetailPage() {
                     )}
                 </div>
             )}
-        </>
+        </div>
+
+        <aside className="track-detail-sidebar">
+            <h2>Autres musiques du jeu</h2>
+            {gameTracks === null && <p>Chargement...</p>}
+            {gameTracks !== null && gameTracks.length === 0 && <p>Aucune autre musique de ce jeu.</p>}
+            {gameTracks !== null && gameTracks.length > 0 && (
+                <>
+                    <button type="button" onClick={toggleSelectAll}>
+                        {selectedTrackIds.size === gameTracks.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                    </button>
+                    <ul className="game-track-list">
+                        {gameTracks.map((gameTrack) => (
+                            <li key={gameTrack.id}>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedTrackIds.has(gameTrack.id)}
+                                        onChange={() => toggleTrackSelection(gameTrack.id)}
+                                    />
+                                    {gameTrack.name}
+                                </label>
+                            </li>
+                        ))}
+                    </ul>
+
+                    {tags.length > 0 && (
+                        <>
+                            <p className="sidebar-hint">
+                                {selectedTrackIds.size} musique{selectedTrackIds.size > 1 ? 's' : ''} sélectionnée
+                                {selectedTrackIds.size > 1 ? 's' : ''}
+                            </p>
+                            <ul className="tag-suggestions">
+                                {tags.map((tag) => (
+                                    <li key={tag.id}>
+                                        <button
+                                            type="button"
+                                            onClick={() => handlePushTag(tag)}
+                                            disabled={selectedTrackIds.size === 0}
+                                        >
+                                            + {tag.name} aux sélectionnées
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </>
+            )}
+        </aside>
+        </div>
     )
 }

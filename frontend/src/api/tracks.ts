@@ -4,6 +4,7 @@ import type { Tag } from './tags'
 export type Track = {
   id: number
   name: string
+  gameId: number
   gameName: string
   franchiseName: string
   khinsiderLink: string | null
