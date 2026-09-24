@@ -9,8 +9,12 @@ import org.springframework.stereotype.Service;
 
 import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.model.TagType;
+import fr.insalan.blindtest.model.Track;
+import fr.insalan.blindtest.model.TrackTag;
+import fr.insalan.blindtest.model.TrackTagId;
 import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TagTypeRepository;
+import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import jakarta.transaction.Transactional;
 
@@ -20,15 +24,18 @@ public class TagService {
     private final TagTypeRepository tagTypeRepository;
     private final TagRepository tagRepository;
     private final TrackTagRepository trackTagRepository;
+    private final TrackRepository trackRepository;
 
     public TagService(
         TagTypeRepository tagTypeRepository,
         TagRepository tagRepository,
-        TrackTagRepository trackTagRepository
+        TrackTagRepository trackTagRepository,
+        TrackRepository trackRepository
     ){
         this.tagTypeRepository = tagTypeRepository;
         this.tagRepository = tagRepository;
         this.trackTagRepository = trackTagRepository;
+        this.trackRepository = trackRepository;
     }
 
     @Transactional
@@ -49,5 +56,18 @@ public class TagService {
         return counts.stream()
             .map(row -> new TagUsage(tagsById.get((Integer) row[0]), (Long) row[1]))
             .toList();
+    }
+
+    // Applique un tag à toutes les musiques d'un jeu (utilisé pour les tags inhérents au jeu : genre, plateforme).
+    // Idempotent : une musique qui a déjà le tag n'est pas touchée deux fois.
+    @Transactional
+    public void applyToGame(Integer tagId, Integer gameId) {
+        Tag tag = tagRepository.findById(tagId).orElseThrow();
+        for (Track track : trackRepository.findByGameIdWithGameAndFranchise(gameId)) {
+            TrackTagId trackTagId = new TrackTagId(track.getId(), tag.getId());
+            if (!trackTagRepository.existsById(trackTagId)) {
+                trackTagRepository.save(new TrackTag(track, tag));
+            }
+        }
     }
 }

@@ -30,6 +30,16 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
             """)
     Optional<Track> findByIdWithGameAndFranchise(@Param("id") Integer id);
 
+    // même chose, mais pour toutes les musiques d'un même jeu (bouton "appliquer au jeu", liste latérale)
+    @Query("""
+            SELECT t FROM Track t
+            JOIN FETCH t.game g
+            JOIN FETCH g.franchise f
+            WHERE g.id = :gameId
+            ORDER BY t.name
+            """)
+    List<Track> findByGameIdWithGameAndFranchise(@Param("gameId") Integer gameId);
+
     Optional<Track> findByGameAndName(Game game, String name);
 
     List<Track> findByKhinsiderLinkIsNotNull();
