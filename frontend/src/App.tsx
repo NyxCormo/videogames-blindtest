@@ -6,6 +6,7 @@ import { BlindtestCreatePage } from './pages/BlindtestCreate/BlindtestCreatePage
 import { BlindtestLeaderboardPage } from './pages/BlindtestLeaderboard/BlindtestLeaderboardPage'
 import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
 import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
+import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
 import { TrackListPage } from './pages/TrackList/TrackListPage'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<TrackListPage />} />
+            <Route path="/tracks/:id" element={<TrackDetailPage />} />
             <Route path="/blindtests" element={<BlindtestListPage />} />
             <Route path="/blindtests/new" element={<BlindtestCreatePage />} />
             <Route path="/blindtests/:id/play" element={<BlindtestPlayPage />} />
