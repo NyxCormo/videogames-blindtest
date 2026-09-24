@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.dto.AddTagRequest;
 import fr.insalan.blindtest.dto.TagResponse;
@@ -46,6 +47,13 @@ public class TrackController {
         return trackRepository.findAllWithGameAndFranchise().stream()
             .map(TrackResponse::from)
             .toList();
+    }
+
+    @GetMapping("/{id}")
+    public TrackResponse get(@PathVariable Integer id) {
+        return trackRepository.findByIdWithGameAndFranchise(id)
+            .map(TrackResponse::from)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
     }
 
     @GetMapping("/{id}/tags")
