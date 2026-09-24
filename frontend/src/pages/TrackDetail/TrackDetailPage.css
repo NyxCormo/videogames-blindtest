@@ -1,0 +1,83 @@
+.track-detail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.track-detail-main {
+    flex: 1 1 24rem;
+}
+
+.track-detail-sidebar {
+    flex: 1 1 16rem;
+    max-width: 20rem;
+}
+
+.track-info {
+    color: var(--muted);
+}
+
+.tag-list {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 20rem;
+}
+
+.tag-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.tag-list-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.game-track-list {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-hint {
+    color: var(--muted);
+    margin: 1rem 0 0;
+}
+
+.tag-suggestions {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    max-width: 30rem;
+}
+
+.tag-suggestions button {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    background: none;
+    cursor: pointer;
+}
+
+.tag-suggestions button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.all-tags {
+    margin-top: 0.5rem;
+}

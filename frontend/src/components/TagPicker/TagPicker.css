@@ -1,0 +1,43 @@
+.tag-picker {
+    position: relative;
+    margin-top: 1rem;
+    max-width: 20rem;
+}
+
+.tag-picker-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    list-style: none;
+    margin: 0.25rem 0 0;
+    padding: 0.25rem;
+    background: Canvas;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    min-width: 12rem;
+    z-index: 1;
+}
+
+.tag-picker-results button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    padding: 0.35rem 0.5rem;
+    cursor: pointer;
+}
+
+.tag-picker-results button:hover {
+    background: var(--border);
+}
+
+.tag-picker-create {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tag-type {
+    color: var(--muted);
+}

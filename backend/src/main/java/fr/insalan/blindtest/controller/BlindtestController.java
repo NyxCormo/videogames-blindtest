@@ -76,7 +76,9 @@ public class BlindtestController {
 
         Blindtest blindtest;
         try {
-            blindtest = blindtestGenerator.generate(request.name(), request.trackCount(), request.difficulty());
+            List<Integer> tagIds = request.tagIds() == null ? List.of() : request.tagIds();
+            boolean matchAllTags = request.matchAllTags() == null || request.matchAllTags();
+            blindtest = blindtestGenerator.generate(request.name(), request.trackCount(), request.difficulty(), tagIds, matchAllTags);
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

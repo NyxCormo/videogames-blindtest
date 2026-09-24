@@ -87,5 +87,23 @@ class TrackControllerTests {
 				.andExpect(jsonPath("$[1].audioLink").doesNotExist());
  	}
 
+	@Test
+	void getReturnsOneTrack() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = tracks.save(new Track("Dawn", game));
+
+		mockMvc.perform(get("/api/tracks/" + dawn.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("Dawn"))
+				.andExpect(jsonPath("$.gameName").value("Stellar Blade"));
+	}
+
+	@Test
+	void getReturnsNotFoundForAnUnknownTrack() throws Exception {
+		mockMvc.perform(get("/api/tracks/999999"))
+				.andExpect(status().isNotFound());
+	}
+
 
 }

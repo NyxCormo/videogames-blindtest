@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { hasSource, type Track } from '../../api/tracks'
 import './TrackTable.css'
 
@@ -25,7 +26,9 @@ export function TrackTable({ tracks, onPlay, playingTrackId }: Props) {
             <tr key={track.id}>
               <td>{track.franchiseName}</td>
               <td>{track.gameName}</td>
-              <td>{track.name}</td>
+              <td>
+                <Link to={`/tracks/${track.id}`}>{track.name}</Link>
+              </td>
               <td>
                 <Sources track={track} />
               </td>

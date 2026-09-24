@@ -94,7 +94,7 @@ class BlindtestControllerTests {
         Game game = games.save(new Game("Stellar Blade", franchise));
         playableTrack(game, "Dawn", true);
 
-        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, 50);
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, 50, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +110,7 @@ class BlindtestControllerTests {
 
     @Test
     void rejectsBlankName() throws Exception {
-        CreateBlindtestRequest request = new CreateBlindtestRequest(" ", 1, 50);
+        CreateBlindtestRequest request = new CreateBlindtestRequest(" ", 1, 50, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -120,7 +120,7 @@ class BlindtestControllerTests {
 
     @Test
     void rejectsWhenNotEnoughTracks() throws Exception {
-        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 5, 50);
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 5, 50, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -5,6 +5,7 @@ import fr.insalan.blindtest.model.Track;
 public record TrackResponse (
     Integer id,
     String name,
+    Integer gameId,
     String gameName,
     String franchiseName,
     String khinsiderLink,
@@ -16,6 +17,7 @@ public record TrackResponse (
         return new TrackResponse(
             track.getId(),
             track.getName(),
+            track.getGame().getId(),
             track.getGame().getName(),
             track.getGame().getFranchise().getName(),
             track.getKhinsiderLink(),
@@ -23,5 +25,5 @@ public record TrackResponse (
             track.getAudioLink()
         );
     }
-    
+
 }

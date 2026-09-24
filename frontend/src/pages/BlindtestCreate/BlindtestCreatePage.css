@@ -10,3 +10,33 @@
   flex-direction: column;
   gap: 0.25rem;
 }
+
+.blindtest-tags {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tag-type-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tag-type-group h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: capitalize;
+  flex-basis: 100%;
+}
+
+.blindtest-create .tag-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+}

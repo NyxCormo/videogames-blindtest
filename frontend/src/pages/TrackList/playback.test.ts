@@ -6,6 +6,7 @@ function track(id: number, name: string): Track {
   return {
     id,
     name,
+    gameId: 1,
     gameName: 'Stellar Blade',
     franchiseName: 'Stellar Blade',
     khinsiderLink: null,
