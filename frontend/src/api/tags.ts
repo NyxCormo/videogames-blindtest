@@ -39,3 +39,22 @@ export async function fetchTagTypes(signal?: AbortSignal): Promise<TagType[]> {
     }
     return response.json()
 }
+
+// Forme du JSON renvoyé par GET /api/tags/most-used (voir TagUsageResponse côté backend)
+export type TagUsage = Tag & { count: number }
+
+export async function fetchMostUsedTags(signal?: AbortSignal): Promise<TagUsage[]> {
+    const response = await fetch('/api/tags/most-used', { signal })
+    if (!response.ok) {
+        throw new Error(`Erreur ${response.status}`)
+    }
+    return response.json()
+}
+
+export async function fetchAllTags(signal?: AbortSignal): Promise<Tag[]> {
+    const response = await fetch('/api/tags/all', { signal })
+    if (!response.ok) {
+        throw new Error(`Erreur ${response.status}`)
+    }
+    return response.json()
+}

@@ -2,6 +2,7 @@ package fr.insalan.blindtest.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +22,12 @@ public interface TrackTagRepository extends JpaRepository<TrackTag, TrackTagId> 
             ORDER BY t.name
             """)
     List<TrackTag> findWithTagByTrackId(@Param("trackId") Integer trackId);
+
+    // pour chaque tag, le nombre de musiques qui l'ont (les plus utilisés en premier) : id du tag + total
+    @Query("""
+            SELECT tt.id.tagId, COUNT(tt) FROM TrackTag tt
+            GROUP BY tt.id.tagId
+            ORDER BY COUNT(tt) DESC
+            """)
+    List<Object[]> countTracksByTag(Pageable limit);
 }

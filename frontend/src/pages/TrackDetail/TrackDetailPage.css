@@ -20,3 +20,30 @@
     border: 1px solid var(--border);
     border-radius: 0.5rem;
 }
+
+.tag-suggestions {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    max-width: 30rem;
+}
+
+.tag-suggestions button {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    background: none;
+    cursor: pointer;
+}
+
+.tag-suggestions button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.all-tags {
+    margin-top: 0.5rem;
+}

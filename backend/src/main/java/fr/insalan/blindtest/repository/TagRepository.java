@@ -22,4 +22,19 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
             ORDER BY t.name
             """)
     List<Tag> searchWithType(@Param("search") String search, Pageable limit);
+
+    // tous les tags, avec leur type (pour la liste complète filtrable côté front)
+    @Query("""
+            SELECT t FROM Tag t
+            JOIN FETCH t.type
+            ORDER BY t.name
+            """)
+    List<Tag> findAllWithType();
+
+    @Query("""
+            SELECT t FROM Tag t
+            JOIN FETCH t.type
+            WHERE t.id IN :ids
+            """)
+    List<Tag> findAllByIdInWithType(@Param("ids") List<Integer> ids);
 }

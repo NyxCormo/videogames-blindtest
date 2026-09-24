@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.dto.CreateTagRequest;
 import fr.insalan.blindtest.dto.TagResponse;
+import fr.insalan.blindtest.dto.TagUsageResponse;
 import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.tag.TagService;
 
@@ -47,5 +48,21 @@ public class TagController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom du tag est obligatoire");
         }
         return TagResponse.from(tagService.findOrCreate(request.typeName(), request.tagName()));
+    }
+
+    // Exemples : les tags les plus utilisés dans toute la base.
+    @GetMapping("/most-used")
+    public List<TagUsageResponse> mostUsed() {
+        return tagService.mostUsed(10).stream()
+            .map(TagUsageResponse::from)
+            .toList();
+    }
+
+    // Tous les tags, pour la liste complète filtrable côté front.
+    @GetMapping("/all")
+    public List<TagResponse> all() {
+        return tagRepository.findAllWithType().stream()
+            .map(TagResponse::from)
+            .toList();
     }
 }

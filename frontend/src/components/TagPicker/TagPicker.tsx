@@ -12,6 +12,7 @@ export function TagPicker({ onPick }: Props) {
     const [tagTypes, setTagTypes] = useState<TagType[]>([])
     const [typeName, setTypeName] = useState('')
     const [creating, setCreating] = useState(false)
+    const [createError, setCreateError] = useState<string | null>(null)
 
     useEffect(() => {
         const controller = new AbortController()
@@ -46,12 +47,19 @@ export function TagPicker({ onPick }: Props) {
         setQuery('')
         setResults([])
         setTypeName('')
+        setCreateError(null)
     }
 
     function handleCreate() {
+        if (typeName.trim().length === 0) {
+            setCreateError('Le type est obligatoire pour créer un tag')
+            return
+        }
+        setCreateError(null)
         setCreating(true)
         createTag(typeName.trim(), query.trim())
             .then(select)
+            .catch((err: Error) => setCreateError(err.message))
             .finally(() => setCreating(false))
     }
 
@@ -90,9 +98,10 @@ export function TagPicker({ onPick }: Props) {
                             <option key={type.id} value={type.name} />
                         ))}
                     </datalist>
-                    <button type="button" onClick={handleCreate} disabled={creating || typeName.trim().length === 0}>
+                    <button type="button" onClick={handleCreate} disabled={creating}>
                         Créer « {query.trim()} »
                     </button>
+                    {createError && <p role="alert">{createError}</p>}
                 </div>
             )}
         </div>

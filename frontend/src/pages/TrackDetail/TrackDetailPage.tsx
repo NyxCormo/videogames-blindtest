@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
-import type { Tag } from '../../api/tags'
+import { fetchAllTags, fetchMostUsedTags, type Tag, type TagUsage } from '../../api/tags'
 import { addTrackTag, fetchTrack, fetchTrackTags, removeTrackTag, type Track } from '../../api/tracks'
 import { TagPicker } from '../../components/TagPicker/TagPicker'
+import { filterTags } from './filterTags'
 import './TrackDetailPage.css'
 
 export function TrackDetailPage() {
@@ -12,6 +13,10 @@ export function TrackDetailPage() {
     const [track, setTrack] = useState<Track | null>(null)
     const [tags, setTags] = useState<Tag[] | null>(null)
     const [error, setError] = useState(false)
+    const [mostUsedTags, setMostUsedTags] = useState<TagUsage[]>([])
+    const [showAllTags, setShowAllTags] = useState(false)
+    const [allTags, setAllTags] = useState<Tag[] | null>(null)
+    const [allTagsFilter, setAllTagsFilter] = useState('')
 
     useEffect(() => {
         const controller = new AbortController()
@@ -28,6 +33,21 @@ export function TrackDetailPage() {
             })
         return () => controller.abort()
     }, [trackId])
+
+    useEffect(() => {
+        const controller = new AbortController()
+        fetchMostUsedTags(controller.signal)
+            .then(setMostUsedTags)
+            .catch(() => {})
+        return () => controller.abort()
+    }, [])
+
+    function handleShowAllTags() {
+        setShowAllTags(true)
+        if (allTags === null) {
+            fetchAllTags().then(setAllTags)
+        }
+    }
 
     function handleAdd(tag: Tag) {
         addTrackTag(trackId, tag.id).then(() => {
@@ -47,6 +67,9 @@ export function TrackDetailPage() {
     if (track === null || tags === null) {
         return <p>Chargement...</p>
     }
+
+    const alreadyTaggedIds = new Set(tags.map((tag) => tag.id))
+    const filteredAllTags = allTags ? filterTags(allTags, allTagsFilter) : []
 
     return (
         <>
@@ -71,6 +94,49 @@ export function TrackDetailPage() {
             </ul>
 
             <TagPicker onPick={handleAdd} />
+
+            {mostUsedTags.length > 0 && (
+                <>
+                    <h3>Tags populaires</h3>
+                    <ul className="tag-suggestions">
+                        {mostUsedTags.map((tag) => (
+                            <li key={tag.id}>
+                                <button type="button" onClick={() => handleAdd(tag)} disabled={alreadyTaggedIds.has(tag.id)}>
+                                    {tag.name} <span className="tag-type">({tag.typeName})</span> · {tag.count}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
+
+            {!showAllTags ? (
+                <button type="button" onClick={handleShowAllTags}>
+                    + Voir tous les tags
+                </button>
+            ) : (
+                <div className="all-tags">
+                    <input
+                        type="search"
+                        placeholder="Filtrer les tags"
+                        aria-label="Filtrer les tags"
+                        value={allTagsFilter}
+                        onChange={(event) => setAllTagsFilter(event.target.value)}
+                    />
+                    {allTags === null && <p>Chargement...</p>}
+                    {allTags !== null && (
+                        <ul className="tag-suggestions">
+                            {filteredAllTags.map((tag) => (
+                                <li key={tag.id}>
+                                    <button type="button" onClick={() => handleAdd(tag)} disabled={alreadyTaggedIds.has(tag.id)}>
+                                        {tag.name} <span className="tag-type">({tag.typeName})</span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
         </>
     )
 }
