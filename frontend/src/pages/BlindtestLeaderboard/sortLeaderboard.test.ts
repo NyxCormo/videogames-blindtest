@@ -3,7 +3,7 @@ import type { LeaderboardEntry } from '../../api/blindtests'
 import { sortLeaderboard } from './sortLeaderboard'
 
 function entry(listenerName: string, goodAnswers: number, tracksHeard: number): LeaderboardEntry {
-  return { listenerName, goodAnswers, tracksHeard }
+  return { listenerName, goodAnswers, bonusAnswers: 0, tracksHeard }
 }
 
 describe('sortLeaderboard', () => {

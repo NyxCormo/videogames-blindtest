@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
   fetchSession,
@@ -8,6 +8,7 @@ import {
   type BlindtestSession,
   type Reveal,
 } from '../../api/blindtests'
+import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import './BlindtestPlayPage.css'
 
@@ -18,9 +19,9 @@ export function BlindtestPlayPage() {
 
   const [session, setSession] = useState<BlindtestSession | null>(null)
   const [error, setError] = useState(false)
-  const [guess, setGuess] = useState('')
   const [wrongGuess, setWrongGuess] = useState(false)
   const [reveal, setReveal] = useState<Reveal | null>(null)
+  const [bonusCorrect, setBonusCorrect] = useState(false)
   const [passed, setPassed] = useState(false)
   const [correctedKnowledge, setCorrectedKnowledge] = useState(false)
 
@@ -35,12 +36,13 @@ export function BlindtestPlayPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(loadSession, [blindtestId, listener])
 
-  function handleGuess(event: FormEvent) {
-    event.preventDefault()
+  function handleGuess(gameId: number, trackId: number | null) {
     if (!listener) return
-    submitGuess(blindtestId, listener.id, guess).then((result) => {
+    setWrongGuess(false)
+    submitGuess(blindtestId, listener.id, gameId, trackId).then((result) => {
       if (result.correct && result.reveal) {
         setReveal(result.reveal)
+        setBonusCorrect(result.bonusCorrect)
         setPassed(false)
       } else {
         setWrongGuess(true)
@@ -63,9 +65,9 @@ export function BlindtestPlayPage() {
   }
 
   function handleNext() {
-    setGuess('')
     setWrongGuess(false)
     setReveal(null)
+    setBonusCorrect(false)
     setPassed(false)
     setCorrectedKnowledge(false)
     loadSession()
@@ -107,6 +109,7 @@ export function BlindtestPlayPage() {
           <p>
             <strong>{reveal.franchiseName}</strong> — {reveal.gameName} — {reveal.trackName}
           </p>
+          {bonusCorrect && <p className="bonus">+ bonus musique trouvée !</p>}
           {passed && !correctedKnowledge && (
             <button type="button" onClick={handleKnowAnyway}>
               Ah, je connais en fait
@@ -117,24 +120,10 @@ export function BlindtestPlayPage() {
           </button>
         </div>
       ) : (
-        <form onSubmit={handleGuess} className="guess-form">
-          <input
-            type="text"
-            placeholder="Nom du jeu"
-            value={guess}
-            onChange={(event) => {
-              setGuess(event.target.value)
-              setWrongGuess(false)
-            }}
-            required
-            autoFocus
-          />
-          <button type="submit">Valider</button>
-          <button type="button" onClick={handlePass}>
-            Je passe
-          </button>
+        <>
+          <GameGuessForm key={session.trackId} onSubmit={handleGuess} onPass={handlePass} />
           {wrongGuess && <p role="alert">Ce n'est pas ça, réessaie.</p>}
-        </form>
+        </>
       )}
     </>
   )

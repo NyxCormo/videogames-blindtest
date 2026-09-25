@@ -72,6 +72,7 @@ export type Reveal = {
 
 export type GuessResult = {
   correct: boolean
+  bonusCorrect: boolean
   reveal: Reveal | null
 }
 
@@ -83,11 +84,16 @@ export async function fetchSession(blindtestId: number, listenerId: number, sign
   return response.json()
 }
 
-export async function submitGuess(blindtestId: number, listenerId: number, guess: string): Promise<GuessResult> {
+export async function submitGuess(
+  blindtestId: number,
+  listenerId: number,
+  gameId: number,
+  trackId: number | null,
+): Promise<GuessResult> {
   const response = await fetch(`/api/blindtests/${blindtestId}/guess?listenerId=${listenerId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ guess }),
+    body: JSON.stringify({ gameId, trackId }),
   })
   if (!response.ok) {
     throw new Error(`Erreur ${response.status}`)
@@ -117,6 +123,7 @@ export async function submitKnowAnyway(blindtestId: number, listenerId: number, 
 export type LeaderboardEntry = {
   listenerName: string
   goodAnswers: number
+  bonusAnswers: number
   tracksHeard: number
 }
 

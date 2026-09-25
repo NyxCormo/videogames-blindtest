@@ -1,0 +1,40 @@
+.name-picker {
+  position: relative;
+}
+
+.name-picker-selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.name-picker-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0.25rem;
+  background: Canvas;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  min-width: 14rem;
+  max-height: 12rem;
+  overflow-y: auto;
+  z-index: 1;
+}
+
+.name-picker-results button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.name-picker-results button:hover {
+  background: var(--border);
+}
