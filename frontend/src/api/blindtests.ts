@@ -14,17 +14,36 @@ export async function fetchBlindtests(signal?: AbortSignal): Promise<Blindtest[]
   return response.json()
 }
 
+// Un palier de difficulté envoyé à la création (voir DifficultyBandRequest côté backend)
+export type DifficultyBand = {
+  minDifficulty: number
+  maxDifficulty: number
+  proportion: number
+}
+
 export async function createBlindtest(
     name: string,
     trackCount: number,
-    difficulty: number,
+    difficultyBands: DifficultyBand[],
     tagIds: number[],
-    matchAllTags: boolean
+    matchAllTags: boolean,
+    maxPerGame: number | null,
+    maxPerFranchise: number | null,
+    strategy: string | null
 ): Promise<Blindtest> {
     const response = await fetch(`/api/blindtests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, trackCount, difficulty, tagIds, matchAllTags }),
+    body: JSON.stringify({
+        name,
+        trackCount,
+        difficultyBands,
+        tagIds,
+        matchAllTags,
+        maxPerGame,
+        maxPerFranchise,
+        strategy,
+    }),
     })
     if (!response.ok) {
         const body = await response.json()

@@ -1,0 +1,49 @@
+.difficulty-slider {
+  position: relative;
+  flex: 1;
+  height: 1.5rem;
+  min-width: 8rem;
+}
+
+.difficulty-slider-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.difficulty-slider-fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  background: Highlight;
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.difficulty-slider-handle {
+  position: absolute;
+  top: 50%;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: Highlight;
+  border: 2px solid Canvas;
+  box-shadow: 0 0 0 1px var(--border);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  touch-action: none;
+}
+
+.difficulty-slider-handle:active {
+  cursor: grabbing;
+}
+
+.difficulty-slider-handle:focus-visible {
+  outline: 2px solid Highlight;
+  outline-offset: 2px;
+}

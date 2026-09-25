@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,8 @@ public class BlindtestGeneratorTests {
     @Autowired
     TrackTagRepository trackTagRepository;
 
+    private static final List<DifficultyBand> ANY_DIFFICULTY = List.of(new DifficultyBand(0, 100, 100));
+
     private Track playableTrack(Game game, String name, int knownVotes, int totalVotes) {
         Track track = trackRepository.save(new Track(name, game));
         track.setAudioLink("https://example.org/" + name);
@@ -87,27 +90,17 @@ public class BlindtestGeneratorTests {
     }
 
     @Test
-    void pickHardestTrackAtMaxDifficulty() {
+    void picksOnlyTracksWithinTheRequestedDifficultyBand() {
         Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
         Game game = gameRepository.save(new Game("Stellar Blade", franchise));
-        playableTrack(game, "Dawn", 3, 3); // ratio 1.0, facile
-        Track shael = playableTrack(game, "Shaël", 0, 3); // ratio 0.0, difficile
+        playableTrack(game, "Dawn", 3, 3); // ratio 1.0, difficulté 0
+        Track shael = playableTrack(game, "Shaël", 0, 3); // ratio 0.0, difficulté 100
 
-        Blindtest blindtest = blindtestGenerator.generate("Test", 1, 100);
+        Blindtest blindtest = blindtestGenerator.generate(
+            "Test", 1, List.of(new DifficultyBand(90, 100, 100)), List.of(), true, null, null, GenerationStrategy.RANDOM
+        );
 
         assertEquals(List.of(shael), tracksOf(blindtest));
-    }
-
-    @Test
-    void pickEasiestTrackAtMinDifficulty() {
-        Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
-        Game game = gameRepository.save(new Game("Stellar Blade", franchise));
-        Track dawn = playableTrack(game, "Dawn", 3, 3);
-        playableTrack(game, "Shaël", 0, 3);
-
-        Blindtest blindtest = blindtestGenerator.generate("Test", 1, 0);
-
-        assertEquals(List.of(dawn), tracksOf(blindtest));
     }
 
     @Test
@@ -118,7 +111,8 @@ public class BlindtestGeneratorTests {
         raven.setAudioLink("https://example.org/raven");
         trackRepository.save(raven);
 
-        assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate("Test", 1, 50));
+        assertThrows(IllegalStateException.class,
+            () -> blindtestGenerator.generate("Test", 1, ANY_DIFFICULTY, List.of(), true, null, null, GenerationStrategy.RANDOM));
     }
 
     @Test
@@ -129,15 +123,16 @@ public class BlindtestGeneratorTests {
         Listener listener = listenerRepository.save(new Listener("Nyx"));
         knowledgeRepository.save(new Knowledge(listener, track, true));
 
-        assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate("Test", 1, 0));
+        assertThrows(IllegalStateException.class,
+            () -> blindtestGenerator.generate("Test", 1, ANY_DIFFICULTY, List.of(), true, null, null, GenerationStrategy.RANDOM));
     }
 
     @Test
     void matchAllTagsRestrictsToTracksHavingEveryTag() {
         Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
         Game game = gameRepository.save(new Game("Stellar Blade", franchise));
-        Track dawn = playableTrack(game, "Dawn", 3, 3); // ratio 1.0, loin de la difficulté 100 demandée
-        Track raven = playableTrack(game, "Raven", 0, 3); // ratio 0.0, proche de la difficulté 100 demandée
+        Track dawn = playableTrack(game, "Dawn", 3, 3);
+        Track raven = playableTrack(game, "Raven", 0, 3);
 
         TagType genre = tagTypeRepository.findByName("genre").orElseThrow();
         Tag action = tagRepository.save(new Tag("Action", genre));
@@ -146,9 +141,10 @@ public class BlindtestGeneratorTests {
         trackTagRepository.save(new TrackTag(dawn, epique));
         trackTagRepository.save(new TrackTag(raven, action)); // seulement Action, pas Épique
 
-        Blindtest blindtest = blindtestGenerator.generate("Test", 1, 100, List.of(action.getId(), epique.getId()), true);
+        Blindtest blindtest = blindtestGenerator.generate(
+            "Test", 1, ANY_DIFFICULTY, List.of(action.getId(), epique.getId()), true, null, null, GenerationStrategy.RANDOM
+        );
 
-        // Raven serait le choix naturel par difficulté, mais seul Dawn a les deux tags
         assertEquals(List.of(dawn), tracksOf(blindtest));
     }
 
@@ -166,7 +162,9 @@ public class BlindtestGeneratorTests {
         trackTagRepository.save(new TrackTag(dawn, epique));
         trackTagRepository.save(new TrackTag(raven, action));
 
-        Blindtest blindtest = blindtestGenerator.generate("Test", 2, 100, List.of(action.getId(), epique.getId()), false);
+        Blindtest blindtest = blindtestGenerator.generate(
+            "Test", 2, ANY_DIFFICULTY, List.of(action.getId(), epique.getId()), false, null, null, GenerationStrategy.RANDOM
+        );
 
         List<Track> picked = tracksOf(blindtest);
         assertEquals(2, picked.size());
@@ -186,7 +184,125 @@ public class BlindtestGeneratorTests {
         Tag action = tagRepository.save(new Tag("Action", genre));
         trackTagRepository.save(new TrackTag(dawn, action));
 
-        assertThrows(IllegalStateException.class,
-            () -> blindtestGenerator.generate("Test", 2, 50, List.of(action.getId()), true));
+        assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate(
+            "Test", 2, ANY_DIFFICULTY, List.of(action.getId()), true, null, null, GenerationStrategy.RANDOM
+        ));
+    }
+
+    @Test
+    void bandQuotasSumExactlyToTrackCountEvenWithUnevenProportions() {
+        Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
+        Game game = gameRepository.save(new Game("Stellar Blade", franchise));
+        for (int i = 0; i < 10; i++) {
+            playableTrack(game, "Track" + i, 5, 10); // ratio 0.5, tombe dans n'importe quel palier large
+        }
+
+        List<DifficultyBand> bands = List.of(
+            new DifficultyBand(0, 100, 33),
+            new DifficultyBand(0, 100, 33),
+            new DifficultyBand(0, 100, 34)
+        );
+
+        Blindtest blindtest = blindtestGenerator.generate("Test", 10, bands, List.of(), true, null, null, GenerationStrategy.RANDOM);
+
+        assertEquals(10, tracksOf(blindtest).size());
+    }
+
+    @Test
+    void maxPerGameCapPreventsExceedingIt() {
+        Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
+        Game game = gameRepository.save(new Game("Stellar Blade", franchise));
+        playableTrack(game, "Dawn", 0, 3);
+        playableTrack(game, "Raven", 0, 3);
+        playableTrack(game, "Shaël", 0, 3);
+        // 3 musiques du même jeu, mais le plafond n'en autorise que 2
+
+        assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate(
+            "Test", 3, ANY_DIFFICULTY, List.of(), true, 2, null, GenerationStrategy.RANDOM
+        ));
+    }
+
+    @Test
+    void maxPerFranchiseCapPreventsExceedingIt() {
+        Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
+        Game gameA = gameRepository.save(new Game("Stellar Blade", franchise));
+        Game gameB = gameRepository.save(new Game("Stellar Blade: Blood Rain", franchise));
+        playableTrack(gameA, "Dawn", 0, 3);
+        playableTrack(gameA, "Raven", 0, 3);
+        playableTrack(gameB, "Trailer", 0, 3);
+        // 3 musiques dans la même franchise (2 jeux), mais le plafond de franchise n'en autorise que 2
+
+        assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate(
+            "Test", 3, ANY_DIFFICULTY, List.of(), true, null, 2, GenerationStrategy.RANDOM
+        ));
+    }
+
+    @Test
+    void rareGamesStrategyPrioritizesGamesNeededByFewerBands() {
+        Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
+        Game common = gameRepository.save(new Game("Common Game", franchise)); // a une piste dans les deux paliers
+        Game rare = gameRepository.save(new Game("Rare Game", franchise)); // seulement le palier facile
+
+        Track rareEasy = playableTrack(rare, "Rare Easy", 3, 3); // ratio 1.0
+        playableTrack(common, "Common Easy", 3, 3); // ratio 1.0
+        Track commonHard = playableTrack(common, "Common Hard", 0, 3); // ratio 0.0
+
+        List<DifficultyBand> bands = List.of(
+            new DifficultyBand(0, 10, 50),
+            new DifficultyBand(90, 100, 50)
+        );
+
+        Blindtest blindtest = blindtestGenerator.generate(
+            "Test", 2, bands, List.of(), true, 1, null, GenerationStrategy.RARE_GAMES
+        );
+
+        // Le palier facile doit prendre le jeu rare (fréquence 1) plutôt que le commun (fréquence 2),
+        // pour laisser le jeu commun disponible pour le palier difficile qui n'a que lui.
+        assertEquals(Set.of(rareEasy, commonHard), Set.copyOf(tracksOf(blindtest)));
+    }
+
+    @Test
+    void rareFranchisesStrategyPrioritizesFranchisesNeededByFewerBands() {
+        Franchise common = franchiseRepository.save(new Franchise("Common Franchise"));
+        Franchise rare = franchiseRepository.save(new Franchise("Rare Franchise"));
+        Game commonGame = gameRepository.save(new Game("Common Game", common));
+        Game rareGame = gameRepository.save(new Game("Rare Game", rare));
+
+        Track rareEasy = playableTrack(rareGame, "Rare Easy", 3, 3);
+        playableTrack(commonGame, "Common Easy", 3, 3);
+        Track commonHard = playableTrack(commonGame, "Common Hard", 0, 3);
+
+        List<DifficultyBand> bands = List.of(
+            new DifficultyBand(0, 10, 50),
+            new DifficultyBand(90, 100, 50)
+        );
+
+        Blindtest blindtest = blindtestGenerator.generate(
+            "Test", 2, bands, List.of(), true, null, 1, GenerationStrategy.RARE_FRANCHISES
+        );
+
+        assertEquals(Set.of(rareEasy, commonHard), Set.copyOf(tracksOf(blindtest)));
+    }
+
+    @Test
+    void automaticEscalationFindsTheOnlyFeasibleSelectionWithoutAnExplicitStrategy() {
+        Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
+        Game common = gameRepository.save(new Game("Common Game", franchise));
+        Game rare = gameRepository.save(new Game("Rare Game", franchise));
+
+        Track rareEasy = playableTrack(rare, "Rare Easy", 3, 3);
+        playableTrack(common, "Common Easy", 3, 3);
+        Track commonHard = playableTrack(common, "Common Hard", 0, 3);
+
+        List<DifficultyBand> bands = List.of(
+            new DifficultyBand(0, 10, 50),
+            new DifficultyBand(90, 100, 50)
+        );
+
+        // Sans stratégie imposée (null) : [rareEasy, commonHard] est la seule combinaison possible avec ce
+        // plafond, que ce soit trouvé dès le tirage au hasard (par chance) ou grâce au repli "jeux rares".
+        Blindtest blindtest = blindtestGenerator.generate("Test", 2, bands, List.of(), true, 1, null, null);
+
+        assertEquals(Set.of(rareEasy, commonHard), Set.copyOf(tracksOf(blindtest)));
     }
 }

@@ -30,6 +30,7 @@ public class SchemaTests {
 		assertEquals(
             List.of(
                 "blindtest",
+                "blindtest_difficulty_band",
                 "blindtest_score",
                 "blindtest_track",
                 "franchise",

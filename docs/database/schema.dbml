@@ -74,6 +74,18 @@ Table blindtest {
   created_at datetime [not null]
 }
 
+Table blindtest_difficulty_band {
+  blindtest_id integer
+  position integer [not null]
+  min_difficulty integer [not null]
+  max_difficulty integer [not null]
+  proportion integer [not null]
+
+  indexes {
+    (blindtest_id, position) [pk]
+  }
+}
+
 Table blindtest_track {
   blindtest_id integer
   track_id integer
@@ -107,6 +119,8 @@ Ref: track_tag.tag_id > tag.id
 
 Ref: blindtest_track.blindtest_id > blindtest.id
 Ref: blindtest_track.track_id > track.id
+
+Ref: blindtest_difficulty_band.blindtest_id > blindtest.id
 
 Ref: blindtest_score.blindtest_id > blindtest.id
 Ref: blindtest_score.listener_id > listener.id
