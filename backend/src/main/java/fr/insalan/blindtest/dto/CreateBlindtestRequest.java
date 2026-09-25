@@ -5,8 +5,11 @@ import java.util.List;
 public record CreateBlindtestRequest(
     String name,
     int trackCount,
-    int difficulty,
+    List<DifficultyBandRequest> difficultyBands,
     List<Integer> tagIds,
-    Boolean matchAllTags
+    Boolean matchAllTags,
+    Integer maxPerGame,
+    Integer maxPerFranchise,
+    String strategy
 ) {
 }

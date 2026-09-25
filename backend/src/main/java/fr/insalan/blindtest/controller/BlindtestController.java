@@ -17,12 +17,15 @@ import org.springframework.web.server.ResponseStatusException;
 import fr.insalan.blindtest.dto.BlindtestResponse;
 import fr.insalan.blindtest.dto.BlindtestSessionResponse;
 import fr.insalan.blindtest.dto.CreateBlindtestRequest;
+import fr.insalan.blindtest.dto.DifficultyBandRequest;
 import fr.insalan.blindtest.dto.GuessRequest;
 import fr.insalan.blindtest.dto.GuessResponse;
 import fr.insalan.blindtest.dto.LeaderboardEntryResponse;
 import fr.insalan.blindtest.dto.RevealResponse;
 import fr.insalan.blindtest.game.BlindtestGenerator;
 import fr.insalan.blindtest.game.BlindtestPlayer;
+import fr.insalan.blindtest.game.DifficultyBand;
+import fr.insalan.blindtest.game.GenerationStrategy;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestScore;
 import fr.insalan.blindtest.model.Track;
@@ -70,19 +73,58 @@ public class BlindtestController {
         if (request.trackCount() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre de musiques doit être positif");
         }
-        if (request.difficulty() < 0 || request.difficulty() > 100) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La difficulté doit être comprise entre 0 et 100");
-        }
+        List<DifficultyBand> bands = validatedBands(request.difficultyBands());
+        GenerationStrategy strategy = parseStrategy(request.strategy());
 
         Blindtest blindtest;
         try {
             List<Integer> tagIds = request.tagIds() == null ? List.of() : request.tagIds();
             boolean matchAllTags = request.matchAllTags() == null || request.matchAllTags();
-            blindtest = blindtestGenerator.generate(request.name(), request.trackCount(), request.difficulty(), tagIds, matchAllTags);
+            blindtest = blindtestGenerator.generate(
+                request.name(),
+                request.trackCount(),
+                bands,
+                tagIds,
+                matchAllTags,
+                request.maxPerGame(),
+                request.maxPerFranchise(),
+                strategy
+            );
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
         return BlindtestResponse.from(blindtest);
+    }
+
+    private List<DifficultyBand> validatedBands(List<DifficultyBandRequest> requested) {
+        if (requested == null || requested.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Au moins un palier de difficulté est requis");
+        }
+        int totalProportion = 0;
+        for (DifficultyBandRequest band : requested) {
+            if (band.minDifficulty() < 0 || band.maxDifficulty() > 100 || band.minDifficulty() > band.maxDifficulty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Palier de difficulté invalide");
+            }
+            totalProportion += band.proportion();
+        }
+        if (totalProportion != 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Les proportions des paliers doivent totaliser 100");
+        }
+        return requested.stream()
+            .map(band -> new DifficultyBand(band.minDifficulty(), band.maxDifficulty(), band.proportion()))
+            .toList();
+    }
+
+    private GenerationStrategy parseStrategy(String strategy) {
+        if (strategy == null) {
+            return null;
+        }
+        return switch (strategy) {
+            case "random" -> GenerationStrategy.RANDOM;
+            case "rareGames" -> GenerationStrategy.RARE_GAMES;
+            case "rareFranchises" -> GenerationStrategy.RARE_FRANCHISES;
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stratégie de génération inconnue");
+        };
     }
 
     // Musique en cours pour ce joueur (id + lien audio seulement, jamais franchise/jeu/titre : ce serait la réponse) et son score.

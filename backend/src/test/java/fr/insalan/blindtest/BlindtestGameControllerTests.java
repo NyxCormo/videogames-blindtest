@@ -25,6 +25,7 @@ import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.KnowledgeId;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
+import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
@@ -47,6 +48,9 @@ class BlindtestGameControllerTests {
 
     @Autowired
     BlindtestScoreRepository blindtestScores;
+
+    @Autowired
+    BlindtestDifficultyBandRepository blindtestDifficultyBands;
 
     @Autowired
     BlindtestTrackRepository blindtestTracks;
@@ -72,6 +76,7 @@ class BlindtestGameControllerTests {
     @AfterEach
     void cleanDatabase() {
         blindtestScores.deleteAll();
+        blindtestDifficultyBands.deleteAll();
         blindtestTracks.deleteAll();
         blindtests.deleteAll();
         knowledge.deleteAll();
