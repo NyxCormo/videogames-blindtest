@@ -106,6 +106,7 @@ Table blindtest_score {
   tracks_heard integer [not null]
   total_attempts integer [not null]
   attempts_used_on_current_track integer [not null]
+  franchise_found_on_current_track boolean [not null]
 
   indexes {
     (blindtest_id, listener_id) [pk]

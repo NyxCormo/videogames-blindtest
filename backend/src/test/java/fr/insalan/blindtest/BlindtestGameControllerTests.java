@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
 
+import fr.insalan.blindtest.dto.GuessFranchiseRequest;
 import fr.insalan.blindtest.dto.GuessRequest;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestTrack;
@@ -122,6 +123,36 @@ class BlindtestGameControllerTests {
         mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
             .andExpect(jsonPath("$.finished").value(true))
             .andExpect(jsonPath("$.goodAnswers").value(1));
+    }
+
+    @Test
+    void guessFranchiseAwardsAPointWithoutResolvingTheTrack() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = tracks.save(new Track("Dawn", game));
+        dawn.setAudioLink("https://example.org/dawn");
+        tracks.save(dawn);
+        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50, 5));
+        blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
+        Listener listener = listeners.save(new Listener("Nyx"));
+
+        GuessFranchiseRequest wrongFranchise = new GuessFranchiseRequest(franchise.getId() + 1000);
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess-franchise")
+                .param("listenerId", listener.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(wrongFranchise)))
+            .andExpect(jsonPath("$.correct").value(false));
+
+        GuessFranchiseRequest rightFranchise = new GuessFranchiseRequest(franchise.getId());
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess-franchise")
+                .param("listenerId", listener.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(rightFranchise)))
+            .andExpect(jsonPath("$.correct").value(true));
+
+        mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
+            .andExpect(jsonPath("$.finished").value(false))
+            .andExpect(jsonPath("$.trackId").value(dawn.getId()));
     }
 
     @Test

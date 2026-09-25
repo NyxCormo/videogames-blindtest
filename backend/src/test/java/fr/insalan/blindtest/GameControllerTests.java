@@ -78,8 +78,10 @@ class GameControllerTests {
         mockMvc.perform(get("/api/games"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].name").value("Final Fantasy VII"))
+            .andExpect(jsonPath("$[0].franchiseId").value(finalFantasy.getId()))
             .andExpect(jsonPath("$[0].franchiseName").value("Final Fantasy"))
             .andExpect(jsonPath("$[1].name").value("Stellar Blade"))
+            .andExpect(jsonPath("$[1].franchiseId").value(stellarBladeFranchise.getId()))
             .andExpect(jsonPath("$[1].franchiseName").value("Stellar Blade"));
     }
 

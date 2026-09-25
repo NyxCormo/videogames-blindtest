@@ -56,6 +56,24 @@ public class BlindtestPlayer {
             .map(BlindtestTrack::getTrack);
     }
 
+    // Le joueur ne connaît que la franchise : point de franchise acquis une seule fois par musique
+    // (une deuxième soumission correcte ne compte pas deux fois), la musique n'est pas résolue pour autant.
+    @Transactional
+    public boolean guessFranchise(Integer blindtestId, Integer listenerId, Integer franchiseId) {
+        BlindtestScore score = score(blindtestId, listenerId);
+        Track track = trackAt(blindtestId, score.getTracksHeard());
+
+        boolean correct = track.getGame().getFranchise().getId().equals(franchiseId);
+        if (correct && !score.isFranchiseFoundOnCurrentTrack()) {
+            score.setFranchiseAnswers(score.getFranchiseAnswers() + 1);
+            score.setFranchiseFoundOnCurrentTrack(true);
+        }
+        score.setTotalAttempts(score.getTotalAttempts() + 1);
+        score.setAttemptsUsedOnCurrentTrack(score.getAttemptsUsedOnCurrentTrack() + 1);
+        blindtestScoreRepository.save(score);
+        return correct;
+    }
+
     // Le joueur choisit un jeu (id) dans une liste, jamais du texte libre.
     // Bonne réponse : connaissance enregistrée, point marqué, musique suivante.
     // Mauvaise réponse : rien ne change (nombre d'essais infini).

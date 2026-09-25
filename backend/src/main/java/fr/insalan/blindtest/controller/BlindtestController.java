@@ -18,6 +18,8 @@ import fr.insalan.blindtest.dto.BlindtestResponse;
 import fr.insalan.blindtest.dto.BlindtestSessionResponse;
 import fr.insalan.blindtest.dto.CreateBlindtestRequest;
 import fr.insalan.blindtest.dto.DifficultyBandRequest;
+import fr.insalan.blindtest.dto.GuessFranchiseRequest;
+import fr.insalan.blindtest.dto.GuessFranchiseResponse;
 import fr.insalan.blindtest.dto.GuessRequest;
 import fr.insalan.blindtest.dto.GuessResponse;
 import fr.insalan.blindtest.dto.LeaderboardEntryResponse;
@@ -159,6 +161,23 @@ public class BlindtestController {
                 && request.trackId() != null
                 && request.trackId().equals(revealed.get().getId());
             return new GuessResponse(revealed.isPresent(), bonusCorrect, revealed.map(RevealResponse::from).orElse(null));
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/guess-franchise")
+    public GuessFranchiseResponse guessFranchise(
+        @PathVariable Integer id,
+        @RequestParam Integer listenerId,
+        @RequestBody GuessFranchiseRequest request
+    ) {
+        if (request.franchiseId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La franchise est obligatoire");
+        }
+        try {
+            boolean correct = blindtestPlayer.guessFranchise(id, listenerId, request.franchiseId());
+            return new GuessFranchiseResponse(correct);
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

@@ -64,13 +64,14 @@ public class BlindtestPlayerTests {
 
     private Blindtest blindtest;
     private Listener listener;
+    private Franchise stellarBladeFranchise;
     private Game stellarBlade;
     private Track dawn;
     private Track shael;
 
     private void setUp(int trackCount) {
-        Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
-        stellarBlade = gameRepository.save(new Game("Stellar Blade", franchise));
+        stellarBladeFranchise = franchiseRepository.save(new Franchise("Stellar Blade"));
+        stellarBlade = gameRepository.save(new Game("Stellar Blade", stellarBladeFranchise));
         blindtest = blindtestRepository.save(new Blindtest("Test", 50, 5));
         listener = listenerRepository.save(new Listener("Nyx"));
 
@@ -149,6 +150,43 @@ public class BlindtestPlayerTests {
 
         assertEquals(1, score().getGoodAnswers());
         assertEquals(0, score().getBonusAnswers());
+    }
+
+    @Test
+    void correctFranchiseAwardsFranchisePointWithoutResolvingTheTrack() {
+        setUp(2);
+
+        boolean correct = blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId());
+
+        assertTrue(correct);
+        assertEquals(1, score().getFranchiseAnswers());
+        assertEquals(1, score().getTotalAttempts());
+        assertEquals(1, score().getAttemptsUsedOnCurrentTrack());
+        assertEquals(0, score().getTracksHeard());
+        assertEquals(dawn, blindtestPlayer.currentTrack(blindtest.getId(), listener.getId()).orElseThrow());
+    }
+
+    @Test
+    void wrongFranchiseChangesNothingButCountsAsAnAttempt() {
+        setUp(2);
+
+        boolean correct = blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId() + 1000);
+
+        assertFalse(correct);
+        assertEquals(0, score().getFranchiseAnswers());
+        assertEquals(1, score().getTotalAttempts());
+        assertEquals(1, score().getAttemptsUsedOnCurrentTrack());
+    }
+
+    @Test
+    void resubmittingTheCorrectFranchiseDoesNotDoubleCountThePoint() {
+        setUp(2);
+
+        blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId());
+        blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId());
+
+        assertEquals(1, score().getFranchiseAnswers());
+        assertEquals(2, score().getTotalAttempts());
     }
 
     @Test

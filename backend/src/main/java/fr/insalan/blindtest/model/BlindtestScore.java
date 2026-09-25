@@ -42,6 +42,9 @@ public class BlindtestScore {
     @Column(nullable = false)
     private int attemptsUsedOnCurrentTrack;
 
+    @Column(nullable = false, columnDefinition = "integer")
+    private boolean franchiseFoundOnCurrentTrack;
+
     protected BlindtestScore() {
         // JPA
     }
@@ -56,6 +59,7 @@ public class BlindtestScore {
         this.tracksHeard = 0;
         this.totalAttempts = 0;
         this.attemptsUsedOnCurrentTrack = 0;
+        this.franchiseFoundOnCurrentTrack = false;
     }
 
     public Blindtest getBlindtest() {
@@ -112,5 +116,13 @@ public class BlindtestScore {
 
     public void setAttemptsUsedOnCurrentTrack(int attemptsUsedOnCurrentTrack) {
         this.attemptsUsedOnCurrentTrack = attemptsUsedOnCurrentTrack;
+    }
+
+    public boolean isFranchiseFoundOnCurrentTrack() {
+        return franchiseFoundOnCurrentTrack;
+    }
+
+    public void setFranchiseFoundOnCurrentTrack(boolean franchiseFoundOnCurrentTrack) {
+        this.franchiseFoundOnCurrentTrack = franchiseFoundOnCurrentTrack;
     }
 }
