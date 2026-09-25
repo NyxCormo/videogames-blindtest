@@ -71,7 +71,7 @@ public class BlindtestPlayerTests {
     private void setUp(int trackCount) {
         Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
         stellarBlade = gameRepository.save(new Game("Stellar Blade", franchise));
-        blindtest = blindtestRepository.save(new Blindtest("Test", 50));
+        blindtest = blindtestRepository.save(new Blindtest("Test", 50, 5));
         listener = listenerRepository.save(new Listener("Nyx"));
 
         String[] names = { "Dawn", "Shaël", "Raven", "Democrawler" };

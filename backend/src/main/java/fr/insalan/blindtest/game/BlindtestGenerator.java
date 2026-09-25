@@ -83,7 +83,7 @@ public class BlindtestGenerator {
 
         Collections.shuffle(picked);
 
-        Blindtest blindtest = blindtestRepository.save(new Blindtest(name, weightedAverageDifficulty(bands)));
+        Blindtest blindtest = blindtestRepository.save(new Blindtest(name, weightedAverageDifficulty(bands), 5));
         for (int position = 0; position < picked.size(); position++) {
             blindtestTrackRepository.save(new BlindtestTrack(blindtest, picked.get(position), position));
         }

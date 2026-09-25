@@ -93,7 +93,7 @@ class BlindtestGameControllerTests {
         Track dawn = tracks.save(new Track("Dawn", game));
         dawn.setAudioLink("https://example.org/dawn");
         tracks.save(dawn);
-        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50));
+        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50, 5));
         blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
         Listener listener = listeners.save(new Listener("Nyx"));
 
@@ -131,7 +131,7 @@ class BlindtestGameControllerTests {
         Track dawn = tracks.save(new Track("Dawn", game));
         dawn.setAudioLink("https://example.org/dawn");
         tracks.save(dawn);
-        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50));
+        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50, 5));
         blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
         Listener listener = listeners.save(new Listener("Nyx"));
 
@@ -163,7 +163,7 @@ class BlindtestGameControllerTests {
         Track raven = tracks.save(new Track("Raven", game));
         raven.setAudioLink("https://example.org/raven");
         tracks.save(raven);
-        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50));
+        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50, 5));
         blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
         blindtestTracks.save(new BlindtestTrack(blindtest, raven, 1));
         Listener bonneReponse = listeners.save(new Listener("BonneReponse"));
