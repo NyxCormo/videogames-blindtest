@@ -64,11 +64,13 @@ public class BlindtestPlayerTests {
 
     private Blindtest blindtest;
     private Listener listener;
+    private Game stellarBlade;
     private Track dawn;
+    private Track shael;
 
     private void setUp(int trackCount) {
         Franchise franchise = franchiseRepository.save(new Franchise("Stellar Blade"));
-        Game stellarBlade = gameRepository.save(new Game("Stellar Blade", franchise));
+        stellarBlade = gameRepository.save(new Game("Stellar Blade", franchise));
         blindtest = blindtestRepository.save(new Blindtest("Test", 50));
         listener = listenerRepository.save(new Listener("Nyx"));
 
@@ -80,6 +82,9 @@ public class BlindtestPlayerTests {
             blindtestTrackRepository.save(new BlindtestTrack(blindtest, track, position));
             if (position == 0) {
                 dawn = track;
+            }
+            if (position == 1) {
+                shael = track;
             }
         }
     }
@@ -107,10 +112,11 @@ public class BlindtestPlayerTests {
     void correctGuessScoresAndAdvances() {
         setUp(2);
 
-        Optional<Track> revealed = blindtestPlayer.guess(blindtest.getId(), listener.getId(), " stellar blade ");
+        Optional<Track> revealed = blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId(), null);
 
         assertEquals(dawn, revealed.orElseThrow());
         assertEquals(1, score().getGoodAnswers());
+        assertEquals(0, score().getBonusAnswers());
         assertEquals(1, score().getTracksHeard());
         assertTrue(knowsDawn());
     }
@@ -119,10 +125,30 @@ public class BlindtestPlayerTests {
     void wrongGuessChangesNothing() {
         setUp(2);
 
-        Optional<Track> revealed = blindtestPlayer.guess(blindtest.getId(), listener.getId(), "Autre jeu");
+        Optional<Track> revealed = blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId() + 1000, null);
 
         assertTrue(revealed.isEmpty());
         assertEquals(dawn, blindtestPlayer.currentTrack(blindtest.getId(), listener.getId()).orElseThrow());
+    }
+
+    @Test
+    void correctGameAndTrackAlsoAwardsBonusPoint() {
+        setUp(2);
+
+        blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId(), dawn.getId());
+
+        assertEquals(1, score().getGoodAnswers());
+        assertEquals(1, score().getBonusAnswers());
+    }
+
+    @Test
+    void correctGameButWrongTrackDoesNotAwardBonusPoint() {
+        setUp(2);
+
+        blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId(), shael.getId());
+
+        assertEquals(1, score().getGoodAnswers());
+        assertEquals(0, score().getBonusAnswers());
     }
 
     @Test

@@ -150,9 +150,15 @@ public class BlindtestController {
         @RequestParam Integer listenerId,
         @RequestBody GuessRequest request
     ) {
+        if (request.gameId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le jeu est obligatoire");
+        }
         try {
-            Optional<Track> revealed = blindtestPlayer.guess(id, listenerId, request.guess());
-            return new GuessResponse(revealed.isPresent(), revealed.map(RevealResponse::from).orElse(null));
+            Optional<Track> revealed = blindtestPlayer.guess(id, listenerId, request.gameId(), request.trackId());
+            boolean bonusCorrect = revealed.isPresent()
+                && request.trackId() != null
+                && request.trackId().equals(revealed.get().getId());
+            return new GuessResponse(revealed.isPresent(), bonusCorrect, revealed.map(RevealResponse::from).orElse(null));
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

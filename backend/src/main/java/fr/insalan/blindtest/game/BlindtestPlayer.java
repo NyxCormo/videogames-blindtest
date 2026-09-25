@@ -56,21 +56,25 @@ public class BlindtestPlayer {
             .map(BlindtestTrack::getTrack);
     }
 
-    // Le joueur tape le nom du jeu. 
-    // Bonne réponse (casse et espaces ignorés) : connaissance enregistrée, point marqué, musique suivante. 
+    // Le joueur choisit un jeu (id) dans une liste, jamais du texte libre.
+    // Bonne réponse : connaissance enregistrée, point marqué, musique suivante.
     // Mauvaise réponse : rien ne change (nombre d'essais infini).
+    // En plus, s'il a aussi choisi la bonne musique (trackId, optionnel) : point bonus à part, sans effet sur goodAnswers.
     @Transactional
-    public Optional<Track> guess(Integer blindtestId, Integer listenerId, String guess) {
+    public Optional<Track> guess(Integer blindtestId, Integer listenerId, Integer gameId, Integer trackId) {
         BlindtestScore score = score(blindtestId, listenerId);
         Track track = trackAt(blindtestId, score.getTracksHeard());
 
-        boolean correct = track.getGame().getName().strip().equalsIgnoreCase(guess.strip());
+        boolean correct = track.getGame().getId().equals(gameId);
         if (!correct) {
             return Optional.empty();
         }
 
         recordKnowledge(listenerId, track, true);
         score.setGoodAnswers(score.getGoodAnswers() + 1);
+        if (trackId != null && track.getId().equals(trackId)) {
+            score.setBonusAnswers(score.getBonusAnswers() + 1);
+        }
         score.setTracksHeard(score.getTracksHeard() + 1);
         blindtestScoreRepository.save(score);
         return Optional.of(track);

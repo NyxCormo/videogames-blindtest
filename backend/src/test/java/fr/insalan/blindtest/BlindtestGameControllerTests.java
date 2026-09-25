@@ -103,19 +103,20 @@ class BlindtestGameControllerTests {
             .andExpect(jsonPath("$.finished").value(false))
             .andExpect(jsonPath("$.totalTracks").value(1));
 
-        GuessRequest wrongGuess = new GuessRequest("Autre jeu");
+        GuessRequest wrongGuess = new GuessRequest(game.getId() + 1000, null);
         mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
                 .param("listenerId", listener.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(wrongGuess)))
             .andExpect(jsonPath("$.correct").value(false));
 
-        GuessRequest rightGuess = new GuessRequest("stellar blade");
+        GuessRequest rightGuess = new GuessRequest(game.getId(), dawn.getId());
         mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
                 .param("listenerId", listener.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(rightGuess)))
             .andExpect(jsonPath("$.correct").value(true))
+            .andExpect(jsonPath("$.bonusCorrect").value(true))
             .andExpect(jsonPath("$.reveal.gameName").value("Stellar Blade"));
 
         mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
@@ -168,7 +169,7 @@ class BlindtestGameControllerTests {
         Listener bonneReponse = listeners.save(new Listener("BonneReponse"));
         Listener mauvaiseReponse = listeners.save(new Listener("MauvaiseReponse"));
 
-        GuessRequest rightGuess = new GuessRequest("stellar blade");
+        GuessRequest rightGuess = new GuessRequest(game.getId(), null);
         mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
                 .param("listenerId", bonneReponse.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
