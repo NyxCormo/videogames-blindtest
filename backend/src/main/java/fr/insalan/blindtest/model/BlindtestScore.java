@@ -28,6 +28,9 @@ public class BlindtestScore {
     private int goodAnswers;
 
     @Column(nullable = false)
+    private int bonusAnswers;
+
+    @Column(nullable = false)
     private int tracksHeard;
 
     protected BlindtestScore() {
@@ -39,6 +42,7 @@ public class BlindtestScore {
         this.blindtest = blindtest;
         this.listener = listener;
         this.goodAnswers = 0;
+        this.bonusAnswers = 0;
         this.tracksHeard = 0;
     }
 
@@ -56,6 +60,14 @@ public class BlindtestScore {
 
     public void setGoodAnswers(int goodAnswers) {
         this.goodAnswers = goodAnswers;
+    }
+
+    public int getBonusAnswers() {
+        return bonusAnswers;
+    }
+
+    public void setBonusAnswers(int bonusAnswers) {
+        this.bonusAnswers = bonusAnswers;
     }
 
     public int getTracksHeard() {
