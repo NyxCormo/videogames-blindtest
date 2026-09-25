@@ -1,14 +1,60 @@
 import type { LeaderboardEntry } from '../../api/blindtests'
 
-export type LeaderboardSort = 'count' | 'percentage'
+export type LeaderboardColumn = 'name' | 'good' | 'goodPercent' | 'bonus' | 'bonusPercent' | 'tracksHeard'
+export type SortDirection = 'asc' | 'desc'
 
-function percentage(entry: LeaderboardEntry): number {
-  return entry.tracksHeard > 0 ? entry.goodAnswers / entry.tracksHeard : 0
+// Tri avec casse et accents ignorés (SQLite ne sait pas faire cela), même principe que sortTracks
+const collator = new Intl.Collator('fr', { sensitivity: 'base' })
+
+function percent(count: number, tracksHeard: number): number {
+  return tracksHeard > 0 ? count / tracksHeard : 0
 }
 
-export function sortLeaderboard(entries: LeaderboardEntry[], sort: LeaderboardSort): LeaderboardEntry[] {
-  if (sort === 'percentage') {
-    return [...entries].sort((a, b) => percentage(b) - percentage(a))
+function columnValue(entry: LeaderboardEntry, column: LeaderboardColumn): number | string {
+  switch (column) {
+    case 'name':
+      return entry.listenerName
+    case 'good':
+      return entry.goodAnswers
+    case 'goodPercent':
+      return percent(entry.goodAnswers, entry.tracksHeard)
+    case 'bonus':
+      return entry.bonusAnswers
+    case 'bonusPercent':
+      return percent(entry.bonusAnswers, entry.tracksHeard)
+    case 'tracksHeard':
+      return entry.tracksHeard
   }
-  return [...entries].sort((a, b) => b.goodAnswers - a.goodAnswers)
+}
+
+export function sortLeaderboard(
+  entries: LeaderboardEntry[],
+  column: LeaderboardColumn,
+  direction: SortDirection,
+): LeaderboardEntry[] {
+  const sorted = [...entries].sort((a, b) => {
+    const valueA = columnValue(a, column)
+    const valueB = columnValue(b, column)
+    return typeof valueA === 'string' && typeof valueB === 'string'
+      ? collator.compare(valueA, valueB)
+      : (valueA as number) - (valueB as number)
+  })
+  return direction === 'asc' ? sorted : sorted.reverse()
+}
+
+// Classement officiel (colonne "Rang") : bonnes réponses, puis leur pourcentage, puis les musiques bonus,
+// puis ordre alphabétique. Le pourcentage de bonus n'entre pas dans le départage : à bonnes réponses,
+// pourcentage et bonus égaux, les musiques écoutées le sont aussi (pourcentage = bonus / écoutées), donc
+// il ne peut plus rien départager de plus.
+function rankCompare(a: LeaderboardEntry, b: LeaderboardEntry): number {
+  return (
+    b.goodAnswers - a.goodAnswers ||
+    percent(b.goodAnswers, b.tracksHeard) - percent(a.goodAnswers, a.tracksHeard) ||
+    b.bonusAnswers - a.bonusAnswers ||
+    collator.compare(a.listenerName, b.listenerName)
+  )
+}
+
+export function rankLeaderboard(entries: LeaderboardEntry[]): LeaderboardEntry[] {
+  return [...entries].sort(rankCompare)
 }

@@ -1,22 +1,24 @@
+.leaderboard-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
 .leaderboard {
-  list-style: decimal;
-  margin: 1rem 0 0;
-  padding-left: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.leaderboard li {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
+.leaderboard th,
+.leaderboard td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
 }
 
-.leaderboard .name {
+.leaderboard th button {
+  border: none;
+  background: none;
+  padding: 0;
   font-weight: 600;
-}
-
-.leaderboard .progress {
-  color: var(--muted);
+  cursor: pointer;
 }
