@@ -1,13 +1,9 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGameTracks, fetchGames, type Game } from '../../api/games'
 import type { Track } from '../../api/tracks'
 import { NamePicker } from '../NamePicker/NamePicker'
 import './GameGuessForm.css'
-
-type Franchise = {
-  id: number
-  name: string
-}
 
 type Props = {
   onSubmit: (gameId: number, trackId: number | null) => void
@@ -18,22 +14,33 @@ type Props = {
 
 // Jeu (affiché avec sa franchise, pour les rares doublons de nom) puis musique (bonus, optionnelle) :
 // choisis dans une liste, jamais tapés en texte libre. Chemin de secours : valider juste la franchise
-// pour un point partiel quand on est bloqué, sans avoir à trouver le jeu exact.
+// pour un point partiel quand on est bloqué, sans avoir à trouver le jeu exact. La liste de franchises
+// proposées est celle de toutes les franchises (même sans jeu) : ça sert de leurres, un joueur qui ne
+// connaît pas la bonne réponse ne peut pas deviner que certaines ne sont jamais la bonne réponse.
 export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = false }: Props) {
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
   const [track, setTrack] = useState<Track | null>(null)
 
+  const [franchises, setFranchises] = useState<Franchise[]>([])
   const [franchiseHelp, setFranchiseHelp] = useState(false)
   const [franchise, setFranchise] = useState<Franchise | null>(null)
-  const [franchiseFound, setFranchiseFound] = useState(false)
+  const [confirmedFranchise, setConfirmedFranchise] = useState<Franchise | null>(null)
   const [franchiseSubmitting, setFranchiseSubmitting] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
     fetchGames(controller.signal)
       .then(setGames)
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchFranchises(controller.signal)
+      .then(setFranchises)
       .catch(() => {})
     return () => controller.abort()
   }, [])
@@ -50,15 +57,10 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
     return () => controller.abort()
   }, [game])
 
-  const franchises = useMemo(() => {
-    const byId = new Map<number, Franchise>()
-    for (const item of games) {
-      if (!byId.has(item.franchiseId)) {
-        byId.set(item.franchiseId, { id: item.franchiseId, name: item.franchiseName })
-      }
-    }
-    return [...byId.values()]
-  }, [games])
+  // Une fois la franchise confirmée, la case "Jeu" ne propose plus que ses jeux (aide sans donner la réponse).
+  const gamesToSearch = confirmedFranchise
+    ? games.filter((item) => item.franchiseId === confirmedFranchise.id)
+    : games
 
   function selectGame(selected: Game) {
     setGame(selected)
@@ -84,7 +86,7 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
         // Si la musique vient d'être révélée (essais épuisés), ce composant va disparaître :
         // pas la peine de mettre à jour un état local qui ne sera jamais affiché.
         if (!revealed) {
-          setFranchiseFound(correct)
+          setConfirmedFranchise(correct ? franchise : null)
           setFranchise(null)
         }
       })
@@ -94,9 +96,9 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
   return (
     <form onSubmit={handleSubmit} className="game-guess-form">
       <label>
-        Jeu
+        Jeu {confirmedFranchise && `(dans ${confirmedFranchise.name})`}
         <NamePicker
-          items={games}
+          items={gamesToSearch}
           selected={game}
           onSelect={selectGame}
           onClear={clearGame}
@@ -128,8 +130,8 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
         </button>
       </div>
 
-      {franchiseFound ? (
-        <p className="franchise-found">Franchise trouvée !</p>
+      {confirmedFranchise ? (
+        <p className="franchise-found">Franchise trouvée : {confirmedFranchise.name} !</p>
       ) : (
         <div className="franchise-help">
           {!franchiseHelp ? (
