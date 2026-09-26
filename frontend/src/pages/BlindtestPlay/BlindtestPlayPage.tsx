@@ -9,6 +9,7 @@ import {
   type BlindtestSession,
   type Reveal,
 } from '../../api/blindtests'
+import { loadStoredVolume, storeVolume } from '../../audioPreferences'
 import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import './BlindtestPlayPage.css'
@@ -134,7 +135,19 @@ export function BlindtestPlayPage() {
         &middot; {session.attemptsRemaining} essai{session.attemptsRemaining > 1 ? 's' : ''} restant
         {session.attemptsRemaining > 1 ? 's' : ''}
       </p>
-      <audio key={session.trackId} controls src={session.audioLink ?? undefined} />
+      {/* ref-callback plutôt qu'une ref + un effet : "Suivant" démonte cette page pendant son
+          chargement (session repasse par null), donc l'élément est recréé à chaque musique. Une
+          ref-callback s'exécute à chaque création, un effet à dépendances vides une seule fois. */}
+      <audio
+        ref={(element) => {
+          if (element) {
+            element.volume = loadStoredVolume()
+          }
+        }}
+        controls
+        src={session.audioLink ?? undefined}
+        onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
+      />
 
       {reveal ? (
         <div className="reveal">
