@@ -28,7 +28,22 @@ public class BlindtestScore {
     private int goodAnswers;
 
     @Column(nullable = false)
+    private int franchiseAnswers;
+
+    @Column(nullable = false)
+    private int bonusAnswers;
+
+    @Column(nullable = false)
     private int tracksHeard;
+
+    @Column(nullable = false)
+    private int totalAttempts;
+
+    @Column(nullable = false)
+    private int attemptsUsedOnCurrentTrack;
+
+    @Column(nullable = false, columnDefinition = "integer")
+    private boolean franchiseFoundOnCurrentTrack;
 
     protected BlindtestScore() {
         // JPA
@@ -39,7 +54,12 @@ public class BlindtestScore {
         this.blindtest = blindtest;
         this.listener = listener;
         this.goodAnswers = 0;
+        this.franchiseAnswers = 0;
+        this.bonusAnswers = 0;
         this.tracksHeard = 0;
+        this.totalAttempts = 0;
+        this.attemptsUsedOnCurrentTrack = 0;
+        this.franchiseFoundOnCurrentTrack = false;
     }
 
     public Blindtest getBlindtest() {
@@ -58,11 +78,51 @@ public class BlindtestScore {
         this.goodAnswers = goodAnswers;
     }
 
+    public int getFranchiseAnswers() {
+        return franchiseAnswers;
+    }
+
+    public void setFranchiseAnswers(int franchiseAnswers) {
+        this.franchiseAnswers = franchiseAnswers;
+    }
+
+    public int getBonusAnswers() {
+        return bonusAnswers;
+    }
+
+    public void setBonusAnswers(int bonusAnswers) {
+        this.bonusAnswers = bonusAnswers;
+    }
+
     public int getTracksHeard() {
         return tracksHeard;
     }
 
     public void setTracksHeard(int tracksHeard) {
         this.tracksHeard = tracksHeard;
+    }
+
+    public int getTotalAttempts() {
+        return totalAttempts;
+    }
+
+    public void setTotalAttempts(int totalAttempts) {
+        this.totalAttempts = totalAttempts;
+    }
+
+    public int getAttemptsUsedOnCurrentTrack() {
+        return attemptsUsedOnCurrentTrack;
+    }
+
+    public void setAttemptsUsedOnCurrentTrack(int attemptsUsedOnCurrentTrack) {
+        this.attemptsUsedOnCurrentTrack = attemptsUsedOnCurrentTrack;
+    }
+
+    public boolean isFranchiseFoundOnCurrentTrack() {
+        return franchiseFoundOnCurrentTrack;
+    }
+
+    public void setFranchiseFoundOnCurrentTrack(boolean franchiseFoundOnCurrentTrack) {
+        this.franchiseFoundOnCurrentTrack = franchiseFoundOnCurrentTrack;
     }
 }

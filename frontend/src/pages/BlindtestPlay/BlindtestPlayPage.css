@@ -2,18 +2,15 @@
   color: var(--muted);
 }
 
-.guess-form {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
 .reveal {
   display: flex;
   gap: 1rem;
   align-items: center;
   margin-top: 1rem;
   flex-wrap: wrap;
+}
+
+.bonus {
+  color: var(--muted);
+  font-weight: 600;
 }

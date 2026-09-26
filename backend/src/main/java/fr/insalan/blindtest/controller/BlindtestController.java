@@ -18,6 +18,8 @@ import fr.insalan.blindtest.dto.BlindtestResponse;
 import fr.insalan.blindtest.dto.BlindtestSessionResponse;
 import fr.insalan.blindtest.dto.CreateBlindtestRequest;
 import fr.insalan.blindtest.dto.DifficultyBandRequest;
+import fr.insalan.blindtest.dto.GuessFranchiseRequest;
+import fr.insalan.blindtest.dto.GuessFranchiseResponse;
 import fr.insalan.blindtest.dto.GuessRequest;
 import fr.insalan.blindtest.dto.GuessResponse;
 import fr.insalan.blindtest.dto.LeaderboardEntryResponse;
@@ -26,6 +28,7 @@ import fr.insalan.blindtest.game.BlindtestGenerator;
 import fr.insalan.blindtest.game.BlindtestPlayer;
 import fr.insalan.blindtest.game.DifficultyBand;
 import fr.insalan.blindtest.game.GenerationStrategy;
+import fr.insalan.blindtest.game.GuessResult;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestScore;
 import fr.insalan.blindtest.model.Track;
@@ -73,6 +76,10 @@ public class BlindtestController {
         if (request.trackCount() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre de musiques doit être positif");
         }
+        int maxAttempts = request.maxAttempts() == null ? 5 : request.maxAttempts();
+        if (maxAttempts <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre d'essais doit être positif");
+        }
         List<DifficultyBand> bands = validatedBands(request.difficultyBands());
         GenerationStrategy strategy = parseStrategy(request.strategy());
 
@@ -88,7 +95,8 @@ public class BlindtestController {
                 matchAllTags,
                 request.maxPerGame(),
                 request.maxPerFranchise(),
-                strategy
+                strategy,
+                maxAttempts
             );
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -133,6 +141,9 @@ public class BlindtestController {
         BlindtestScore score = blindtestPlayer.score(id, listenerId);
         Optional<Track> current = blindtestPlayer.currentTrack(id, listenerId);
         long totalTracks = blindtestTrackRepository.countByIdBlindtestId(id);
+        // findById plutôt que score.getBlindtest() : cette association Lazy n'est plus valide une fois
+        // sortis de la transaction de blindtestPlayer.score(), la charger ici lèverait une LazyInitializationException.
+        Blindtest blindtest = blindtestRepository.findById(id).orElseThrow();
 
         return new BlindtestSessionResponse(
             current.map(Track::getId).orElse(null),
@@ -140,7 +151,8 @@ public class BlindtestController {
             current.isEmpty(),
             score.getTracksHeard(),
             (int) totalTracks,
-            score.getGoodAnswers()
+            score.getGoodAnswers(),
+            blindtest.getMaxAttempts() - score.getAttemptsUsedOnCurrentTrack()
         );
     }
 
@@ -150,9 +162,35 @@ public class BlindtestController {
         @RequestParam Integer listenerId,
         @RequestBody GuessRequest request
     ) {
+        if (request.gameId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le jeu est obligatoire");
+        }
         try {
-            Optional<Track> revealed = blindtestPlayer.guess(id, listenerId, request.guess());
-            return new GuessResponse(revealed.isPresent(), revealed.map(RevealResponse::from).orElse(null));
+            GuessResult result = blindtestPlayer.guess(id, listenerId, request.gameId(), request.trackId());
+            boolean bonusCorrect = result.correct()
+                && request.trackId() != null
+                && result.revealed().isPresent()
+                && request.trackId().equals(result.revealed().get().getId());
+            RevealResponse reveal = result.revealed().map(RevealResponse::from).orElse(null);
+            return new GuessResponse(result.correct(), bonusCorrect, reveal);
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/guess-franchise")
+    public GuessFranchiseResponse guessFranchise(
+        @PathVariable Integer id,
+        @RequestParam Integer listenerId,
+        @RequestBody GuessFranchiseRequest request
+    ) {
+        if (request.franchiseId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La franchise est obligatoire");
+        }
+        try {
+            GuessResult result = blindtestPlayer.guessFranchise(id, listenerId, request.franchiseId());
+            RevealResponse reveal = result.revealed().map(RevealResponse::from).orElse(null);
+            return new GuessFranchiseResponse(result.correct(), reveal);
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

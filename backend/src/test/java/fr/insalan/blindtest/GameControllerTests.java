@@ -69,6 +69,23 @@ class GameControllerTests {
     }
 
     @Test
+    void listReturnsEveryGameSortedByNameWithItsFranchise() throws Exception {
+        Franchise stellarBladeFranchise = franchises.save(new Franchise("Stellar Blade"));
+        games.save(new Game("Stellar Blade", stellarBladeFranchise));
+        Franchise finalFantasy = franchises.save(new Franchise("Final Fantasy"));
+        games.save(new Game("Final Fantasy VII", finalFantasy));
+
+        mockMvc.perform(get("/api/games"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].name").value("Final Fantasy VII"))
+            .andExpect(jsonPath("$[0].franchiseId").value(finalFantasy.getId()))
+            .andExpect(jsonPath("$[0].franchiseName").value("Final Fantasy"))
+            .andExpect(jsonPath("$[1].name").value("Stellar Blade"))
+            .andExpect(jsonPath("$[1].franchiseId").value(stellarBladeFranchise.getId()))
+            .andExpect(jsonPath("$[1].franchiseName").value("Stellar Blade"));
+    }
+
+    @Test
     void tracksReturnsOnlyTheTracksOfThatGame() throws Exception {
         Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
         Game stellarBlade = games.save(new Game("Stellar Blade", franchise));

@@ -1,13 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
   fetchSession,
   submitGuess,
+  submitGuessFranchise,
   submitKnowAnyway,
   submitPass,
   type BlindtestSession,
   type Reveal,
 } from '../../api/blindtests'
+import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import './BlindtestPlayPage.css'
 
@@ -18,10 +20,11 @@ export function BlindtestPlayPage() {
 
   const [session, setSession] = useState<BlindtestSession | null>(null)
   const [error, setError] = useState(false)
-  const [guess, setGuess] = useState('')
   const [wrongGuess, setWrongGuess] = useState(false)
   const [reveal, setReveal] = useState<Reveal | null>(null)
-  const [passed, setPassed] = useState(false)
+  const [bonusCorrect, setBonusCorrect] = useState(false)
+  // Vrai quand la musique a été révélée sans que le jeu ait été trouvé : passe explicite ou essais épuisés.
+  const [revealedAsUnknown, setRevealedAsUnknown] = useState(false)
   const [correctedKnowledge, setCorrectedKnowledge] = useState(false)
 
   function loadSession() {
@@ -32,19 +35,47 @@ export function BlindtestPlayPage() {
       .catch(() => setError(true))
   }
 
+  // Comme loadSession, mais sans repasser par "session = null" entre-temps : utilisée après une tentative
+  // manquée sur la même musique, pour rafraîchir juste les essais restants sans démonter GameGuessForm
+  // (ça lui ferait perdre sa sélection en cours et le panneau "franchise" ouvert).
+  function refreshAttemptsRemaining() {
+    if (!listener) return
+    fetchSession(blindtestId, listener.id)
+      .then(setSession)
+      .catch(() => {})
+  }
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(loadSession, [blindtestId, listener])
 
-  function handleGuess(event: FormEvent) {
-    event.preventDefault()
+  function handleGuess(gameId: number, trackId: number | null) {
     if (!listener) return
-    submitGuess(blindtestId, listener.id, guess).then((result) => {
-      if (result.correct && result.reveal) {
+    setWrongGuess(false)
+    submitGuess(blindtestId, listener.id, gameId, trackId).then((result) => {
+      if (result.reveal) {
         setReveal(result.reveal)
-        setPassed(false)
+        setBonusCorrect(result.bonusCorrect)
+        setRevealedAsUnknown(!result.correct)
+        setCorrectedKnowledge(false)
       } else {
         setWrongGuess(true)
+        refreshAttemptsRemaining()
       }
+    })
+  }
+
+  function handleGuessFranchise(franchiseId: number): Promise<{ correct: boolean; revealed: boolean }> {
+    if (!listener) return Promise.resolve({ correct: false, revealed: false })
+    return submitGuessFranchise(blindtestId, listener.id, franchiseId).then((result) => {
+      if (result.reveal) {
+        setReveal(result.reveal)
+        setBonusCorrect(false)
+        setRevealedAsUnknown(true)
+        setCorrectedKnowledge(false)
+      } else {
+        refreshAttemptsRemaining()
+      }
+      return { correct: result.correct, revealed: result.reveal !== null }
     })
   }
 
@@ -52,7 +83,8 @@ export function BlindtestPlayPage() {
     if (!listener) return
     submitPass(blindtestId, listener.id).then((result) => {
       setReveal(result)
-      setPassed(true)
+      setBonusCorrect(false)
+      setRevealedAsUnknown(true)
       setCorrectedKnowledge(false)
     })
   }
@@ -63,10 +95,10 @@ export function BlindtestPlayPage() {
   }
 
   function handleNext() {
-    setGuess('')
     setWrongGuess(false)
     setReveal(null)
-    setPassed(false)
+    setBonusCorrect(false)
+    setRevealedAsUnknown(false)
     setCorrectedKnowledge(false)
     loadSession()
   }
@@ -99,6 +131,8 @@ export function BlindtestPlayPage() {
       <h1>Blindtest</h1>
       <p className="progress">
         {session.tracksHeard} / {session.totalTracks} musiques &middot; {session.goodAnswers} bonnes réponses
+        &middot; {session.attemptsRemaining} essai{session.attemptsRemaining > 1 ? 's' : ''} restant
+        {session.attemptsRemaining > 1 ? 's' : ''}
       </p>
       <audio key={session.trackId} controls src={session.audioLink ?? undefined} />
 
@@ -107,7 +141,8 @@ export function BlindtestPlayPage() {
           <p>
             <strong>{reveal.franchiseName}</strong> — {reveal.gameName} — {reveal.trackName}
           </p>
-          {passed && !correctedKnowledge && (
+          {bonusCorrect && <p className="bonus">+ bonus musique trouvée !</p>}
+          {revealedAsUnknown && !correctedKnowledge && (
             <button type="button" onClick={handleKnowAnyway}>
               Ah, je connais en fait
             </button>
@@ -117,24 +152,15 @@ export function BlindtestPlayPage() {
           </button>
         </div>
       ) : (
-        <form onSubmit={handleGuess} className="guess-form">
-          <input
-            type="text"
-            placeholder="Nom du jeu"
-            value={guess}
-            onChange={(event) => {
-              setGuess(event.target.value)
-              setWrongGuess(false)
-            }}
-            required
-            autoFocus
+        <>
+          <GameGuessForm
+            key={session.trackId}
+            onSubmit={handleGuess}
+            onGuessFranchise={handleGuessFranchise}
+            onPass={handlePass}
           />
-          <button type="submit">Valider</button>
-          <button type="button" onClick={handlePass}>
-            Je passe
-          </button>
           {wrongGuess && <p role="alert">Ce n'est pas ça, réessaie.</p>}
-        </form>
+        </>
       )}
     </>
   )

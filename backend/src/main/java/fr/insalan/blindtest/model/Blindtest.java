@@ -21,6 +21,9 @@ public class Blindtest {
     @Column(nullable = false)
     private int difficulty;
 
+    @Column(nullable = false)
+    private int maxAttempts;
+
     @Column(nullable = false, columnDefinition = "datetime")
     private Instant createdAt;
 
@@ -28,9 +31,10 @@ public class Blindtest {
         // JPA
     }
 
-    public Blindtest(String name, int difficulty) {
+    public Blindtest(String name, int difficulty, int maxAttempts) {
         this.name = name;
         this.difficulty = difficulty;
+        this.maxAttempts = maxAttempts;
         this.createdAt = Instant.now();
     }
 
@@ -44,6 +48,10 @@ public class Blindtest {
 
     public int getDifficulty() {
         return difficulty;
+    }
+
+    public int getMaxAttempts() {
+        return maxAttempts;
     }
 
     public Instant getCreatedAt() {

@@ -10,6 +10,7 @@ public record CreateBlindtestRequest(
     Boolean matchAllTags,
     Integer maxPerGame,
     Integer maxPerFranchise,
-    String strategy
+    String strategy,
+    Integer maxAttempts
 ) {
 }

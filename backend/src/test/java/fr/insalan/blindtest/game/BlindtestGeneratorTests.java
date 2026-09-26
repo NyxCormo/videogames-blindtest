@@ -97,7 +97,7 @@ public class BlindtestGeneratorTests {
         Track shael = playableTrack(game, "Shaël", 0, 3); // ratio 0.0, difficulté 100
 
         Blindtest blindtest = blindtestGenerator.generate(
-            "Test", 1, List.of(new DifficultyBand(90, 100, 100)), List.of(), true, null, null, GenerationStrategy.RANDOM
+            "Test", 1, List.of(new DifficultyBand(90, 100, 100)), List.of(), true, null, null, GenerationStrategy.RANDOM, 5
         );
 
         assertEquals(List.of(shael), tracksOf(blindtest));
@@ -112,7 +112,7 @@ public class BlindtestGeneratorTests {
         trackRepository.save(raven);
 
         assertThrows(IllegalStateException.class,
-            () -> blindtestGenerator.generate("Test", 1, ANY_DIFFICULTY, List.of(), true, null, null, GenerationStrategy.RANDOM));
+            () -> blindtestGenerator.generate("Test", 1, ANY_DIFFICULTY, List.of(), true, null, null, GenerationStrategy.RANDOM, 5));
     }
 
     @Test
@@ -124,7 +124,7 @@ public class BlindtestGeneratorTests {
         knowledgeRepository.save(new Knowledge(listener, track, true));
 
         assertThrows(IllegalStateException.class,
-            () -> blindtestGenerator.generate("Test", 1, ANY_DIFFICULTY, List.of(), true, null, null, GenerationStrategy.RANDOM));
+            () -> blindtestGenerator.generate("Test", 1, ANY_DIFFICULTY, List.of(), true, null, null, GenerationStrategy.RANDOM, 5));
     }
 
     @Test
@@ -142,7 +142,7 @@ public class BlindtestGeneratorTests {
         trackTagRepository.save(new TrackTag(raven, action)); // seulement Action, pas Épique
 
         Blindtest blindtest = blindtestGenerator.generate(
-            "Test", 1, ANY_DIFFICULTY, List.of(action.getId(), epique.getId()), true, null, null, GenerationStrategy.RANDOM
+            "Test", 1, ANY_DIFFICULTY, List.of(action.getId(), epique.getId()), true, null, null, GenerationStrategy.RANDOM, 5
         );
 
         assertEquals(List.of(dawn), tracksOf(blindtest));
@@ -163,7 +163,7 @@ public class BlindtestGeneratorTests {
         trackTagRepository.save(new TrackTag(raven, action));
 
         Blindtest blindtest = blindtestGenerator.generate(
-            "Test", 2, ANY_DIFFICULTY, List.of(action.getId(), epique.getId()), false, null, null, GenerationStrategy.RANDOM
+            "Test", 2, ANY_DIFFICULTY, List.of(action.getId(), epique.getId()), false, null, null, GenerationStrategy.RANDOM, 5
         );
 
         List<Track> picked = tracksOf(blindtest);
@@ -185,7 +185,7 @@ public class BlindtestGeneratorTests {
         trackTagRepository.save(new TrackTag(dawn, action));
 
         assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate(
-            "Test", 2, ANY_DIFFICULTY, List.of(action.getId()), true, null, null, GenerationStrategy.RANDOM
+            "Test", 2, ANY_DIFFICULTY, List.of(action.getId()), true, null, null, GenerationStrategy.RANDOM, 5
         ));
     }
 
@@ -203,7 +203,7 @@ public class BlindtestGeneratorTests {
             new DifficultyBand(0, 100, 34)
         );
 
-        Blindtest blindtest = blindtestGenerator.generate("Test", 10, bands, List.of(), true, null, null, GenerationStrategy.RANDOM);
+        Blindtest blindtest = blindtestGenerator.generate("Test", 10, bands, List.of(), true, null, null, GenerationStrategy.RANDOM, 5);
 
         assertEquals(10, tracksOf(blindtest).size());
     }
@@ -218,7 +218,7 @@ public class BlindtestGeneratorTests {
         // 3 musiques du même jeu, mais le plafond n'en autorise que 2
 
         assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate(
-            "Test", 3, ANY_DIFFICULTY, List.of(), true, 2, null, GenerationStrategy.RANDOM
+            "Test", 3, ANY_DIFFICULTY, List.of(), true, 2, null, GenerationStrategy.RANDOM, 5
         ));
     }
 
@@ -233,7 +233,7 @@ public class BlindtestGeneratorTests {
         // 3 musiques dans la même franchise (2 jeux), mais le plafond de franchise n'en autorise que 2
 
         assertThrows(IllegalStateException.class, () -> blindtestGenerator.generate(
-            "Test", 3, ANY_DIFFICULTY, List.of(), true, null, 2, GenerationStrategy.RANDOM
+            "Test", 3, ANY_DIFFICULTY, List.of(), true, null, 2, GenerationStrategy.RANDOM, 5
         ));
     }
 
@@ -253,7 +253,7 @@ public class BlindtestGeneratorTests {
         );
 
         Blindtest blindtest = blindtestGenerator.generate(
-            "Test", 2, bands, List.of(), true, 1, null, GenerationStrategy.RARE_GAMES
+            "Test", 2, bands, List.of(), true, 1, null, GenerationStrategy.RARE_GAMES, 5
         );
 
         // Le palier facile doit prendre le jeu rare (fréquence 1) plutôt que le commun (fréquence 2),
@@ -278,7 +278,7 @@ public class BlindtestGeneratorTests {
         );
 
         Blindtest blindtest = blindtestGenerator.generate(
-            "Test", 2, bands, List.of(), true, null, 1, GenerationStrategy.RARE_FRANCHISES
+            "Test", 2, bands, List.of(), true, null, 1, GenerationStrategy.RARE_FRANCHISES, 5
         );
 
         assertEquals(Set.of(rareEasy, commonHard), Set.copyOf(tracksOf(blindtest)));
@@ -301,7 +301,7 @@ public class BlindtestGeneratorTests {
 
         // Sans stratégie imposée (null) : [rareEasy, commonHard] est la seule combinaison possible avec ce
         // plafond, que ce soit trouvé dès le tirage au hasard (par chance) ou grâce au repli "jeux rares".
-        Blindtest blindtest = blindtestGenerator.generate("Test", 2, bands, List.of(), true, 1, null, null);
+        Blindtest blindtest = blindtestGenerator.generate("Test", 2, bands, List.of(), true, 1, null, null, 5);
 
         assertEquals(Set.of(rareEasy, commonHard), Set.copyOf(tracksOf(blindtest)));
     }

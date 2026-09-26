@@ -1,8 +1,7 @@
 package fr.insalan.blindtest.dto;
 
-public record GuessResponse(
+public record GuessFranchiseResponse(
     boolean correct,
-    boolean bonusCorrect,
     RevealResponse reveal
 ) {
 }
