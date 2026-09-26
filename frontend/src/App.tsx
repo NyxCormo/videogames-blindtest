@@ -6,6 +6,7 @@ import { BlindtestCreatePage } from './pages/BlindtestCreate/BlindtestCreatePage
 import { BlindtestLeaderboardPage } from './pages/BlindtestLeaderboard/BlindtestLeaderboardPage'
 import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
 import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
+import { DiscoverPage } from './pages/Discover/DiscoverPage'
 import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
 import { TrackListPage } from './pages/TrackList/TrackListPage'
 
@@ -17,6 +18,7 @@ function App() {
           <div className="nav-links">
             <Link to="/">Musiques</Link>
             <Link to="/blindtests">Blindtests</Link>
+            <Link to="/knowledge/discover">Découvrir</Link>
           </div>
           <ListenerBanner />
         </nav>
@@ -28,6 +30,7 @@ function App() {
             <Route path="/blindtests/new" element={<BlindtestCreatePage />} />
             <Route path="/blindtests/:id/play" element={<BlindtestPlayPage />} />
             <Route path="/blindtests/:id/leaderboard" element={<BlindtestLeaderboardPage />} />
+            <Route path="/knowledge/discover" element={<DiscoverPage />} />
           </Routes>
         </main>
       </BrowserRouter>
