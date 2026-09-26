@@ -7,3 +7,16 @@
 .discover-name {
   margin-top: 1rem;
 }
+
+.discover-guess {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  max-width: 24rem;
+}
+
+.discover-correct,
+.discover-incorrect {
+  font-weight: 600;
+}

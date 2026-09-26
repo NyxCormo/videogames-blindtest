@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchNextTrack, setKnowledge, type DiscoverTrack } from '../../api/discover'
+import { fetchGames, type Game } from '../../api/games'
+import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import './DiscoverPage.css'
 
@@ -27,11 +29,16 @@ export function DiscoverPage() {
   const [error, setError] = useState(false)
   const [showNames, setShowNames] = useState(loadShowNames)
   const [revealed, setRevealed] = useState(false)
+  const [games, setGames] = useState<Game[]>([])
+  const [game, setGame] = useState<Game | null>(null)
+  const [guessCorrect, setGuessCorrect] = useState<boolean | null>(null)
 
   function loadNext() {
     if (!listener) return
     setTrack(null)
     setRevealed(false)
+    setGame(null)
+    setGuessCorrect(null)
     fetchNextTrack(listener.id)
       .then(setTrack)
       .catch(() => setError(true))
@@ -39,6 +46,14 @@ export function DiscoverPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(loadNext, [listener])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchGames(controller.signal)
+      .then(setGames)
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
 
   function toggleShowNames() {
     const next = !showNames
@@ -54,6 +69,14 @@ export function DiscoverPage() {
     } else {
       setRevealed(true)
     }
+  }
+
+  function submitGuess(selected: Game) {
+    if (!listener || track === null || track.trackId === null) return
+    const correct = selected.id === track.gameId
+    setGuessCorrect(correct)
+    setKnowledge(listener.id, track.trackId, correct).catch(() => {})
+    setRevealed(true)
   }
 
   if (!listener) {
@@ -94,6 +117,11 @@ export function DiscoverPage() {
             </>
           ) : revealed ? (
             <>
+              {guessCorrect !== null && (
+                <p className={guessCorrect ? 'discover-correct' : 'discover-incorrect'}>
+                  {guessCorrect ? 'Trouvé !' : "Ce n'était pas ça."}
+                </p>
+              )}
               <p className="discover-name">
                 <strong>{track.franchiseName}</strong> — {track.gameName} — {track.trackName}
               </p>
@@ -102,13 +130,24 @@ export function DiscoverPage() {
               </button>
             </>
           ) : (
-            <div className="discover-actions">
-              <button type="button" onClick={() => answer(true)}>
-                Je connais
-              </button>
-              <button type="button" onClick={() => answer(false)}>
-                Je ne sais pas
-              </button>
+            <div className="discover-guess">
+              <NamePicker
+                items={games}
+                selected={game}
+                onSelect={submitGuess}
+                onClear={() => setGame(null)}
+                placeholder="Chercher un jeu"
+                renderLabel={(item) => `${item.name} (${item.franchiseName})`}
+                getSearchText={(item) => `${item.name} ${item.franchiseName}`}
+              />
+              <div className="discover-actions">
+                <button type="button" onClick={() => answer(true)}>
+                  Je connais
+                </button>
+                <button type="button" onClick={() => answer(false)}>
+                  Je ne sais pas
+                </button>
+              </div>
             </div>
           )}
         </>
