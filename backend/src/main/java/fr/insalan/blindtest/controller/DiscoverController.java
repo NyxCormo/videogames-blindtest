@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.dto.DiscoverTrackResponse;
+import fr.insalan.blindtest.dto.KnowledgeEntryResponse;
 import fr.insalan.blindtest.model.Knowledge;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
@@ -47,6 +48,13 @@ public class DiscoverController {
         }
         Track track = candidates.get(random.nextInt(candidates.size()));
         return DiscoverTrackResponse.from(track);
+    }
+
+    @GetMapping("/knowledge")
+    public List<KnowledgeEntryResponse> knowledge(@RequestParam Integer listenerId) {
+        return knowledgeRepository.findByListenerId(listenerId).stream()
+            .map(k -> new KnowledgeEntryResponse(k.getTrack().getId(), k.isKnows()))
+            .toList();
     }
 
     @PostMapping("/knowledge")

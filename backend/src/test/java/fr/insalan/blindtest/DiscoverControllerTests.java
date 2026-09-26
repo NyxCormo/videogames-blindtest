@@ -165,4 +165,32 @@ class DiscoverControllerTests {
 
         assertThat(knowledge.findById(new KnowledgeId(listener.getId(), dawn.getId())).orElseThrow().isKnows()).isFalse();
     }
+
+    @Test
+    void listsKnowledgeForAGivenListenerOnly() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = playableTrack(game, "Dawn");
+        Track raven = playableTrack(game, "Raven");
+        Listener listener = listeners.save(new Listener("Nyx"));
+        Listener other = listeners.save(new Listener("Other"));
+        knowledge.save(new Knowledge(listener, dawn, true));
+        knowledge.save(new Knowledge(listener, raven, false));
+        knowledge.save(new Knowledge(other, dawn, false));
+
+        mockMvc.perform(get("/api/discover/knowledge").param("listenerId", listener.getId().toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[?(@.trackId == " + dawn.getId() + ")].knows").value(true))
+            .andExpect(jsonPath("$[?(@.trackId == " + raven.getId() + ")].knows").value(false));
+    }
+
+    @Test
+    void listsNothingForAListenerWithoutAnyVote() throws Exception {
+        Listener listener = listeners.save(new Listener("Nyx"));
+
+        mockMvc.perform(get("/api/discover/knowledge").param("listenerId", listener.getId().toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+    }
 }
