@@ -29,7 +29,8 @@ export async function createBlindtest(
     matchAllTags: boolean,
     maxPerGame: number | null,
     maxPerFranchise: number | null,
-    strategy: string | null
+    strategy: string | null,
+    maxAttempts: number | null
 ): Promise<Blindtest> {
     const response = await fetch(`/api/blindtests`, {
         method: 'POST',
@@ -43,6 +44,7 @@ export async function createBlindtest(
         maxPerGame,
         maxPerFranchise,
         strategy,
+        maxAttempts,
     }),
     })
     if (!response.ok) {
@@ -60,6 +62,7 @@ export type BlindtestSession = {
   tracksHeard: number
   totalTracks: number
   goodAnswers: number
+  attemptsRemaining: number
 }
 
 // Forme du JSON renvoyé quand une musique est révélée (bonne réponse ou passe)
@@ -94,6 +97,27 @@ export async function submitGuess(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ gameId, trackId }),
+  })
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}`)
+  }
+  return response.json()
+}
+
+export type FranchiseGuessResult = {
+  correct: boolean
+  reveal: Reveal | null
+}
+
+export async function submitGuessFranchise(
+  blindtestId: number,
+  listenerId: number,
+  franchiseId: number,
+): Promise<FranchiseGuessResult> {
+  const response = await fetch(`/api/blindtests/${blindtestId}/guess-franchise?listenerId=${listenerId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ franchiseId }),
   })
   if (!response.ok) {
     throw new Error(`Erreur ${response.status}`)

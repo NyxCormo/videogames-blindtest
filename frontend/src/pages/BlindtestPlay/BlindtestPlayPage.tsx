@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 import {
   fetchSession,
   submitGuess,
+  submitGuessFranchise,
   submitKnowAnyway,
   submitPass,
   type BlindtestSession,
@@ -22,7 +23,8 @@ export function BlindtestPlayPage() {
   const [wrongGuess, setWrongGuess] = useState(false)
   const [reveal, setReveal] = useState<Reveal | null>(null)
   const [bonusCorrect, setBonusCorrect] = useState(false)
-  const [passed, setPassed] = useState(false)
+  // Vrai quand la musique a été révélée sans que le jeu ait été trouvé : passe explicite ou essais épuisés.
+  const [revealedAsUnknown, setRevealedAsUnknown] = useState(false)
   const [correctedKnowledge, setCorrectedKnowledge] = useState(false)
 
   function loadSession() {
@@ -33,6 +35,16 @@ export function BlindtestPlayPage() {
       .catch(() => setError(true))
   }
 
+  // Comme loadSession, mais sans repasser par "session = null" entre-temps : utilisée après une tentative
+  // manquée sur la même musique, pour rafraîchir juste les essais restants sans démonter GameGuessForm
+  // (ça lui ferait perdre sa sélection en cours et le panneau "franchise" ouvert).
+  function refreshAttemptsRemaining() {
+    if (!listener) return
+    fetchSession(blindtestId, listener.id)
+      .then(setSession)
+      .catch(() => {})
+  }
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(loadSession, [blindtestId, listener])
 
@@ -40,13 +52,30 @@ export function BlindtestPlayPage() {
     if (!listener) return
     setWrongGuess(false)
     submitGuess(blindtestId, listener.id, gameId, trackId).then((result) => {
-      if (result.correct && result.reveal) {
+      if (result.reveal) {
         setReveal(result.reveal)
         setBonusCorrect(result.bonusCorrect)
-        setPassed(false)
+        setRevealedAsUnknown(!result.correct)
+        setCorrectedKnowledge(false)
       } else {
         setWrongGuess(true)
+        refreshAttemptsRemaining()
       }
+    })
+  }
+
+  function handleGuessFranchise(franchiseId: number): Promise<{ correct: boolean; revealed: boolean }> {
+    if (!listener) return Promise.resolve({ correct: false, revealed: false })
+    return submitGuessFranchise(blindtestId, listener.id, franchiseId).then((result) => {
+      if (result.reveal) {
+        setReveal(result.reveal)
+        setBonusCorrect(false)
+        setRevealedAsUnknown(true)
+        setCorrectedKnowledge(false)
+      } else {
+        refreshAttemptsRemaining()
+      }
+      return { correct: result.correct, revealed: result.reveal !== null }
     })
   }
 
@@ -54,7 +83,8 @@ export function BlindtestPlayPage() {
     if (!listener) return
     submitPass(blindtestId, listener.id).then((result) => {
       setReveal(result)
-      setPassed(true)
+      setBonusCorrect(false)
+      setRevealedAsUnknown(true)
       setCorrectedKnowledge(false)
     })
   }
@@ -68,7 +98,7 @@ export function BlindtestPlayPage() {
     setWrongGuess(false)
     setReveal(null)
     setBonusCorrect(false)
-    setPassed(false)
+    setRevealedAsUnknown(false)
     setCorrectedKnowledge(false)
     loadSession()
   }
@@ -101,6 +131,8 @@ export function BlindtestPlayPage() {
       <h1>Blindtest</h1>
       <p className="progress">
         {session.tracksHeard} / {session.totalTracks} musiques &middot; {session.goodAnswers} bonnes réponses
+        &middot; {session.attemptsRemaining} essai{session.attemptsRemaining > 1 ? 's' : ''} restant
+        {session.attemptsRemaining > 1 ? 's' : ''}
       </p>
       <audio key={session.trackId} controls src={session.audioLink ?? undefined} />
 
@@ -110,7 +142,7 @@ export function BlindtestPlayPage() {
             <strong>{reveal.franchiseName}</strong> — {reveal.gameName} — {reveal.trackName}
           </p>
           {bonusCorrect && <p className="bonus">+ bonus musique trouvée !</p>}
-          {passed && !correctedKnowledge && (
+          {revealedAsUnknown && !correctedKnowledge && (
             <button type="button" onClick={handleKnowAnyway}>
               Ah, je connais en fait
             </button>
@@ -121,7 +153,12 @@ export function BlindtestPlayPage() {
         </div>
       ) : (
         <>
-          <GameGuessForm key={session.trackId} onSubmit={handleGuess} onPass={handlePass} />
+          <GameGuessForm
+            key={session.trackId}
+            onSubmit={handleGuess}
+            onGuessFranchise={handleGuessFranchise}
+            onPass={handlePass}
+          />
           {wrongGuess && <p role="alert">Ce n'est pas ça, réessaie.</p>}
         </>
       )}

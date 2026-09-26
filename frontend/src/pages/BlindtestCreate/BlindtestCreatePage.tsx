@@ -18,6 +18,7 @@ export function BlindtestCreatePage() {
   const [bands, setBands] = useState<DifficultyBand[]>([{ minDifficulty: 0, maxDifficulty: 100, proportion: 100 }])
   const [maxPerGame, setMaxPerGame] = useState<number | ''>('')
   const [maxPerFranchise, setMaxPerFranchise] = useState<number | ''>('')
+  const [maxAttempts, setMaxAttempts] = useState<number | ''>('')
   const [strategy, setStrategy] = useState('')
   const [allTags, setAllTags] = useState<Tag[]>([])
   const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set())
@@ -79,6 +80,7 @@ export function BlindtestCreatePage() {
       maxPerGame === '' ? null : maxPerGame,
       maxPerFranchise === '' ? null : maxPerFranchise,
       strategy === '' ? null : strategy,
+      maxAttempts === '' ? null : maxAttempts,
     )
       .then(() => navigate('/blindtests'))
       .catch((err: Error) => setError(err.message))
@@ -173,6 +175,15 @@ export function BlindtestCreatePage() {
             min={1}
             value={maxPerFranchise}
             onChange={(event) => setMaxPerFranchise(event.target.value === '' ? '' : Number(event.target.value))}
+          />
+        </label>
+        <label>
+          Nombre d'essais par musique (optionnel, 5 par défaut)
+          <input
+            type="number"
+            min={1}
+            value={maxAttempts}
+            onChange={(event) => setMaxAttempts(event.target.value === '' ? '' : Number(event.target.value))}
           />
         </label>
         <label>

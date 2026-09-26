@@ -102,7 +102,8 @@ class BlindtestGameControllerTests {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.audioLink").value(dawn.getAudioLink()))
             .andExpect(jsonPath("$.finished").value(false))
-            .andExpect(jsonPath("$.totalTracks").value(1));
+            .andExpect(jsonPath("$.totalTracks").value(1))
+            .andExpect(jsonPath("$.attemptsRemaining").value(5));
 
         GuessRequest wrongGuess = new GuessRequest(game.getId() + 1000, null);
         mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
@@ -110,6 +111,9 @@ class BlindtestGameControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(wrongGuess)))
             .andExpect(jsonPath("$.correct").value(false));
+
+        mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
+            .andExpect(jsonPath("$.attemptsRemaining").value(4));
 
         GuessRequest rightGuess = new GuessRequest(game.getId(), dawn.getId());
         mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
@@ -153,6 +157,37 @@ class BlindtestGameControllerTests {
         mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
             .andExpect(jsonPath("$.finished").value(false))
             .andExpect(jsonPath("$.trackId").value(dawn.getId()));
+    }
+
+    @Test
+    void exhaustingAttemptsRevealsTheTrackWithoutCountingAsCorrect() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = tracks.save(new Track("Dawn", game));
+        dawn.setAudioLink("https://example.org/dawn");
+        tracks.save(dawn);
+        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50, 2));
+        blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
+        Listener listener = listeners.save(new Listener("Nyx"));
+
+        GuessRequest wrongGuess = new GuessRequest(game.getId() + 1000, null);
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
+                .param("listenerId", listener.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(wrongGuess)))
+            .andExpect(jsonPath("$.correct").value(false))
+            .andExpect(jsonPath("$.reveal").doesNotExist());
+
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
+                .param("listenerId", listener.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(wrongGuess)))
+            .andExpect(jsonPath("$.correct").value(false))
+            .andExpect(jsonPath("$.reveal.gameName").value("Stellar Blade"));
+
+        mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
+            .andExpect(jsonPath("$.finished").value(true))
+            .andExpect(jsonPath("$.goodAnswers").value(0));
     }
 
     @Test

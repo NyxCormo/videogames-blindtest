@@ -16,3 +16,19 @@
   display: flex;
   gap: 0.5rem;
 }
+
+.franchise-help {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+
+.franchise-help-picker {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.franchise-found {
+  color: var(--muted);
+  font-weight: 600;
+}

@@ -1,22 +1,34 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { fetchGameTracks, fetchGames, type Game } from '../../api/games'
 import type { Track } from '../../api/tracks'
 import { NamePicker } from '../NamePicker/NamePicker'
 import './GameGuessForm.css'
 
+type Franchise = {
+  id: number
+  name: string
+}
+
 type Props = {
   onSubmit: (gameId: number, trackId: number | null) => void
+  onGuessFranchise: (franchiseId: number) => Promise<{ correct: boolean; revealed: boolean }>
   onPass: () => void
   disabled?: boolean
 }
 
 // Jeu (affiché avec sa franchise, pour les rares doublons de nom) puis musique (bonus, optionnelle) :
-// choisis dans une liste, jamais tapés en texte libre.
-export function GameGuessForm({ onSubmit, onPass, disabled = false }: Props) {
+// choisis dans une liste, jamais tapés en texte libre. Chemin de secours : valider juste la franchise
+// pour un point partiel quand on est bloqué, sans avoir à trouver le jeu exact.
+export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = false }: Props) {
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
   const [track, setTrack] = useState<Track | null>(null)
+
+  const [franchiseHelp, setFranchiseHelp] = useState(false)
+  const [franchise, setFranchise] = useState<Franchise | null>(null)
+  const [franchiseFound, setFranchiseFound] = useState(false)
+  const [franchiseSubmitting, setFranchiseSubmitting] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -38,6 +50,16 @@ export function GameGuessForm({ onSubmit, onPass, disabled = false }: Props) {
     return () => controller.abort()
   }, [game])
 
+  const franchises = useMemo(() => {
+    const byId = new Map<number, Franchise>()
+    for (const item of games) {
+      if (!byId.has(item.franchiseId)) {
+        byId.set(item.franchiseId, { id: item.franchiseId, name: item.franchiseName })
+      }
+    }
+    return [...byId.values()]
+  }, [games])
+
   function selectGame(selected: Game) {
     setGame(selected)
     setTrack(null)
@@ -52,6 +74,21 @@ export function GameGuessForm({ onSubmit, onPass, disabled = false }: Props) {
     event.preventDefault()
     if (!game) return
     onSubmit(game.id, track ? track.id : null)
+  }
+
+  function handleGuessFranchise() {
+    if (!franchise) return
+    setFranchiseSubmitting(true)
+    onGuessFranchise(franchise.id)
+      .then(({ correct, revealed }) => {
+        // Si la musique vient d'être révélée (essais épuisés), ce composant va disparaître :
+        // pas la peine de mettre à jour un état local qui ne sera jamais affiché.
+        if (!revealed) {
+          setFranchiseFound(correct)
+          setFranchise(null)
+        }
+      })
+      .finally(() => setFranchiseSubmitting(false))
   }
 
   return (
@@ -90,6 +127,37 @@ export function GameGuessForm({ onSubmit, onPass, disabled = false }: Props) {
           Je passe
         </button>
       </div>
+
+      {franchiseFound ? (
+        <p className="franchise-found">Franchise trouvée !</p>
+      ) : (
+        <div className="franchise-help">
+          {!franchiseHelp ? (
+            <button type="button" onClick={() => setFranchiseHelp(true)} disabled={disabled}>
+              Je sais juste la franchise
+            </button>
+          ) : (
+            <label>
+              Franchise
+              <div className="franchise-help-picker">
+                <NamePicker
+                  items={franchises}
+                  selected={franchise}
+                  onSelect={setFranchise}
+                  onClear={() => setFranchise(null)}
+                  placeholder="Chercher une franchise"
+                  disabled={disabled || franchiseSubmitting}
+                />
+                {franchise && (
+                  <button type="button" onClick={handleGuessFranchise} disabled={disabled || franchiseSubmitting}>
+                    Valider la franchise
+                  </button>
+                )}
+              </div>
+            </label>
+          )}
+        </div>
+      )}
     </form>
   )
 }

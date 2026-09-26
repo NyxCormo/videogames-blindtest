@@ -141,6 +141,9 @@ public class BlindtestController {
         BlindtestScore score = blindtestPlayer.score(id, listenerId);
         Optional<Track> current = blindtestPlayer.currentTrack(id, listenerId);
         long totalTracks = blindtestTrackRepository.countByIdBlindtestId(id);
+        // findById plutôt que score.getBlindtest() : cette association Lazy n'est plus valide une fois
+        // sortis de la transaction de blindtestPlayer.score(), la charger ici lèverait une LazyInitializationException.
+        Blindtest blindtest = blindtestRepository.findById(id).orElseThrow();
 
         return new BlindtestSessionResponse(
             current.map(Track::getId).orElse(null),
@@ -148,7 +151,8 @@ public class BlindtestController {
             current.isEmpty(),
             score.getTracksHeard(),
             (int) totalTracks,
-            score.getGoodAnswers()
+            score.getGoodAnswers(),
+            blindtest.getMaxAttempts() - score.getAttemptsUsedOnCurrentTrack()
         );
     }
 

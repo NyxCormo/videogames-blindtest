@@ -4,6 +4,7 @@ import type { Track } from './tracks'
 export type Game = {
   id: number
   name: string
+  franchiseId: number
   franchiseName: string
 }
 

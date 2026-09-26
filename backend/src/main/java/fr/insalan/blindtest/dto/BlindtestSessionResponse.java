@@ -6,6 +6,7 @@ public record BlindtestSessionResponse(
     boolean finished,
     int tracksHeard,
     int totalTracks,
-    int goodAnswers
+    int goodAnswers,
+    int attemptsRemaining
 ) {
 }
