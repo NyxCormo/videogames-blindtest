@@ -134,7 +134,7 @@ export function BlindtestPlayPage() {
         &middot; {session.attemptsRemaining} essai{session.attemptsRemaining > 1 ? 's' : ''} restant
         {session.attemptsRemaining > 1 ? 's' : ''}
       </p>
-      <audio key={session.trackId} controls src={session.audioLink ?? undefined} />
+      <audio key={session.trackId} controls autoPlay src={session.audioLink ?? undefined} />
 
       {reveal ? (
         <div className="reveal">

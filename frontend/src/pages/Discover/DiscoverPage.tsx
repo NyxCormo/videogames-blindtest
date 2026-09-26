@@ -76,7 +76,7 @@ export function DiscoverPage() {
         <p>Tu as déjà voté pour toutes les musiques jouables.</p>
       ) : (
         <>
-          <audio key={track.trackId} controls src={track.audioLink ?? undefined} />
+          <audio key={track.trackId} controls autoPlay src={track.audioLink ?? undefined} />
 
           {showNames ? (
             <>
