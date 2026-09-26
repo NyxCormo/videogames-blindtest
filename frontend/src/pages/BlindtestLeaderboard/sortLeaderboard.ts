@@ -1,6 +1,14 @@
 import type { LeaderboardEntry } from '../../api/blindtests'
 
-export type LeaderboardColumn = 'name' | 'good' | 'goodPercent' | 'bonus' | 'bonusPercent' | 'tracksHeard'
+export type LeaderboardColumn =
+  | 'name'
+  | 'good'
+  | 'goodPercent'
+  | 'franchise'
+  | 'franchisePercent'
+  | 'bonus'
+  | 'bonusPercent'
+  | 'tracksHeard'
 export type SortDirection = 'asc' | 'desc'
 
 // Tri avec casse et accents ignorés (SQLite ne sait pas faire cela), même principe que sortTracks
@@ -18,6 +26,10 @@ function columnValue(entry: LeaderboardEntry, column: LeaderboardColumn): number
       return entry.goodAnswers
     case 'goodPercent':
       return percent(entry.goodAnswers, entry.tracksHeard)
+    case 'franchise':
+      return entry.franchiseAnswers
+    case 'franchisePercent':
+      return percent(entry.franchiseAnswers, entry.tracksHeard)
     case 'bonus':
       return entry.bonusAnswers
     case 'bonusPercent':
@@ -42,14 +54,16 @@ export function sortLeaderboard(
   return direction === 'asc' ? sorted : sorted.reverse()
 }
 
-// Classement officiel (colonne "Rang") : bonnes réponses, puis leur pourcentage, puis les musiques bonus,
-// puis ordre alphabétique. Le pourcentage de bonus n'entre pas dans le départage : à bonnes réponses,
-// pourcentage et bonus égaux, les musiques écoutées le sont aussi (pourcentage = bonus / écoutées), donc
-// il ne peut plus rien départager de plus.
+// Classement officiel (colonne "Rang") : bonnes réponses, puis leur pourcentage, puis la franchise (elle
+// compte pour le score, contrairement au bonus), puis les musiques bonus, puis ordre alphabétique. Les
+// pourcentages de franchise et de bonus n'entrent pas dans le départage : à bonnes réponses, pourcentage
+// et franchise (ou bonus) égaux, les musiques écoutées le sont aussi (pourcentage = compte / écoutées),
+// donc il ne peut plus rien départager de plus.
 function rankCompare(a: LeaderboardEntry, b: LeaderboardEntry): number {
   return (
     b.goodAnswers - a.goodAnswers ||
     percent(b.goodAnswers, b.tracksHeard) - percent(a.goodAnswers, a.tracksHeard) ||
+    b.franchiseAnswers - a.franchiseAnswers ||
     b.bonusAnswers - a.bonusAnswers ||
     collator.compare(a.listenerName, b.listenerName)
   )

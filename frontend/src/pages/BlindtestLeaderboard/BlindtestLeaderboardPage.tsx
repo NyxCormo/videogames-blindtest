@@ -8,6 +8,8 @@ const COLUMNS: { column: LeaderboardColumn; label: string }[] = [
   { column: 'name', label: 'Joueur' },
   { column: 'good', label: 'Bonnes réponses' },
   { column: 'goodPercent', label: '%' },
+  { column: 'franchise', label: 'Franchises' },
+  { column: 'franchisePercent', label: '%' },
   { column: 'bonus', label: 'Musiques bonus' },
   { column: 'bonusPercent', label: '%' },
   { column: 'tracksHeard', label: 'Musiques écoutées' },
@@ -82,6 +84,8 @@ export function BlindtestLeaderboardPage() {
                   <td>{entry.listenerName}</td>
                   <td>{entry.goodAnswers}</td>
                   <td>{percentText(entry.goodAnswers, entry.tracksHeard)}</td>
+                  <td>{entry.franchiseAnswers}</td>
+                  <td>{percentText(entry.franchiseAnswers, entry.tracksHeard)}</td>
                   <td>{entry.bonusAnswers}</td>
                   <td>{percentText(entry.bonusAnswers, entry.tracksHeard)}</td>
                   <td>{entry.tracksHeard}</td>

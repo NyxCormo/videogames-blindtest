@@ -83,7 +83,9 @@ public class BlindtestPlayer {
     }
 
     // Le joueur choisit un jeu (id) dans une liste, jamais du texte libre.
-    // Bonne réponse : connaissance enregistrée, point marqué, musique suivante.
+    // Bonne réponse : connaissance enregistrée, point marqué, musique suivante. Trouver le jeu implique
+    // forcément connaître sa franchise : le point de franchise est aussi acquis s'il ne l'était pas déjà
+    // (chemin rapide direct = les deux points d'un coup, sans avoir à passer par guessFranchise avant).
     // Mauvaise réponse : rien ne change, sauf si cette tentative épuise le quota d'essais du blindtest
     // (partagé avec guessFranchise) : la musique est alors révélée comme non connue, comme un passe forcé.
     // En plus d'une bonne réponse : s'il a aussi choisi la bonne musique (trackId, optionnel), point bonus à part.
@@ -96,6 +98,9 @@ public class BlindtestPlayer {
         if (correct) {
             recordKnowledge(listenerId, track, true);
             score.setGoodAnswers(score.getGoodAnswers() + 1);
+            if (!score.isFranchiseFoundOnCurrentTrack()) {
+                score.setFranchiseAnswers(score.getFranchiseAnswers() + 1);
+            }
             if (trackId != null && track.getId().equals(trackId)) {
                 score.setBonusAnswers(score.getBonusAnswers() + 1);
             }

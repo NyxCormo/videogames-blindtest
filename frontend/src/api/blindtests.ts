@@ -147,6 +147,7 @@ export async function submitKnowAnyway(blindtestId: number, listenerId: number, 
 export type LeaderboardEntry = {
   listenerName: string
   goodAnswers: number
+  franchiseAnswers: number
   bonusAnswers: number
   tracksHeard: number
 }

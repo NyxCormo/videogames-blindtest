@@ -122,9 +122,21 @@ public class BlindtestPlayerTests {
         assertTrue(result.correct());
         assertEquals(dawn, result.revealed().orElseThrow());
         assertEquals(1, score().getGoodAnswers());
+        assertEquals(1, score().getFranchiseAnswers());
         assertEquals(0, score().getBonusAnswers());
         assertEquals(1, score().getTracksHeard());
         assertTrue(knowsDawn());
+    }
+
+    @Test
+    void findingTheFranchiseFirstThenTheGameDoesNotDoubleCountTheFranchisePoint() {
+        setUp(2);
+
+        blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId());
+        blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId(), null);
+
+        assertEquals(1, score().getGoodAnswers());
+        assertEquals(1, score().getFranchiseAnswers());
     }
 
     @Test

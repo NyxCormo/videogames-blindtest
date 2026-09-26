@@ -250,9 +250,11 @@ class BlindtestGameControllerTests {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].listenerName").value("BonneReponse"))
             .andExpect(jsonPath("$[0].goodAnswers").value(1))
+            .andExpect(jsonPath("$[0].franchiseAnswers").value(1))
             .andExpect(jsonPath("$[0].tracksHeard").value(1))
             .andExpect(jsonPath("$[1].listenerName").value("MauvaiseReponse"))
-            .andExpect(jsonPath("$[1].goodAnswers").value(0));
+            .andExpect(jsonPath("$[1].goodAnswers").value(0))
+            .andExpect(jsonPath("$[1].franchiseAnswers").value(0));
     }
 
     private void assertKnowsDawn(Listener listener, Track dawn) {

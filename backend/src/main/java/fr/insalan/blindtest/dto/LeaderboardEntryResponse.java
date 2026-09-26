@@ -5,6 +5,7 @@ import fr.insalan.blindtest.model.BlindtestScore;
 public record LeaderboardEntryResponse(
     String listenerName,
     int goodAnswers,
+    int franchiseAnswers,
     int bonusAnswers,
     int tracksHeard
 ) {
@@ -12,6 +13,7 @@ public record LeaderboardEntryResponse(
         return new LeaderboardEntryResponse(
             score.getListener().getName(),
             score.getGoodAnswers(),
+            score.getFranchiseAnswers(),
             score.getBonusAnswers(),
             score.getTracksHeard()
         );
