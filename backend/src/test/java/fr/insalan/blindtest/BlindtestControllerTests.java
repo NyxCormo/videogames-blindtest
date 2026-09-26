@@ -104,7 +104,7 @@ class BlindtestControllerTests {
         Game game = games.save(new Game("Stellar Blade", franchise));
         playableTrack(game, "Dawn", true);
 
-        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, ANY_DIFFICULTY, null, null, null, null, null);
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, ANY_DIFFICULTY, null, null, null, null, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -120,7 +120,7 @@ class BlindtestControllerTests {
 
     @Test
     void rejectsBlankName() throws Exception {
-        CreateBlindtestRequest request = new CreateBlindtestRequest(" ", 1, ANY_DIFFICULTY, null, null, null, null, null);
+        CreateBlindtestRequest request = new CreateBlindtestRequest(" ", 1, ANY_DIFFICULTY, null, null, null, null, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -130,7 +130,7 @@ class BlindtestControllerTests {
 
     @Test
     void rejectsWhenNotEnoughTracks() throws Exception {
-        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 5, ANY_DIFFICULTY, null, null, null, null, null);
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 5, ANY_DIFFICULTY, null, null, null, null, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -140,7 +140,7 @@ class BlindtestControllerTests {
 
     @Test
     void rejectsWhenNoBandsProvided() throws Exception {
-        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, List.of(), null, null, null, null, null);
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, List.of(), null, null, null, null, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -154,7 +154,7 @@ class BlindtestControllerTests {
             new DifficultyBandRequest(0, 50, 40),
             new DifficultyBandRequest(50, 100, 40)
         );
-        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, bands, null, null, null, null, null);
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, bands, null, null, null, null, null, null);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -164,7 +164,17 @@ class BlindtestControllerTests {
 
     @Test
     void rejectsUnknownStrategy() throws Exception {
-        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, ANY_DIFFICULTY, null, null, null, null, "n'importe quoi");
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, ANY_DIFFICULTY, null, null, null, null, "n'importe quoi", null);
+
+        mockMvc.perform(post("/api/blindtests")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rejectsNonPositiveMaxAttempts() throws Exception {
+        CreateBlindtestRequest request = new CreateBlindtestRequest("Soirée InsaLan", 1, ANY_DIFFICULTY, null, null, null, null, null, 0);
 
         mockMvc.perform(post("/api/blindtests")
                 .contentType(MediaType.APPLICATION_JSON)

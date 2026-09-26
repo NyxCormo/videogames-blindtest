@@ -70,9 +70,13 @@ public class BlindtestPlayerTests {
     private Track shael;
 
     private void setUp(int trackCount) {
+        setUp(trackCount, 5);
+    }
+
+    private void setUp(int trackCount, int maxAttempts) {
         stellarBladeFranchise = franchiseRepository.save(new Franchise("Stellar Blade"));
         stellarBlade = gameRepository.save(new Game("Stellar Blade", stellarBladeFranchise));
-        blindtest = blindtestRepository.save(new Blindtest("Test", 50, 5));
+        blindtest = blindtestRepository.save(new Blindtest("Test", 50, maxAttempts));
         listener = listenerRepository.save(new Listener("Nyx"));
 
         String[] names = { "Dawn", "Shaël", "Raven", "Democrawler" };
@@ -113,9 +117,10 @@ public class BlindtestPlayerTests {
     void correctGuessScoresAndAdvances() {
         setUp(2);
 
-        Optional<Track> revealed = blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId(), null);
+        GuessResult result = blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId(), null);
 
-        assertEquals(dawn, revealed.orElseThrow());
+        assertTrue(result.correct());
+        assertEquals(dawn, result.revealed().orElseThrow());
         assertEquals(1, score().getGoodAnswers());
         assertEquals(0, score().getBonusAnswers());
         assertEquals(1, score().getTracksHeard());
@@ -123,12 +128,13 @@ public class BlindtestPlayerTests {
     }
 
     @Test
-    void wrongGuessChangesNothing() {
+    void wrongGuessChangesNothingWhenAttemptsRemain() {
         setUp(2);
 
-        Optional<Track> revealed = blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId() + 1000, null);
+        GuessResult result = blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId() + 1000, null);
 
-        assertTrue(revealed.isEmpty());
+        assertFalse(result.correct());
+        assertTrue(result.revealed().isEmpty());
         assertEquals(dawn, blindtestPlayer.currentTrack(blindtest.getId(), listener.getId()).orElseThrow());
     }
 
@@ -156,9 +162,10 @@ public class BlindtestPlayerTests {
     void correctFranchiseAwardsFranchisePointWithoutResolvingTheTrack() {
         setUp(2);
 
-        boolean correct = blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId());
+        GuessResult result = blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId());
 
-        assertTrue(correct);
+        assertTrue(result.correct());
+        assertTrue(result.revealed().isEmpty());
         assertEquals(1, score().getFranchiseAnswers());
         assertEquals(1, score().getTotalAttempts());
         assertEquals(1, score().getAttemptsUsedOnCurrentTrack());
@@ -170,9 +177,9 @@ public class BlindtestPlayerTests {
     void wrongFranchiseChangesNothingButCountsAsAnAttempt() {
         setUp(2);
 
-        boolean correct = blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId() + 1000);
+        GuessResult result = blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId() + 1000);
 
-        assertFalse(correct);
+        assertFalse(result.correct());
         assertEquals(0, score().getFranchiseAnswers());
         assertEquals(1, score().getTotalAttempts());
         assertEquals(1, score().getAttemptsUsedOnCurrentTrack());
@@ -187,6 +194,44 @@ public class BlindtestPlayerTests {
 
         assertEquals(1, score().getFranchiseAnswers());
         assertEquals(2, score().getTotalAttempts());
+    }
+
+    @Test
+    void exhaustingAttemptsOnWrongGuessesRevealsTheTrackLikeAPass() {
+        setUp(2, 2);
+
+        blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId() + 1000, null);
+        GuessResult result = blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId() + 1000, null);
+
+        assertFalse(result.correct());
+        assertEquals(dawn, result.revealed().orElseThrow());
+        assertEquals(0, score().getGoodAnswers());
+        assertEquals(1, score().getTracksHeard());
+        assertEquals(0, score().getAttemptsUsedOnCurrentTrack());
+        assertFalse(knowsDawn());
+    }
+
+    @Test
+    void exhaustingAttemptsOnFranchiseGuessesAlsoRevealsTheTrack() {
+        setUp(2, 1);
+
+        GuessResult result = blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId() + 1000);
+
+        assertFalse(result.correct());
+        assertEquals(dawn, result.revealed().orElseThrow());
+        assertEquals(1, score().getTracksHeard());
+        assertEquals(0, score().getAttemptsUsedOnCurrentTrack());
+    }
+
+    @Test
+    void attemptCountersResetOnTheNextTrack() {
+        setUp(2, 5);
+
+        blindtestPlayer.guessFranchise(blindtest.getId(), listener.getId(), stellarBladeFranchise.getId());
+        blindtestPlayer.guess(blindtest.getId(), listener.getId(), stellarBlade.getId(), null);
+
+        assertEquals(0, score().getAttemptsUsedOnCurrentTrack());
+        assertFalse(score().isFranchiseFoundOnCurrentTrack());
     }
 
     @Test

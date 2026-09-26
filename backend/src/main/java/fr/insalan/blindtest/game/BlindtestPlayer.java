@@ -57,9 +57,10 @@ public class BlindtestPlayer {
     }
 
     // Le joueur ne connaît que la franchise : point de franchise acquis une seule fois par musique
-    // (une deuxième soumission correcte ne compte pas deux fois), la musique n'est pas résolue pour autant.
+    // (une deuxième soumission correcte ne compte pas deux fois), la musique n'est révélée que si
+    // cette tentative épuise le quota d'essais (comme une réponse de jeu ratée, voir guess()).
     @Transactional
-    public boolean guessFranchise(Integer blindtestId, Integer listenerId, Integer franchiseId) {
+    public GuessResult guessFranchise(Integer blindtestId, Integer listenerId, Integer franchiseId) {
         BlindtestScore score = score(blindtestId, listenerId);
         Track track = trackAt(blindtestId, score.getTracksHeard());
 
@@ -70,32 +71,49 @@ public class BlindtestPlayer {
         }
         score.setTotalAttempts(score.getTotalAttempts() + 1);
         score.setAttemptsUsedOnCurrentTrack(score.getAttemptsUsedOnCurrentTrack() + 1);
+
+        Optional<Track> revealed = Optional.empty();
+        if (score.getAttemptsUsedOnCurrentTrack() >= score.getBlindtest().getMaxAttempts()) {
+            recordKnowledge(listenerId, track, false);
+            advanceToNextTrack(score);
+            revealed = Optional.of(track);
+        }
         blindtestScoreRepository.save(score);
-        return correct;
+        return new GuessResult(correct, revealed);
     }
 
     // Le joueur choisit un jeu (id) dans une liste, jamais du texte libre.
     // Bonne réponse : connaissance enregistrée, point marqué, musique suivante.
-    // Mauvaise réponse : rien ne change (nombre d'essais infini).
-    // En plus, s'il a aussi choisi la bonne musique (trackId, optionnel) : point bonus à part, sans effet sur goodAnswers.
+    // Mauvaise réponse : rien ne change, sauf si cette tentative épuise le quota d'essais du blindtest
+    // (partagé avec guessFranchise) : la musique est alors révélée comme non connue, comme un passe forcé.
+    // En plus d'une bonne réponse : s'il a aussi choisi la bonne musique (trackId, optionnel), point bonus à part.
     @Transactional
-    public Optional<Track> guess(Integer blindtestId, Integer listenerId, Integer gameId, Integer trackId) {
+    public GuessResult guess(Integer blindtestId, Integer listenerId, Integer gameId, Integer trackId) {
         BlindtestScore score = score(blindtestId, listenerId);
         Track track = trackAt(blindtestId, score.getTracksHeard());
 
         boolean correct = track.getGame().getId().equals(gameId);
-        if (!correct) {
-            return Optional.empty();
+        if (correct) {
+            recordKnowledge(listenerId, track, true);
+            score.setGoodAnswers(score.getGoodAnswers() + 1);
+            if (trackId != null && track.getId().equals(trackId)) {
+                score.setBonusAnswers(score.getBonusAnswers() + 1);
+            }
+            advanceToNextTrack(score);
+            blindtestScoreRepository.save(score);
+            return new GuessResult(true, Optional.of(track));
         }
 
-        recordKnowledge(listenerId, track, true);
-        score.setGoodAnswers(score.getGoodAnswers() + 1);
-        if (trackId != null && track.getId().equals(trackId)) {
-            score.setBonusAnswers(score.getBonusAnswers() + 1);
+        score.setTotalAttempts(score.getTotalAttempts() + 1);
+        score.setAttemptsUsedOnCurrentTrack(score.getAttemptsUsedOnCurrentTrack() + 1);
+        if (score.getAttemptsUsedOnCurrentTrack() >= score.getBlindtest().getMaxAttempts()) {
+            recordKnowledge(listenerId, track, false);
+            advanceToNextTrack(score);
+            blindtestScoreRepository.save(score);
+            return new GuessResult(false, Optional.of(track));
         }
-        score.setTracksHeard(score.getTracksHeard() + 1);
         blindtestScoreRepository.save(score);
-        return Optional.of(track);
+        return new GuessResult(false, Optional.empty());
     }
 
     // Le joueur passe : la musique est révélée et comptée comme non connue, mais compte quand même comme écoutée.
@@ -105,9 +123,16 @@ public class BlindtestPlayer {
         Track track = trackAt(blindtestId, score.getTracksHeard());
 
         recordKnowledge(listenerId, track, false);
-        score.setTracksHeard(score.getTracksHeard() + 1);
+        advanceToNextTrack(score);
         blindtestScoreRepository.save(score);
         return track;
+    }
+
+    // Avance à la musique suivante : remet à zéro les compteurs propres à la musique qui vient d'être résolue.
+    private void advanceToNextTrack(BlindtestScore score) {
+        score.setTracksHeard(score.getTracksHeard() + 1);
+        score.setAttemptsUsedOnCurrentTrack(0);
+        score.setFranchiseFoundOnCurrentTrack(false);
     }
 
     // "Je le savais" après un passe : corrige knowledge, sans toucher au score (déjà décompté par pass()).

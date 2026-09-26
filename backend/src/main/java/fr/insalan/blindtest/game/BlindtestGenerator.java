@@ -59,7 +59,8 @@ public class BlindtestGenerator {
         boolean matchAllTags,
         Integer maxPerGame,
         Integer maxPerFranchise,
-        GenerationStrategy strategy
+        GenerationStrategy strategy,
+        int maxAttempts
     ) {
         List<TrackWithRatio> candidates = eligibleTracks(tagIds == null ? List.of() : tagIds, matchAllTags);
         List<Integer> quotas = bandQuotas(bands, trackCount);
@@ -83,7 +84,7 @@ public class BlindtestGenerator {
 
         Collections.shuffle(picked);
 
-        Blindtest blindtest = blindtestRepository.save(new Blindtest(name, weightedAverageDifficulty(bands), 5));
+        Blindtest blindtest = blindtestRepository.save(new Blindtest(name, weightedAverageDifficulty(bands), maxAttempts));
         for (int position = 0; position < picked.size(); position++) {
             blindtestTrackRepository.save(new BlindtestTrack(blindtest, picked.get(position), position));
         }
