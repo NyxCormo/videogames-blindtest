@@ -43,4 +43,11 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
     Optional<Track> findByGameAndName(Game game, String name);
 
     List<Track> findByKhinsiderLinkIsNotNull();
+
+    @Query("""
+            SELECT t FROM Track t
+            WHERE t.audioLink IS NOT NULL
+            AND t.id NOT IN (SELECT k.track.id FROM Knowledge k WHERE k.listener.id = :listenerId)
+            """)
+    List<Track> findPlayableUnknownByListener(@Param("listenerId") Integer listenerId);
 }
