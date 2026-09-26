@@ -135,9 +135,7 @@ export function BlindtestPlayPage() {
         &middot; {session.attemptsRemaining} essai{session.attemptsRemaining > 1 ? 's' : ''} restant
         {session.attemptsRemaining > 1 ? 's' : ''}
       </p>
-      {/* ref-callback plutôt qu'une ref + un effet : "Suivant" démonte cette page pendant son
-          chargement (session repasse par null), donc l'élément est recréé à chaque musique. Une
-          ref-callback s'exécute à chaque création, un effet à dépendances vides une seule fois. */}
+
       <audio
         ref={(element) => {
           if (element) {
@@ -145,6 +143,7 @@ export function BlindtestPlayPage() {
           }
         }}
         controls
+        autoPlay
         src={session.audioLink ?? undefined}
         onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
       />
