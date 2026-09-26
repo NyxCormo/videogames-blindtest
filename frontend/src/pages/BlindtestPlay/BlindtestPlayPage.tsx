@@ -9,6 +9,7 @@ import {
   type BlindtestSession,
   type Reveal,
 } from '../../api/blindtests'
+import { loadStoredVolume, storeVolume } from '../../audioPreferences'
 import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import './BlindtestPlayPage.css'
@@ -134,7 +135,18 @@ export function BlindtestPlayPage() {
         &middot; {session.attemptsRemaining} essai{session.attemptsRemaining > 1 ? 's' : ''} restant
         {session.attemptsRemaining > 1 ? 's' : ''}
       </p>
-      <audio key={session.trackId} controls autoPlay src={session.audioLink ?? undefined} />
+
+      <audio
+        ref={(element) => {
+          if (element) {
+            element.volume = loadStoredVolume()
+          }
+        }}
+        controls
+        autoPlay
+        src={session.audioLink ?? undefined}
+        onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
+      />
 
       {reveal ? (
         <div className="reveal">
