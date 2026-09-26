@@ -7,6 +7,7 @@ import { BlindtestLeaderboardPage } from './pages/BlindtestLeaderboard/Blindtest
 import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
 import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
 import { DiscoverPage } from './pages/Discover/DiscoverPage'
+import { EnrichmentPage } from './pages/Enrichment/EnrichmentPage'
 import { KnowledgePage } from './pages/Knowledge/KnowledgePage'
 import { KnowledgeListPage } from './pages/KnowledgeList/KnowledgeListPage'
 import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
@@ -21,6 +22,7 @@ function App() {
             <Link to="/">Musiques</Link>
             <Link to="/blindtests">Blindtests</Link>
             <Link to="/knowledge">Ma culture</Link>
+            <Link to="/enrichment">Enrichissement</Link>
           </div>
           <ListenerBanner />
         </nav>
@@ -35,6 +37,7 @@ function App() {
             <Route path="/knowledge" element={<KnowledgePage />} />
             <Route path="/knowledge/discover" element={<DiscoverPage />} />
             <Route path="/knowledge/list" element={<KnowledgeListPage />} />
+            <Route path="/enrichment" element={<EnrichmentPage />} />
           </Routes>
         </main>
       </BrowserRouter>

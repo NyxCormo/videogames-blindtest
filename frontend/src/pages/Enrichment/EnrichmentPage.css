@@ -1,0 +1,41 @@
+.enrichment-tree {
+  margin-top: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.enrichment-franchise {
+  border-top: 2px solid var(--border);
+}
+
+.enrichment-franchise > summary {
+  padding: 0.5rem 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.enrichment-games {
+  padding-left: 1.5rem;
+}
+
+.enrichment-game {
+  border-top: 1px solid var(--border);
+  border-left: 2px solid var(--border);
+  padding-left: 0.75rem;
+}
+
+.enrichment-game > summary {
+  padding: 0.4rem 0;
+  cursor: pointer;
+}
+
+.enrichment-tracks {
+  list-style: none;
+  margin: 0;
+  padding: 0.2rem 0 0.4rem 1.5rem;
+  border-left: 2px solid var(--border);
+}
+
+.enrichment-tracks li {
+  padding: 0.15rem 0;
+  color: var(--muted);
+}
