@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import fr.insalan.blindtest.dto.DiscoverTrackResponse;
 import fr.insalan.blindtest.dto.KnowledgeEntryResponse;
 import fr.insalan.blindtest.model.Knowledge;
+import fr.insalan.blindtest.model.KnowledgeId;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
@@ -65,5 +67,11 @@ public class DiscoverController {
         Track track = trackRepository.findById(trackId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Musique inconnue"));
         knowledgeRepository.save(new Knowledge(listener, track, knows));
+    }
+
+    @DeleteMapping("/knowledge")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteKnowledge(@RequestParam Integer listenerId, @RequestParam Integer trackId) {
+        knowledgeRepository.findById(new KnowledgeId(listenerId, trackId)).ifPresent(knowledgeRepository::delete);
     }
 }

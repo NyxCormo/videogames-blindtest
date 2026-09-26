@@ -1,6 +1,7 @@
 package fr.insalan.blindtest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -193,5 +194,34 @@ class DiscoverControllerTests {
         mockMvc.perform(get("/api/discover/knowledge").param("listenerId", listener.getId().toString()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void deleteKnowledgeRemovesTheVote() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = playableTrack(game, "Dawn");
+        Listener listener = listeners.save(new Listener("Nyx"));
+        knowledge.save(new Knowledge(listener, dawn, true));
+
+        mockMvc.perform(delete("/api/discover/knowledge")
+                .param("listenerId", listener.getId().toString())
+                .param("trackId", dawn.getId().toString()))
+            .andExpect(status().isNoContent());
+
+        assertThat(knowledge.findById(new KnowledgeId(listener.getId(), dawn.getId()))).isEmpty();
+    }
+
+    @Test
+    void deletingAnUnknownVoteIsANoOp() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = playableTrack(game, "Dawn");
+        Listener listener = listeners.save(new Listener("Nyx"));
+
+        mockMvc.perform(delete("/api/discover/knowledge")
+                .param("listenerId", listener.getId().toString())
+                .param("trackId", dawn.getId().toString()))
+            .andExpect(status().isNoContent());
     }
 }
