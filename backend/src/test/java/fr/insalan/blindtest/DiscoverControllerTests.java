@@ -1,6 +1,8 @@
 package fr.insalan.blindtest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Knowledge;
+import fr.insalan.blindtest.model.KnowledgeId;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.FranchiseRepository;
@@ -73,6 +76,9 @@ class DiscoverControllerTests {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.trackId").value(dawn.getId()))
             .andExpect(jsonPath("$.audioLink").value(dawn.getAudioLink()))
+            .andExpect(jsonPath("$.franchiseName").value("Stellar Blade"))
+            .andExpect(jsonPath("$.gameName").value("Stellar Blade"))
+            .andExpect(jsonPath("$.trackName").value("Dawn"))
             .andExpect(jsonPath("$.finished").value(false));
     }
 
@@ -125,5 +131,38 @@ class DiscoverControllerTests {
             .andExpect(jsonPath("$.finished").value(true))
             .andExpect(jsonPath("$.trackId").doesNotExist())
             .andExpect(jsonPath("$.audioLink").doesNotExist());
+    }
+
+    @Test
+    void setKnowledgeRecordsKnowsTrue() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = playableTrack(game, "Dawn");
+        Listener listener = listeners.save(new Listener("Nyx"));
+
+        mockMvc.perform(post("/api/discover/knowledge")
+                .param("listenerId", listener.getId().toString())
+                .param("trackId", dawn.getId().toString())
+                .param("knows", "true"))
+            .andExpect(status().isNoContent());
+
+        assertThat(knowledge.findById(new KnowledgeId(listener.getId(), dawn.getId())).orElseThrow().isKnows()).isTrue();
+    }
+
+    @Test
+    void setKnowledgeOverwritesAPreviousVote() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = playableTrack(game, "Dawn");
+        Listener listener = listeners.save(new Listener("Nyx"));
+        knowledge.save(new Knowledge(listener, dawn, true));
+
+        mockMvc.perform(post("/api/discover/knowledge")
+                .param("listenerId", listener.getId().toString())
+                .param("trackId", dawn.getId().toString())
+                .param("knows", "false"))
+            .andExpect(status().isNoContent());
+
+        assertThat(knowledge.findById(new KnowledgeId(listener.getId(), dawn.getId())).orElseThrow().isKnows()).isFalse();
     }
 }
