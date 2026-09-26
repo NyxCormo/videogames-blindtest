@@ -77,6 +77,7 @@ class DiscoverControllerTests {
             .andExpect(jsonPath("$.trackId").value(dawn.getId()))
             .andExpect(jsonPath("$.audioLink").value(dawn.getAudioLink()))
             .andExpect(jsonPath("$.franchiseName").value("Stellar Blade"))
+            .andExpect(jsonPath("$.gameId").value(game.getId()))
             .andExpect(jsonPath("$.gameName").value("Stellar Blade"))
             .andExpect(jsonPath("$.trackName").value("Dawn"))
             .andExpect(jsonPath("$.finished").value(false));
