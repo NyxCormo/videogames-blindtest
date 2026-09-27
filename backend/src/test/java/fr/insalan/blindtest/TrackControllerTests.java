@@ -224,7 +224,51 @@ class TrackControllerTests {
 	}
 
 	@Test
+	void rejectsAYoutubeLinkFromAnotherDomain() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = tracks.save(new Track("Dawn", game));
+		SetLinkRequest request = new SetLinkRequest("https://downloads.khinsider.com/pas-youtube");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/youtube-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+
+		assertThat(tracks.findById(dawn.getId()).orElseThrow().getYoutubeLink()).isNull();
+	}
+
+	@Test
+	void acceptsAShortYoutubeLink() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = tracks.save(new Track("Dawn", game));
+		SetLinkRequest request = new SetLinkRequest("https://youtu.be/exemple");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/youtube-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void rejectsAKhinsiderLinkFromAnotherDomain() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = tracks.save(new Track("Dawn", game));
+		SetLinkRequest request = new SetLinkRequest("https://www.youtube.com/watch?v=pas-khinsider");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/khinsider-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+
+		assertThat(tracks.findById(dawn.getId()).orElseThrow().getKhinsiderLink()).isNull();
+	}
+
+	@Test
 	void setsKhinsiderLinkAndResolvesTheAudioLinkImmediately() throws Exception {
+		// "khinsider.com" dans le chemin, pour passer la vérification de domaine sur ce serveur local de test.
 		HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
 		server.createContext("/audio", exchange -> {
 			byte[] bytes = "peu importe".getBytes(StandardCharsets.UTF_8);
@@ -232,7 +276,7 @@ class TrackControllerTests {
 			exchange.getResponseBody().write(bytes);
 			exchange.close();
 		});
-		server.createContext("/khinsider", exchange -> {
+		server.createContext("/khinsider.com/khinsider", exchange -> {
 			String audioUrl = "http://localhost:" + exchange.getLocalAddress().getPort() + "/audio";
 			byte[] bytes = ("<html><body><audio id=\"audio\" src=\"" + audioUrl + "\"></audio></body></html>")
 				.getBytes(StandardCharsets.UTF_8);
@@ -245,7 +289,7 @@ class TrackControllerTests {
 			Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
 			Game game = games.save(new Game("Stellar Blade", stellar));
 			Track dawn = tracks.save(new Track("Dawn", game));
-			String khinsiderUrl = "http://localhost:" + server.getAddress().getPort() + "/khinsider";
+			String khinsiderUrl = "http://localhost:" + server.getAddress().getPort() + "/khinsider.com/khinsider";
 			SetLinkRequest request = new SetLinkRequest(khinsiderUrl);
 
 			mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/khinsider-link")

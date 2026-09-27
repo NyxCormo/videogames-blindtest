@@ -95,6 +95,9 @@ public class TrackController {
     @PostMapping("/{id}/khinsider-link")
     public TrackResponse setKhinsiderLink(@PathVariable Integer id, @RequestBody SetLinkRequest request) {
         requireHttpLink(request.link());
+        if (!request.link().contains("khinsider.com")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le lien doit pointer vers khinsider.com");
+        }
         Track track = trackRepository.findByIdWithGameAndFranchise(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
         if (track.getKhinsiderLink() != null) {
@@ -113,6 +116,9 @@ public class TrackController {
     @PostMapping("/{id}/youtube-link")
     public TrackResponse setYoutubeLink(@PathVariable Integer id, @RequestBody SetLinkRequest request) {
         requireHttpLink(request.link());
+        if (!request.link().contains("youtube.com") && !request.link().contains("youtu.be")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le lien doit pointer vers youtube.com ou youtu.be");
+        }
         Track track = trackRepository.findByIdWithGameAndFranchise(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
         if (track.getYoutubeLink() != null) {
