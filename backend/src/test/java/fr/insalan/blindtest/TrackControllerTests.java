@@ -1,6 +1,8 @@
 package fr.insalan.blindtest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -9,9 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import tools.jackson.databind.ObjectMapper;
+
+import fr.insalan.blindtest.dto.CreateTrackRequest;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Track;
@@ -27,6 +33,9 @@ class TrackControllerTests {
 
 	@Autowired
 	MockMvc mockMvc;
+
+	@Autowired
+	ObjectMapper objectMapper;
 
 	@Autowired
 	FranchiseRepository franchises;
@@ -103,6 +112,49 @@ class TrackControllerTests {
 	void getReturnsNotFoundForAnUnknownTrack() throws Exception {
 		mockMvc.perform(get("/api/tracks/999999"))
 				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void createsANewTrackInAGame() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		CreateTrackRequest request = new CreateTrackRequest("Nouvelle musique", game.getId());
+
+		mockMvc.perform(post("/api/tracks")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.name").value("Nouvelle musique"))
+				.andExpect(jsonPath("$.gameId").value(game.getId()))
+				.andExpect(jsonPath("$.franchiseName").value("Stellar Blade"));
+
+		assertThat(tracks.findByGameAndName(game, "Nouvelle musique")).isPresent();
+	}
+
+	@Test
+	void reusesAnExistingTrackWithTheSameNameInTheSameGame() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track existing = tracks.save(new Track("Dawn", game));
+		CreateTrackRequest request = new CreateTrackRequest("Dawn", game.getId());
+
+		mockMvc.perform(post("/api/tracks")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").value(existing.getId()));
+
+		assertThat(tracks.count()).isEqualTo(1);
+	}
+
+	@Test
+	void rejectsAnUnknownGame() throws Exception {
+		CreateTrackRequest request = new CreateTrackRequest("Nouvelle musique", 999999);
+
+		mockMvc.perform(post("/api/tracks")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
 	}
 
 

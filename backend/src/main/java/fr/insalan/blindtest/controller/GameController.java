@@ -10,10 +10,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.dto.AddTagRequest;
+import fr.insalan.blindtest.dto.CreateGameRequest;
 import fr.insalan.blindtest.dto.GameResponse;
 import fr.insalan.blindtest.dto.TrackResponse;
+import fr.insalan.blindtest.model.Franchise;
+import fr.insalan.blindtest.model.Game;
+import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.tag.TagService;
@@ -24,11 +29,18 @@ public class GameController {
 
     private final GameRepository gameRepository;
     private final TrackRepository trackRepository;
+    private final FranchiseRepository franchiseRepository;
     private final TagService tagService;
 
-    public GameController(GameRepository gameRepository, TrackRepository trackRepository, TagService tagService) {
+    public GameController(
+        GameRepository gameRepository,
+        TrackRepository trackRepository,
+        FranchiseRepository franchiseRepository,
+        TagService tagService
+    ) {
         this.gameRepository = gameRepository;
         this.trackRepository = trackRepository;
+        this.franchiseRepository = franchiseRepository;
         this.tagService = tagService;
     }
 
@@ -38,6 +50,25 @@ public class GameController {
         return gameRepository.findAllWithFranchise().stream()
             .map(GameResponse::from)
             .toList();
+    }
+
+    // Retrouve le jeu s'il existe déjà dans cette franchise (même principe que l'import du Google Sheet), sinon le crée.
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public GameResponse create(@RequestBody CreateGameRequest request) {
+        if (request.name() == null || request.name().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
+        }
+        if (request.franchiseId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La franchise est obligatoire");
+        }
+        Franchise franchise = franchiseRepository.findById(request.franchiseId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Franchise inconnue"));
+        Game game = gameRepository.findByFranchiseAndName(franchise, request.name())
+            .orElseGet(() -> gameRepository.save(new Game(request.name(), franchise)));
+        // Un jeu déjà existant est relu par une requête fraîche (findByFranchiseAndName), sa franchise
+        // n'est donc pas forcément chargée : on la relit avec findByIdWithFranchise avant de répondre.
+        return GameResponse.from(gameRepository.findByIdWithFranchise(game.getId()).orElseThrow());
     }
 
     @GetMapping("/{id}/tracks")

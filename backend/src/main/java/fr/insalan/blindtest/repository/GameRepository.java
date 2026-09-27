@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
@@ -20,4 +21,12 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
             ORDER BY g.name
             """)
     List<Game> findAllWithFranchise();
+
+    // même chose que findAllWithFranchise, mais pour un seul jeu
+    @Query("""
+            SELECT g FROM Game g
+            JOIN FETCH g.franchise f
+            WHERE g.id = :id
+            """)
+    Optional<Game> findByIdWithFranchise(@Param("id") Integer id);
 }

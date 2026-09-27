@@ -14,30 +14,36 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.dto.AddTagRequest;
+import fr.insalan.blindtest.dto.CreateTrackRequest;
 import fr.insalan.blindtest.dto.TagResponse;
 import fr.insalan.blindtest.dto.TrackResponse;
+import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.model.TrackTag;
 import fr.insalan.blindtest.model.TrackTagId;
+import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 
-@RestController 
+@RestController
 @RequestMapping("/api/tracks")
 public class TrackController {
 
     private final TrackRepository trackRepository;
+    private final GameRepository gameRepository;
     private final TagRepository tagRepository;
     private final TrackTagRepository trackTagRepository;
 
     public TrackController(
         TrackRepository trackRepository,
+        GameRepository gameRepository,
         TagRepository tagRepository,
         TrackTagRepository trackTagRepository
     ) {
         this.trackRepository = trackRepository;
+        this.gameRepository = gameRepository;
         this.tagRepository = tagRepository;
         this.trackTagRepository = trackTagRepository;
     }
@@ -54,6 +60,25 @@ public class TrackController {
         return trackRepository.findByIdWithGameAndFranchise(id)
             .map(TrackResponse::from)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
+    }
+
+    // Retrouve la musique si elle existe déjà pour ce jeu (même principe que l'import du Google Sheet), sinon la crée.
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public TrackResponse create(@RequestBody CreateTrackRequest request) {
+        if (request.name() == null || request.name().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
+        }
+        if (request.gameId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le jeu est obligatoire");
+        }
+        Game game = gameRepository.findByIdWithFranchise(request.gameId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jeu inconnu"));
+        Track track = trackRepository.findByGameAndName(game, request.name())
+            .orElseGet(() -> trackRepository.save(new Track(request.name(), game)));
+        // Une musique déjà existante est relue par une requête fraîche (findByGameAndName), son jeu et
+        // sa franchise ne sont donc pas forcément chargés : on les relit avant de répondre.
+        return TrackResponse.from(trackRepository.findByIdWithGameAndFranchise(track.getId()).orElseThrow());
     }
 
     @GetMapping("/{id}/tags")

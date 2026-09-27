@@ -1,5 +1,6 @@
 package fr.insalan.blindtest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import fr.insalan.blindtest.dto.AddTagRequest;
+import fr.insalan.blindtest.dto.CreateGameRequest;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Tag;
@@ -141,5 +143,45 @@ class GameControllerTests {
 
         mockMvc.perform(get("/api/tracks/" + dawn.getId() + "/tags"))
             .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void createsANewGameInAFranchise() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        CreateGameRequest request = new CreateGameRequest("Nouveau jeu", franchise.getId());
+
+        mockMvc.perform(post("/api/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.name").value("Nouveau jeu"))
+            .andExpect(jsonPath("$.franchiseId").value(franchise.getId()));
+
+        assertThat(games.findByFranchiseAndName(franchise, "Nouveau jeu")).isPresent();
+    }
+
+    @Test
+    void reusesAnExistingGameWithTheSameNameInTheSameFranchise() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game existing = games.save(new Game("Stellar Blade", franchise));
+        CreateGameRequest request = new CreateGameRequest("Stellar Blade", franchise.getId());
+
+        mockMvc.perform(post("/api/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(existing.getId()));
+
+        assertThat(games.count()).isEqualTo(1);
+    }
+
+    @Test
+    void rejectsAnUnknownFranchise() throws Exception {
+        CreateGameRequest request = new CreateGameRequest("Nouveau jeu", 999999);
+
+        mockMvc.perform(post("/api/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
     }
 }
