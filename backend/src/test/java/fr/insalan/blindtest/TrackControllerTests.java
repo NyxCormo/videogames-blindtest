@@ -6,6 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +18,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.sun.net.httpserver.HttpServer;
 import tools.jackson.databind.ObjectMapper;
 
 import fr.insalan.blindtest.dto.CreateTrackRequest;
+import fr.insalan.blindtest.dto.SetLinkRequest;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Track;
@@ -157,5 +162,132 @@ class TrackControllerTests {
 				.andExpect(status().isBadRequest());
 	}
 
+	@Test
+	void setsYoutubeLink() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = tracks.save(new Track("Dawn", game));
+		SetLinkRequest request = new SetLinkRequest("https://www.youtube.com/watch?v=exemple");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/youtube-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.youtubeLink").value(request.link()));
+
+		assertThat(tracks.findById(dawn.getId()).orElseThrow().getYoutubeLink()).isEqualTo(request.link());
+	}
+
+	@Test
+	void rejectsOverwritingAnExistingYoutubeLink() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = new Track("Dawn", game);
+		dawn.setYoutubeLink("https://www.youtube.com/watch?v=ancien");
+		tracks.save(dawn);
+		SetLinkRequest request = new SetLinkRequest("https://www.youtube.com/watch?v=nouveau");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/youtube-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isConflict());
+
+		assertThat(tracks.findById(dawn.getId()).orElseThrow().getYoutubeLink()).isEqualTo("https://www.youtube.com/watch?v=ancien");
+	}
+
+	@Test
+	void rejectsABlankLink() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = tracks.save(new Track("Dawn", game));
+		SetLinkRequest request = new SetLinkRequest("  ");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/youtube-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void rejectsALinkThatIsNotHttps() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = tracks.save(new Track("Dawn", game));
+		SetLinkRequest request = new SetLinkRequest("javascript:alert(1)");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/youtube-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+
+		assertThat(tracks.findById(dawn.getId()).orElseThrow().getYoutubeLink()).isNull();
+	}
+
+	@Test
+	void setsKhinsiderLinkAndResolvesTheAudioLinkImmediately() throws Exception {
+		HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+		server.createContext("/audio", exchange -> {
+			byte[] bytes = "peu importe".getBytes(StandardCharsets.UTF_8);
+			exchange.sendResponseHeaders(200, bytes.length);
+			exchange.getResponseBody().write(bytes);
+			exchange.close();
+		});
+		server.createContext("/khinsider", exchange -> {
+			String audioUrl = "http://localhost:" + exchange.getLocalAddress().getPort() + "/audio";
+			byte[] bytes = ("<html><body><audio id=\"audio\" src=\"" + audioUrl + "\"></audio></body></html>")
+				.getBytes(StandardCharsets.UTF_8);
+			exchange.sendResponseHeaders(200, bytes.length);
+			exchange.getResponseBody().write(bytes);
+			exchange.close();
+		});
+		server.start();
+		try {
+			Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+			Game game = games.save(new Game("Stellar Blade", stellar));
+			Track dawn = tracks.save(new Track("Dawn", game));
+			String khinsiderUrl = "http://localhost:" + server.getAddress().getPort() + "/khinsider";
+			SetLinkRequest request = new SetLinkRequest(khinsiderUrl);
+
+			mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/khinsider-link")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.khinsiderLink").value(khinsiderUrl))
+					.andExpect(jsonPath("$.audioLink").value("http://localhost:" + server.getAddress().getPort() + "/audio"));
+
+			Track updated = tracks.findById(dawn.getId()).orElseThrow();
+			assertThat(updated.getKhinsiderLink()).isEqualTo(khinsiderUrl);
+			assertThat(updated.getAudioLink()).isNotNull();
+		} finally {
+			server.stop(0);
+		}
+	}
+
+	@Test
+	void rejectsOverwritingAnExistingKhinsiderLink() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = new Track("Dawn", game);
+		dawn.setKhinsiderLink("https://downloads.khinsider.com/ancien");
+		tracks.save(dawn);
+		SetLinkRequest request = new SetLinkRequest("https://downloads.khinsider.com/nouveau");
+
+		mockMvc.perform(post("/api/tracks/" + dawn.getId() + "/khinsider-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isConflict());
+
+		assertThat(tracks.findById(dawn.getId()).orElseThrow().getKhinsiderLink()).isEqualTo("https://downloads.khinsider.com/ancien");
+	}
+
+	@Test
+	void linkEndpointsReturnNotFoundForAnUnknownTrack() throws Exception {
+		SetLinkRequest request = new SetLinkRequest("https://downloads.khinsider.com/quelque-chose");
+
+		mockMvc.perform(post("/api/tracks/999999/khinsider-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isNotFound());
+	}
 
 }

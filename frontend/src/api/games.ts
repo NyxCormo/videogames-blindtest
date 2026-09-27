@@ -16,6 +16,19 @@ export async function fetchGames(signal?: AbortSignal): Promise<Game[]> {
   return response.json()
 }
 
+export async function createGame(name: string, franchiseId: number): Promise<Game> {
+  const response = await fetch('/api/games', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, franchiseId }),
+  })
+  if (!response.ok) {
+    const body = await response.json()
+    throw new Error(body.message ?? `Erreur ${response.status}`)
+  }
+  return response.json()
+}
+
 export async function fetchGameTracks(gameId: number, signal?: AbortSignal): Promise<Track[]> {
   const response = await fetch(`/api/games/${gameId}/tracks`, { signal })
   if (!response.ok) {

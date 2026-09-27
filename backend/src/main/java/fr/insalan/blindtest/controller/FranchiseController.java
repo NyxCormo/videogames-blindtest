@@ -16,9 +16,7 @@ import fr.insalan.blindtest.dto.FranchiseResponse;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 
-// Toutes les franchises, y compris celles sans jeu : la case "je sais juste la franchise" de la réponse
-// à un blindtest en a besoin comme leurres (demande de Clément, 26/09) — une franchise sans jeu ne peut
-// jamais être la bonne réponse, mais le joueur ne le sait pas, ce qui rend le hasard moins payant.
+// Inclut les franchises sans jeu, utilisées comme leurres dans la réponse à un blindtest.
 @RestController
 @RequestMapping("/api/franchises")
 public class FranchiseController {

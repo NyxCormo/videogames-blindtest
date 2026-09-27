@@ -1,6 +1,6 @@
 import type { Franchise } from '../../api/franchises'
 import type { Game } from '../../api/games'
-import type { Track } from '../../api/tracks'
+import { hasSource, type Track } from '../../api/tracks'
 
 // Normalzation : "Shaël" -> "shael"
 function normalize(text: string): string {
@@ -22,11 +22,17 @@ export function filterEnrichment(
   onlyFranchisesWithoutGames: boolean,
   onlyGamesWithoutTracks: boolean,
   maxTracksPerGame: number,
+  onlyTracksWithoutLinks: boolean,
 ): EnrichmentFranchise[] {
   const words = normalize(query).split(/\s+/).filter(Boolean)
-  const trackCountByGame = new Map<number, number>()
+  const tracksByGame = new Map<number, Track[]>()
   for (const track of tracks) {
-    trackCountByGame.set(track.gameId, (trackCountByGame.get(track.gameId) ?? 0) + 1)
+    const gameTracks = tracksByGame.get(track.gameId)
+    if (gameTracks) {
+      gameTracks.push(track)
+    } else {
+      tracksByGame.set(track.gameId, [track])
+    }
   }
 
   function matchesWords(text: string): boolean {
@@ -56,9 +62,12 @@ export function filterEnrichment(
     }
 
     const matchingGames = franchiseGames.filter((game) => {
-      const trackCount = trackCountByGame.get(game.id) ?? 0
-      if (onlyGamesWithoutTracks && trackCount !== 0) return false
-      if (trackCount > maxTracksPerGame) return false
+      const gameTracks = tracksByGame.get(game.id) ?? []
+      if (onlyGamesWithoutTracks) {
+        return gameTracks.length === 0 && matchesWords(`${franchise.name} ${game.name}`)
+      }
+      if (gameTracks.length > maxTracksPerGame) return false
+      if (onlyTracksWithoutLinks && !gameTracks.some((track) => !hasSource(track))) return false
       return matchesWords(`${franchise.name} ${game.name}`)
     })
 

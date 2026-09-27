@@ -24,7 +24,7 @@ const dawn: Track = {
   youtubeLink: null,
   audioLink: null,
 }
-const raven: Track = { ...dawn, id: 2, name: 'Raven' }
+const raven: Track = { ...dawn, id: 2, name: 'Raven', khinsiderLink: 'https://downloads.khinsider.com/raven' }
 const molgera: Track = { ...dawn, id: 3, name: 'Molgera', gameId: 3, gameName: 'Wind Waker' }
 const tracks = [dawn, raven, molgera]
 
@@ -33,8 +33,18 @@ function filter(
   onlyFranchisesWithoutGames = false,
   onlyGamesWithoutTracks = false,
   maxTracksPerGame = 25,
+  onlyTracksWithoutLinks = false,
 ) {
-  return filterEnrichment(franchises, games, tracks, query, onlyFranchisesWithoutGames, onlyGamesWithoutTracks, maxTracksPerGame)
+  return filterEnrichment(
+    franchises,
+    games,
+    tracks,
+    query,
+    onlyFranchisesWithoutGames,
+    onlyGamesWithoutTracks,
+    maxTracksPerGame,
+    onlyTracksWithoutLinks,
+  )
 }
 
 describe('filterEnrichment', () => {
@@ -66,5 +76,18 @@ describe('filterEnrichment', () => {
     expect(result.map((entry) => entry.franchise.name)).toEqual(['Stellar Blade', 'Zelda', 'Sans jeu'])
     expect(result[0].games).toEqual([gameNoTrack])
     expect(result[1].games).toEqual([gameOneTrack])
+  })
+
+  it('ne montre que les jeux ayant au moins une musique sans lien, sans cacher les franchises sans jeu', () => {
+    const result = filter('', false, false, 25, true)
+    expect(result.map((entry) => entry.franchise.name)).toEqual(['Stellar Blade', 'Zelda', 'Sans jeu'])
+    expect(result[0].games).toEqual([gameTwoTracks])
+    expect(result[1].games).toEqual([gameOneTrack])
+  })
+
+  it('ne cache pas les jeux sans musique quand "jeux sans musique" et "musiques sans lien" sont cochées ensemble', () => {
+    const result = filter('', false, true, 25, true)
+    expect(result.map((entry) => entry.franchise.name)).toEqual(['Stellar Blade', 'Sans jeu'])
+    expect(result[0].games).toEqual([gameNoTrack])
   })
 })

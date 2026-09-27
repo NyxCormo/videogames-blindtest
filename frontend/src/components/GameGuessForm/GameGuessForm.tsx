@@ -12,11 +12,7 @@ type Props = {
   disabled?: boolean
 }
 
-// Jeu (affiché avec sa franchise, pour les rares doublons de nom) puis musique (bonus, optionnelle) :
-// choisis dans une liste, jamais tapés en texte libre. Chemin de secours : valider juste la franchise
-// pour un point partiel quand on est bloqué, sans avoir à trouver le jeu exact. La liste de franchises
-// proposées est celle de toutes les franchises (même sans jeu) : ça sert de leurres, un joueur qui ne
-// connaît pas la bonne réponse ne peut pas deviner que certaines ne sont jamais la bonne réponse.
+// Les franchises proposées incluent celles sans jeu, utilisées comme leurres.
 export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = false }: Props) {
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)

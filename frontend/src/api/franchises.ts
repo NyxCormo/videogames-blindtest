@@ -11,3 +11,16 @@ export async function fetchFranchises(signal?: AbortSignal): Promise<Franchise[]
   }
   return response.json()
 }
+
+export async function createFranchise(name: string): Promise<Franchise> {
+  const response = await fetch('/api/franchises', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+  if (!response.ok) {
+    const body = await response.json()
+    throw new Error(body.message ?? `Erreur ${response.status}`)
+  }
+  return response.json()
+}
