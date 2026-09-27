@@ -30,6 +30,7 @@ export function EnrichmentPage() {
   const [addingYoutubeFor, setAddingYoutubeFor] = useState<number | null>(null)
   const [youtubeDraft, setYoutubeDraft] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
+  const [khinsiderFeedback, setKhinsiderFeedback] = useState<string | null>(null)
 
   function loadAll(signal?: AbortSignal) {
     return Promise.all([fetchFranchises(signal), fetchGames(signal), fetchTracks(signal)]).then(
@@ -122,10 +123,16 @@ export function EnrichmentPage() {
     const link = khinsiderDraft.trim()
     if (!link) return
     setCreateError(null)
+    setKhinsiderFeedback(null)
     addKhinsiderLink(trackId, link)
-      .then(() => {
+      .then((track) => {
         setKhinsiderDraft('')
         setAddingKhinsiderFor(null)
+        if (!track.audioLink) {
+          setKhinsiderFeedback(
+            "Lien ajouté, mais la musique n'est pas encore jouable : nouvelle tentative à la prochaine passe planifiée.",
+          )
+        }
         return loadAll()
       })
       .catch((err: Error) => setCreateError(err.message))
@@ -190,6 +197,7 @@ export function EnrichmentPage() {
         </button>
       )}
       {createError && <p role="alert">{createError}</p>}
+      {khinsiderFeedback && <p>{khinsiderFeedback}</p>}
 
       <div className="controls">
         <input
@@ -341,6 +349,7 @@ export function EnrichmentPage() {
                                 onStartAdding={() => {
                                   setAddingKhinsiderFor(track.id)
                                   setCreateError(null)
+                                  setKhinsiderFeedback(null)
                                 }}
                                 onDraftChange={setKhinsiderDraft}
                                 onCancel={() => {
