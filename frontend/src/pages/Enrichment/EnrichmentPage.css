@@ -1,3 +1,7 @@
+.enrichment-add-franchise {
+  margin-bottom: 1rem;
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -27,6 +31,10 @@
 }
 
 .enrichment-franchise > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   padding: 0.5rem 0;
   cursor: pointer;
   font-weight: 600;
@@ -43,6 +51,10 @@
 }
 
 .enrichment-game > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   padding: 0.4rem 0;
   cursor: pointer;
 }

@@ -61,6 +61,9 @@ export function EnrichmentPage() {
   return (
     <>
       <h1>Enrichissement</h1>
+      <button type="button" className="enrichment-add-franchise">
+        Ajouter une franchise
+      </button>
       <div className="controls">
         <input
           type="search"
@@ -105,7 +108,12 @@ export function EnrichmentPage() {
           return (
             <details key={franchise.id} className="enrichment-franchise" open>
               <summary>
-                {franchise.name} ({totalGames}) ({totalTracks})
+                <span>
+                  {franchise.name} ({totalGames}) ({totalTracks})
+                </span>
+                <button type="button" onClick={(event) => event.stopPropagation()}>
+                  Ajouter un jeu
+                </button>
               </summary>
               <div className="enrichment-games">
                 {franchiseGames.map((game) => {
@@ -113,7 +121,12 @@ export function EnrichmentPage() {
                   return (
                     <details key={game.id} className="enrichment-game">
                       <summary>
-                        {game.name} ({gameTracks.length})
+                        <span>
+                          {game.name} ({gameTracks.length})
+                        </span>
+                        <button type="button" onClick={(event) => event.stopPropagation()}>
+                          Ajouter une musique
+                        </button>
                       </summary>
                       <ul className="enrichment-tracks">
                         {gameTracks.map((track) => (
