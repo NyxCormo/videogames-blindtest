@@ -73,15 +73,14 @@ class FranchiseControllerTests {
     }
 
     @Test
-    void reusesAnExistingFranchiseWithTheSameName() throws Exception {
-        Franchise existing = franchises.save(new Franchise("Stellar Blade"));
+    void rejectsAFranchiseThatAlreadyExists() throws Exception {
+        franchises.save(new Franchise("Stellar Blade"));
         CreateFranchiseRequest request = new CreateFranchiseRequest("Stellar Blade");
 
         mockMvc.perform(post("/api/franchises")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").value(existing.getId()));
+            .andExpect(status().isConflict());
 
         assertThat(franchises.count()).isEqualTo(1);
     }

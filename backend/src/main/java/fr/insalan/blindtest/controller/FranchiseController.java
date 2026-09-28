@@ -34,15 +34,15 @@ public class FranchiseController {
             .toList();
     }
 
-    // Retrouve la franchise si son nom existe déjà (même principe que l'import du Google Sheet), sinon la crée.
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FranchiseResponse create(@RequestBody CreateFranchiseRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
         }
-        Franchise franchise = franchiseRepository.findByName(request.name())
-            .orElseGet(() -> franchiseRepository.save(new Franchise(request.name())));
-        return FranchiseResponse.from(franchise);
+        if (franchiseRepository.findByName(request.name()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La franchise « " + request.name() + " » existe déjà");
+        }
+        return FranchiseResponse.from(franchiseRepository.save(new Franchise(request.name())));
     }
 }

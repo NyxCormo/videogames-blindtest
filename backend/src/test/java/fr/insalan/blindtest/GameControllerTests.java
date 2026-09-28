@@ -161,16 +161,15 @@ class GameControllerTests {
     }
 
     @Test
-    void reusesAnExistingGameWithTheSameNameInTheSameFranchise() throws Exception {
+    void rejectsAGameThatAlreadyExistsInTheSameFranchise() throws Exception {
         Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
-        Game existing = games.save(new Game("Stellar Blade", franchise));
+        games.save(new Game("Stellar Blade", franchise));
         CreateGameRequest request = new CreateGameRequest("Stellar Blade", franchise.getId());
 
         mockMvc.perform(post("/api/games")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").value(existing.getId()));
+            .andExpect(status().isConflict());
 
         assertThat(games.count()).isEqualTo(1);
     }
