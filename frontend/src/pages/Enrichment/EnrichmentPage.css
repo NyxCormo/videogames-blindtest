@@ -1,0 +1,111 @@
+.enrichment-add-franchise {
+  margin-bottom: 1rem;
+}
+
+.enrichment-add-form {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+}
+
+.enrichment-add-form input {
+  flex: 1 1 16rem;
+  padding: 0.4rem;
+  font: inherit;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.controls input[type='search'] {
+  flex: 1 1 16rem;
+  padding: 0.5rem;
+  font: inherit;
+}
+
+.enrichment-slider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.enrichment-tree {
+  margin-top: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.enrichment-franchise {
+  border-top: 2px solid var(--border);
+}
+
+.enrichment-franchise > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.enrichment-games {
+  padding-left: 1.5rem;
+}
+
+.enrichment-game {
+  border-top: 1px solid var(--border);
+  border-left: 2px solid var(--border);
+  padding-left: 0.75rem;
+}
+
+.enrichment-game > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  cursor: pointer;
+}
+
+.enrichment-tracks {
+  list-style: none;
+  margin: 0;
+  padding: 0.2rem 0 0.4rem 1.5rem;
+  border-left: 2px solid var(--border);
+}
+
+.enrichment-tracks li {
+  padding: 0.15rem 0;
+  color: var(--muted);
+}
+
+.enrichment-tracks li:has(.enrichment-add-form) {
+  color: inherit;
+}
+
+.enrichment-track {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.enrichment-track-links {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.enrichment-badge {
+  display: inline-block;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: inherit;
+}

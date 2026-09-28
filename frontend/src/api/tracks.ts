@@ -20,6 +20,45 @@ export async function fetchTracks(signal?: AbortSignal): Promise<Track[]> {
   return response.json()
 }
 
+export async function createTrack(name: string, gameId: number): Promise<Track> {
+  const response = await fetch('/api/tracks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, gameId }),
+  })
+  if (!response.ok) {
+    const body = await response.json()
+    throw new Error(body.message ?? `Erreur ${response.status}`)
+  }
+  return response.json()
+}
+
+export async function addKhinsiderLink(id: number, link: string): Promise<Track> {
+  const response = await fetch(`/api/tracks/${id}/khinsider-link`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ link }),
+  })
+  if (!response.ok) {
+    const body = await response.json()
+    throw new Error(body.message ?? `Erreur ${response.status}`)
+  }
+  return response.json()
+}
+
+export async function addYoutubeLink(id: number, link: string): Promise<Track> {
+  const response = await fetch(`/api/tracks/${id}/youtube-link`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ link }),
+  })
+  if (!response.ok) {
+    const body = await response.json()
+    throw new Error(body.message ?? `Erreur ${response.status}`)
+  }
+  return response.json()
+}
+
 export function hasSource(track: Track): boolean {
   return track.khinsiderLink !== null || track.youtubeLink !== null
 }
