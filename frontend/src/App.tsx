@@ -12,6 +12,7 @@ import { KnowledgePage } from './pages/Knowledge/KnowledgePage'
 import { KnowledgeListPage } from './pages/KnowledgeList/KnowledgeListPage'
 import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
 import { TrackListPage } from './pages/TrackList/TrackListPage'
+import { TutorialPage } from './pages/Tutorial/TutorialPage'
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
             <Link to="/blindtests">Blindtests</Link>
             <Link to="/knowledge">Ma culture</Link>
             <Link to="/enrichment">Enrichissement</Link>
+            <Link to="/tutorial">Tutoriel</Link>
+            <a href="/api/export/sheet">Exporter en CSV</a>
           </div>
           <ListenerBanner />
         </nav>
@@ -38,6 +41,7 @@ function App() {
             <Route path="/knowledge/discover" element={<DiscoverPage />} />
             <Route path="/knowledge/list" element={<KnowledgeListPage />} />
             <Route path="/enrichment" element={<EnrichmentPage />} />
+            <Route path="/tutorial" element={<TutorialPage />} />
           </Routes>
         </main>
       </BrowserRouter>

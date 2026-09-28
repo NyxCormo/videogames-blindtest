@@ -1,0 +1,11 @@
+.tutorial {
+  max-width: 40rem;
+}
+
+.tutorial h2 {
+  margin-top: 2rem;
+}
+
+.tutorial p {
+  line-height: 1.5;
+}
