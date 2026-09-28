@@ -1,7 +1,9 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router'
 import './index.css'
 import { ListenerBanner } from './components/ListenerBanner/ListenerBanner'
+import { NotificationBanner } from './components/NotificationBanner/NotificationBanner'
 import { CurrentListenerProvider } from './context/CurrentListenerContext'
+import { NotificationProvider } from './context/NotificationContext'
 import { BlindtestCreatePage } from './pages/BlindtestCreate/BlindtestCreatePage'
 import { BlindtestLeaderboardPage } from './pages/BlindtestLeaderboard/BlindtestLeaderboardPage'
 import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
@@ -17,18 +19,22 @@ import { TutorialPage } from './pages/Tutorial/TutorialPage'
 function App() {
   return (
     <CurrentListenerProvider>
+      <NotificationProvider>
       <BrowserRouter>
-        <nav>
-          <div className="nav-links">
-            <Link to="/">Musiques</Link>
-            <Link to="/blindtests">Blindtests</Link>
-            <Link to="/knowledge">Ma culture</Link>
-            <Link to="/enrichment">Enrichissement</Link>
-            <Link to="/tutorial">Tutoriel</Link>
-            <a href="/api/export/sheet">Exporter en CSV</a>
-          </div>
-          <ListenerBanner />
-        </nav>
+        <header className="site-header">
+          <nav>
+            <div className="nav-links">
+              <Link to="/">Musiques</Link>
+              <Link to="/blindtests">Blindtests</Link>
+              <Link to="/knowledge">Ma culture</Link>
+              <Link to="/enrichment">Enrichissement</Link>
+              <Link to="/tutorial">Tutoriel</Link>
+              <a href="/api/export/sheet">Exporter en CSV</a>
+            </div>
+            <ListenerBanner />
+          </nav>
+          <NotificationBanner />
+        </header>
         <main>
           <Routes>
             <Route path="/" element={<TrackListPage />} />
@@ -45,6 +51,7 @@ function App() {
           </Routes>
         </main>
       </BrowserRouter>
+      </NotificationProvider>
     </CurrentListenerProvider>
   )
 }

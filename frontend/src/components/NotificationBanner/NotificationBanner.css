@@ -1,0 +1,30 @@
+.notification-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+}
+
+.notification-banner button {
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.notification-success {
+  background: color-mix(in srgb, #2e7d32 20%, Canvas);
+}
+
+.notification-warning {
+  background: color-mix(in srgb, #ed6c02 20%, Canvas);
+}
+
+.notification-error {
+  background: color-mix(in srgb, #d32f2f 20%, Canvas);
+}
