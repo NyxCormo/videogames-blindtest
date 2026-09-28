@@ -27,6 +27,7 @@ export function BlindtestPlayPage() {
   // Vrai quand la musique a été révélée sans que le jeu ait été trouvé : passe explicite ou essais épuisés.
   const [revealedAsUnknown, setRevealedAsUnknown] = useState(false)
   const [correctedKnowledge, setCorrectedKnowledge] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   function loadSession() {
     if (!listener) return
@@ -52,6 +53,7 @@ export function BlindtestPlayPage() {
   function handleGuess(gameId: number, trackId: number | null) {
     if (!listener) return
     setWrongGuess(false)
+    setSubmitting(true)
     submitGuess(blindtestId, listener.id, gameId, trackId).then((result) => {
       if (result.reveal) {
         setReveal(result.reveal)
@@ -62,11 +64,12 @@ export function BlindtestPlayPage() {
         setWrongGuess(true)
         refreshAttemptsRemaining()
       }
-    })
+    }).finally(() => setSubmitting(false))
   }
 
   function handleGuessFranchise(franchiseId: number): Promise<{ correct: boolean; revealed: boolean }> {
     if (!listener) return Promise.resolve({ correct: false, revealed: false })
+    setSubmitting(true)
     return submitGuessFranchise(blindtestId, listener.id, franchiseId).then((result) => {
       if (result.reveal) {
         setReveal(result.reveal)
@@ -77,17 +80,18 @@ export function BlindtestPlayPage() {
         refreshAttemptsRemaining()
       }
       return { correct: result.correct, revealed: result.reveal !== null }
-    })
+    }).finally(() => setSubmitting(false))
   }
 
   function handlePass() {
     if (!listener) return
+    setSubmitting(true)
     submitPass(blindtestId, listener.id).then((result) => {
       setReveal(result)
       setBonusCorrect(false)
       setRevealedAsUnknown(true)
       setCorrectedKnowledge(false)
-    })
+    }).finally(() => setSubmitting(false))
   }
 
   function handleKnowAnyway() {
@@ -170,6 +174,7 @@ export function BlindtestPlayPage() {
             onSubmit={handleGuess}
             onGuessFranchise={handleGuessFranchise}
             onPass={handlePass}
+            disabled={submitting}
           />
           {wrongGuess && <p role="alert">Ce n'est pas ça, réessaie.</p>}
         </>
