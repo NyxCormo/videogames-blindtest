@@ -62,10 +62,9 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 
 ### Enrichissement de l'appli
 - ~~Implémentation de la difficulté~~
-- Implémentation du système de vote
-- Création d'un système d'ajout de musiques
-- Amélioration du système d'ajout de musique pour permettre l'ajout en lot : choisir une franchise, un ou plusieurs jeux pour cette franchise, puis un nombre de musiques par jeu, ce qui fait apparaître automatiquement autant de lignes à remplir plutôt que d'ajouter les musiques une par une
-- Création d'un système de suggestion de jeux sans musique : proposer un jeu sans encore avoir de bande originale, et lister tous les jeux de la base avec leur nombre de musiques pour savoir où chercher de nouvelles musiques
+- ~~Implémentation du système de vote~~
+- ~~Création d'un système d'ajout de musiques~~
+- ~~Création d'un système de suggestion de jeux sans musique : proposer un jeu sans encore avoir de bande originale, et lister tous les jeux de la base avec leur nombre de musiques pour savoir où chercher de nouvelles musiques~~
 
 ### Pour aller plus loin
 - ~~Implémentation du système de tags~~
