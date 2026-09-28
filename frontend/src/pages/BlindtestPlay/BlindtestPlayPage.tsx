@@ -153,14 +153,15 @@ export function BlindtestPlayPage() {
       />
 
       {reveal ? (
-        <div className="reveal">
+        <div className={`reveal ${revealedAsUnknown ? 'reveal-failure' : 'reveal-success'}`}>
+          <p className="reveal-title">{revealedAsUnknown ? 'Musique révélée' : 'Bien joué !'}</p>
           <p>
             <strong>{reveal.franchiseName}</strong> — {reveal.gameName} — {reveal.trackName}
           </p>
           {bonusCorrect && <p className="bonus">+ bonus musique trouvée !</p>}
           {revealedAsUnknown && !correctedKnowledge && (
             <button type="button" onClick={handleKnowAnyway}>
-              Ah, je connais en fait
+              Je connais en fait
             </button>
           )}
           <button type="button" onClick={handleNext}>
