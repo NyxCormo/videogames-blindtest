@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { deleteKnowledge, fetchKnowledge, setKnowledge } from '../../api/discover'
 import { fetchTracks, type Track } from '../../api/tracks'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
+import { useNotification } from '../../context/NotificationContext'
 import { filterKnowledge, type VoteFilter } from './filterKnowledge'
 import './KnowledgeListPage.css'
 
 export function KnowledgeListPage() {
   const { listener } = useCurrentListener()
+  const { notify } = useNotification()
   const [tracks, setTracks] = useState<Track[] | null>(null)
   const [knowledge, setKnowledgeMap] = useState<Map<number, boolean>>(new Map())
   const [error, setError] = useState(false)
@@ -32,20 +34,30 @@ export function KnowledgeListPage() {
     [tracks, query, vote, knowledge],
   )
 
-  // Recliquer sur le vote déjà en place l'annule (retour à "pas encore votée") au lieu de le répéter.
-  function answer(trackId: number, knows: boolean) {
-    if (!listener) return
-    if (knowledge.get(trackId) === knows) {
-      setKnowledgeMap((previous) => {
-        const next = new Map(previous)
+  function updateVote(trackId: number, knows: boolean | undefined) {
+    setKnowledgeMap((current) => {
+      const next = new Map(current)
+      if (knows === undefined) {
         next.delete(trackId)
-        return next
-      })
-      deleteKnowledge(listener.id, trackId).catch(() => {})
-    } else {
-      setKnowledgeMap((previous) => new Map(previous).set(trackId, knows))
-      setKnowledge(listener.id, trackId, knows).catch(() => {})
-    }
+      } else {
+        next.set(trackId, knows)
+      }
+      return next
+    })
+  }
+
+  // Recliquer sur le vote déjà en place l'annule (retour à "pas encore votée") au lieu de le répéter.
+  function answer(track: Track, knows: boolean) {
+    if (!listener) return
+    const previous = knowledge.get(track.id)
+    const cancelling = previous === knows
+    updateVote(track.id, cancelling ? undefined : knows)
+    const request = cancelling ? deleteKnowledge(listener.id, track.id) : setKnowledge(listener.id, track.id, knows)
+    request.catch(() => {
+      // Le vote affiché doit rester celui du serveur.
+      updateVote(track.id, previous)
+      notify(`Ton vote pour « ${track.name} » n'a pas été enregistré.`, 'error')
+    })
   }
 
   if (!listener) {
@@ -99,10 +111,10 @@ export function KnowledgeListPage() {
                   <td>{track.name}</td>
                   <td>
                     <div className="knowledge-actions">
-                      <button type="button" aria-pressed={knows === true} onClick={() => answer(track.id, true)}>
+                      <button type="button" aria-pressed={knows === true} onClick={() => answer(track, true)}>
                         Oui
                       </button>
-                      <button type="button" aria-pressed={knows === false} onClick={() => answer(track.id, false)}>
+                      <button type="button" aria-pressed={knows === false} onClick={() => answer(track, false)}>
                         Non
                       </button>
                     </div>
