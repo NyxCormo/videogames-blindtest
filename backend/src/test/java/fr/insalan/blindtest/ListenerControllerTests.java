@@ -1,5 +1,6 @@
 package fr.insalan.blindtest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -61,6 +62,19 @@ class ListenerControllerTests {
 
         mockMvc.perform(get("/api/listeners").param("search", "Nyx"))
             .andExpect(jsonPath("$[0].name").value("Nyx"));
+    }
+
+    @Test
+    void rejectsANameThatAlreadyExistsIgnoringCase() throws Exception {
+        listeners.save(new Listener("Nyx"));
+        CreateListenerRequest request = new CreateListenerRequest("nyx");
+
+        mockMvc.perform(post("/api/listeners")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict());
+
+        assertThat(listeners.count()).isEqualTo(1);
     }
 
     @Test
