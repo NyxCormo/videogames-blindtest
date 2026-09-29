@@ -12,7 +12,6 @@ type Props = {
   disabled?: boolean
 }
 
-// Les franchises proposées incluent celles sans jeu, utilisées comme leurres.
 export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = false }: Props) {
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)
@@ -24,6 +23,7 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
   const [franchise, setFranchise] = useState<Franchise | null>(null)
   const [confirmedFranchise, setConfirmedFranchise] = useState<Franchise | null>(null)
   const [franchiseSubmitting, setFranchiseSubmitting] = useState(false)
+  const [franchiseWrong, setFranchiseWrong] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -77,12 +77,12 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
   function handleGuessFranchise() {
     if (!franchise) return
     setFranchiseSubmitting(true)
+    setFranchiseWrong(false)
     onGuessFranchise(franchise.id)
       .then(({ correct, revealed }) => {
-        // Si la musique vient d'être révélée (essais épuisés), ce composant va disparaître :
-        // pas la peine de mettre à jour un état local qui ne sera jamais affiché.
         if (!revealed) {
           setConfirmedFranchise(correct ? franchise : null)
+          setFranchiseWrong(!correct)
           setFranchise(null)
         }
       })
@@ -132,7 +132,7 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
         <div className="franchise-help">
           {!franchiseHelp ? (
             <button type="button" onClick={() => setFranchiseHelp(true)} disabled={disabled}>
-              Je sais juste la franchise
+              Je ne connais que la franchise
             </button>
           ) : (
             <label>
@@ -152,6 +152,7 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
                   </button>
                 )}
               </div>
+              {franchiseWrong && <p role="alert">Ce n'est pas la bonne franchise.</p>}
             </label>
           )}
         </div>
