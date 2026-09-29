@@ -1,5 +1,6 @@
 package fr.insalan.blindtest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -106,6 +107,21 @@ class TagControllerTests {
 
         mockMvc.perform(get("/api/tags/all"))
             .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void reusesExistingTagIgnoringCase() throws Exception {
+        TagType plateforme = tagTypes.findByName("plateforme").orElseThrow();
+        Tag pc = tags.save(new Tag("PC", plateforme));
+        CreateTagRequest request = new CreateTagRequest(plateforme.getId(), "pc");
+
+        mockMvc.perform(post("/api/tags")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(pc.getId()));
+
+        assertThat(tags.count()).isEqualTo(1);
     }
 
     @Test

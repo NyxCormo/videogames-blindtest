@@ -42,6 +42,12 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
 
     Optional<Track> findByGameAndName(Game game, String name);
 
+    boolean existsByGameAndNameIgnoreCase(Game game, String name);
+
+    Optional<Track> findFirstByKhinsiderLink(String khinsiderLink);
+
+    Optional<Track> findFirstByYoutubeLink(String youtubeLink);
+
     List<Track> findByKhinsiderLinkIsNotNull();
 
     @Query("""

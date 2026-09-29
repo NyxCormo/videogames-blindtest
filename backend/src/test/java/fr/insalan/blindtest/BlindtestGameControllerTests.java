@@ -257,6 +257,14 @@ class BlindtestGameControllerTests {
             .andExpect(jsonPath("$[1].franchiseAnswers").value(0));
     }
 
+    @Test
+    void sessionOfAnUnknownBlindtestReturnsNotFound() throws Exception {
+        Listener listener = listeners.save(new Listener("Nyx"));
+
+        mockMvc.perform(get("/api/blindtests/999999/session").param("listenerId", listener.getId().toString()))
+            .andExpect(status().isNotFound());
+    }
+
     private void assertKnowsDawn(Listener listener, Track dawn) {
         boolean knows = knowledge.findById(new KnowledgeId(listener.getId(), dawn.getId())).orElseThrow().isKnows();
         assertTrue(knows);

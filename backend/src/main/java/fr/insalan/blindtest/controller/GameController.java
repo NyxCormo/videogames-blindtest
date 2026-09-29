@@ -64,10 +64,11 @@ public class GameController {
         }
         Franchise franchise = franchiseRepository.findById(request.franchiseId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Franchise inconnue"));
-        if (gameRepository.findByFranchiseAndName(franchise, request.name()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le jeu « " + request.name() + " » existe déjà dans cette franchise");
+        String name = request.name().trim();
+        if (gameRepository.existsByFranchiseAndNameIgnoreCase(franchise, name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le jeu « " + name + " » existe déjà dans cette franchise");
         }
-        return GameResponse.from(gameRepository.save(new Game(request.name(), franchise)));
+        return GameResponse.from(gameRepository.save(new Game(name, franchise)));
     }
 
     @GetMapping("/{id}/tracks")
@@ -81,6 +82,10 @@ public class GameController {
     @PostMapping("/{id}/tags")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void applyTagToGame(@PathVariable Integer id, @RequestBody AddTagRequest request) {
-        tagService.applyToGame(request.tagId(), id);
+        try {
+            tagService.applyToGame(request.tagId(), id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 }

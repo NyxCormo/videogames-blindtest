@@ -13,7 +13,7 @@ import fr.insalan.blindtest.model.TagType;
 
 public interface TagRepository extends JpaRepository<Tag, Integer> {
 
-    Optional<Tag> findByTypeAndName(TagType type, String name);
+    Optional<Tag> findFirstByTypeAndNameIgnoreCase(TagType type, String name);
     
     @Query("""
             SELECT t FROM Tag t

@@ -42,7 +42,7 @@ public class TagService {
     public Tag create(Integer typeId, String tagName) {
         TagType type = tagTypeRepository.findById(typeId)
             .orElseThrow(() -> new IllegalArgumentException("Type de tag inconnu"));
-        return tagRepository.findByTypeAndName(type, tagName)
+        return tagRepository.findFirstByTypeAndNameIgnoreCase(type, tagName)
             .orElseGet(() -> tagRepository.save(new Tag(tagName, type)));
     }
 
@@ -62,7 +62,8 @@ public class TagService {
     // Idempotent : une musique qui a déjà le tag n'est pas touchée deux fois.
     @Transactional
     public void applyToGame(Integer tagId, Integer gameId) {
-        Tag tag = tagRepository.findById(tagId).orElseThrow();
+        Tag tag = tagRepository.findById(tagId)
+            .orElseThrow(() -> new IllegalArgumentException("Tag inconnu"));
         for (Track track : trackRepository.findByGameIdWithGameAndFranchise(gameId)) {
             TrackTagId trackTagId = new TrackTagId(track.getId(), tag.getId());
             if (!trackTagRepository.existsById(trackTagId)) {

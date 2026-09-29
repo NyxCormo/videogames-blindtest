@@ -152,6 +152,21 @@ class TrackControllerTests {
 	}
 
 	@Test
+	void rejectsATrackThatDiffersOnlyByCase() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		tracks.save(new Track("Dawn", game));
+		CreateTrackRequest request = new CreateTrackRequest("dawn", game.getId());
+
+		mockMvc.perform(post("/api/tracks")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isConflict());
+
+		assertThat(tracks.count()).isEqualTo(1);
+	}
+
+	@Test
 	void rejectsAnUnknownGame() throws Exception {
 		CreateTrackRequest request = new CreateTrackRequest("Nouvelle musique", 999999);
 
@@ -321,6 +336,42 @@ class TrackControllerTests {
 				.andExpect(status().isConflict());
 
 		assertThat(tracks.findById(dawn.getId()).orElseThrow().getKhinsiderLink()).isEqualTo("https://downloads.khinsider.com/ancien");
+	}
+
+	@Test
+	void rejectsAYoutubeLinkAlreadyUsedByAnotherTrack() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = new Track("Dawn", game);
+		dawn.setYoutubeLink("https://www.youtube.com/watch?v=exemple");
+		tracks.save(dawn);
+		Track raven = tracks.save(new Track("Raven", game));
+		SetLinkRequest request = new SetLinkRequest("https://www.youtube.com/watch?v=exemple");
+
+		mockMvc.perform(post("/api/tracks/" + raven.getId() + "/youtube-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isConflict());
+
+		assertThat(tracks.findById(raven.getId()).orElseThrow().getYoutubeLink()).isNull();
+	}
+
+	@Test
+	void rejectsAKhinsiderLinkAlreadyUsedByAnotherTrack() throws Exception {
+		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
+		Game game = games.save(new Game("Stellar Blade", stellar));
+		Track dawn = new Track("Dawn", game);
+		dawn.setKhinsiderLink("https://downloads.khinsider.com/dawn");
+		tracks.save(dawn);
+		Track raven = tracks.save(new Track("Raven", game));
+		SetLinkRequest request = new SetLinkRequest("https://downloads.khinsider.com/dawn");
+
+		mockMvc.perform(post("/api/tracks/" + raven.getId() + "/khinsider-link")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isConflict());
+
+		assertThat(tracks.findById(raven.getId()).orElseThrow().getKhinsiderLink()).isNull();
 	}
 
 	@Test

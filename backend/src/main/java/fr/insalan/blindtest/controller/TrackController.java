@@ -2,6 +2,7 @@ package fr.insalan.blindtest.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,10 +85,11 @@ public class TrackController {
         }
         Game game = gameRepository.findByIdWithFranchise(request.gameId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jeu inconnu"));
-        if (trackRepository.findByGameAndName(game, request.name()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique « " + request.name() + " » existe déjà dans ce jeu");
+        String name = request.name().trim();
+        if (trackRepository.existsByGameAndNameIgnoreCase(game, name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique « " + name + " » existe déjà dans ce jeu");
         }
-        return TrackResponse.from(trackRepository.save(new Track(request.name(), game)));
+        return TrackResponse.from(trackRepository.save(new Track(name, game)));
     }
 
     // Refuse d'écraser un lien déjà présent : la correction d'un lien existant sera réservée à un futur panneau admin.
@@ -101,6 +103,10 @@ public class TrackController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
         if (track.getKhinsiderLink() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un lien KHInsider existe déjà pour cette musique");
+        }
+        Optional<Track> other = trackRepository.findFirstByKhinsiderLink(request.link());
+        if (other.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce lien est déjà utilisé par la musique « " + other.get().getName() + " »");
         }
         track.setKhinsiderLink(request.link());
         trackRepository.save(track);
@@ -122,6 +128,10 @@ public class TrackController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
         if (track.getYoutubeLink() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un lien YouTube existe déjà pour cette musique");
+        }
+        Optional<Track> other = trackRepository.findFirstByYoutubeLink(request.link());
+        if (other.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce lien est déjà utilisé par la musique « " + other.get().getName() + " »");
         }
         track.setYoutubeLink(request.link());
         trackRepository.save(track);
@@ -153,8 +163,10 @@ public class TrackController {
         if (trackTagRepository.existsById(trackTagId)) {
             return;
         }
-        Track track = trackRepository.findById(id).orElseThrow();
-        Tag tag = tagRepository.findById(request.tagId()).orElseThrow();
+        Track track = trackRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
+        Tag tag = tagRepository.findById(request.tagId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag inconnu"));
         trackTagRepository.save(new TrackTag(track, tag));
     }
 

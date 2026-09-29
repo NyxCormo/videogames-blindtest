@@ -48,7 +48,7 @@ public class TagController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom du tag est obligatoire");
         }
         try {
-            return TagResponse.from(tagService.create(request.typeId(), request.tagName()));
+            return TagResponse.from(tagService.create(request.typeId(), request.tagName().trim()));
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

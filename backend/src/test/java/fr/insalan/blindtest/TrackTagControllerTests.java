@@ -117,6 +117,17 @@ class TrackTagControllerTests {
     }
 
     @Test
+    void addingATagToAnUnknownTrackReturnsNotFound() throws Exception {
+        TagType genre = tagTypes.findByName("genre").orElseThrow();
+        Tag action = tags.save(new Tag("Action", genre));
+
+        mockMvc.perform(post("/api/tracks/999999/tags")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new AddTagRequest(action.getId()))))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
     void removingAnAbsentTagDoesNotFail() throws Exception {
         Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
         Game game = games.save(new Game("Stellar Blade", franchise));

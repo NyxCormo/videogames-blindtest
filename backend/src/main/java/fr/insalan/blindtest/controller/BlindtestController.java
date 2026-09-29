@@ -143,7 +143,8 @@ public class BlindtestController {
         long totalTracks = blindtestTrackRepository.countByIdBlindtestId(id);
         // findById plutôt que score.getBlindtest() : cette association Lazy n'est plus valide une fois
         // sortis de la transaction de blindtestPlayer.score(), la charger ici lèverait une LazyInitializationException.
-        Blindtest blindtest = blindtestRepository.findById(id).orElseThrow();
+        Blindtest blindtest = blindtestRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blindtest introuvable"));
 
         return new BlindtestSessionResponse(
             current.map(Track::getId).orElse(null),
