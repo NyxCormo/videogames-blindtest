@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { createFranchise, fetchFranchises, type Franchise } from '../../api/franchises'
 import { createGame, fetchGames, type Game } from '../../api/games'
 import { addKhinsiderLink, addYoutubeLink, createTrack, fetchTracks, type Track } from '../../api/tracks'
+import { useNotification } from '../../context/NotificationContext'
 import { filterEnrichment } from './filterEnrichment'
 import { TrackLinkControl } from './TrackLinkControl'
 import './EnrichmentPage.css'
@@ -9,6 +10,7 @@ import './EnrichmentPage.css'
 const MAX_TRACKS_PER_GAME = 25
 
 export function EnrichmentPage() {
+  const { notify } = useNotification()
   const [franchises, setFranchises] = useState<Franchise[] | null>(null)
   const [games, setGames] = useState<Game[]>([])
   const [tracks, setTracks] = useState<Track[]>([])
@@ -29,8 +31,6 @@ export function EnrichmentPage() {
   const [khinsiderDraft, setKhinsiderDraft] = useState('')
   const [addingYoutubeFor, setAddingYoutubeFor] = useState<number | null>(null)
   const [youtubeDraft, setYoutubeDraft] = useState('')
-  const [createError, setCreateError] = useState<string | null>(null)
-  const [khinsiderFeedback, setKhinsiderFeedback] = useState<string | null>(null)
 
   function loadAll(signal?: AbortSignal) {
     return Promise.all([fetchFranchises(signal), fetchGames(signal), fetchTracks(signal)]).then(
@@ -80,76 +80,77 @@ export function EnrichmentPage() {
     event.preventDefault()
     const name = franchiseDraft.trim()
     if (!name) return
-    setCreateError(null)
     createFranchise(name)
       .then(() => {
         setFranchiseDraft('')
         setAddingFranchise(false)
+        notify(`Franchise « ${name} » ajoutée.`, 'success')
         return loadAll()
       })
-      .catch((err: Error) => setCreateError(err.message))
+      .catch((err: Error) => notify(err.message, 'error'))
   }
 
   function submitNewGame(event: FormEvent, franchiseId: number) {
     event.preventDefault()
     const name = gameDraft.trim()
     if (!name) return
-    setCreateError(null)
     createGame(name, franchiseId)
       .then(() => {
         setGameDraft('')
         setAddingGameFor(null)
+        notify(`Jeu « ${name} » ajouté.`, 'success')
         return loadAll()
       })
-      .catch((err: Error) => setCreateError(err.message))
+      .catch((err: Error) => notify(err.message, 'error'))
   }
 
   function submitNewTrack(event: FormEvent, gameId: number) {
     event.preventDefault()
     const name = trackDraft.trim()
     if (!name) return
-    setCreateError(null)
     createTrack(name, gameId)
       .then(() => {
         setTrackDraft('')
         setAddingTrackFor(null)
+        notify(`Musique « ${name} » ajoutée.`, 'success')
         return loadAll()
       })
-      .catch((err: Error) => setCreateError(err.message))
+      .catch((err: Error) => notify(err.message, 'error'))
   }
 
   function submitKhinsiderLink(event: FormEvent, trackId: number) {
     event.preventDefault()
     const link = khinsiderDraft.trim()
     if (!link) return
-    setCreateError(null)
-    setKhinsiderFeedback(null)
     addKhinsiderLink(trackId, link)
       .then((track) => {
         setKhinsiderDraft('')
         setAddingKhinsiderFor(null)
-        if (!track.audioLink) {
-          setKhinsiderFeedback(
-            "Lien ajouté, mais la musique n'est pas encore jouable : nouvelle tentative à la prochaine passe planifiée.",
+        if (track.audioLink) {
+          notify(`Lien KHInsider ajouté à « ${track.name} ».`, 'success')
+        } else {
+          notify(
+            `Lien KHInsider ajouté à « ${track.name} », mais la musique n'est pas encore jouable : nouvelle tentative à la prochaine passe planifiée.`,
+            'warning',
           )
         }
         return loadAll()
       })
-      .catch((err: Error) => setCreateError(err.message))
+      .catch((err: Error) => notify(err.message, 'error'))
   }
 
   function submitYoutubeLink(event: FormEvent, trackId: number) {
     event.preventDefault()
     const link = youtubeDraft.trim()
     if (!link) return
-    setCreateError(null)
     addYoutubeLink(trackId, link)
-      .then(() => {
+      .then((track) => {
         setYoutubeDraft('')
         setAddingYoutubeFor(null)
+        notify(`Lien YouTube ajouté à « ${track.name} ».`, 'success')
         return loadAll()
       })
-      .catch((err: Error) => setCreateError(err.message))
+      .catch((err: Error) => notify(err.message, 'error'))
   }
 
   if (error) {
@@ -188,16 +189,11 @@ export function EnrichmentPage() {
         <button
           type="button"
           className="enrichment-add-franchise"
-          onClick={() => {
-            setAddingFranchise(true)
-            setCreateError(null)
-          }}
+          onClick={() => setAddingFranchise(true)}
         >
           Ajouter une franchise
         </button>
       )}
-      {createError && <p role="alert">{createError}</p>}
-      {khinsiderFeedback && <p>{khinsiderFeedback}</p>}
 
       <div className="controls">
         <input
@@ -263,7 +259,6 @@ export function EnrichmentPage() {
                     event.stopPropagation()
                     event.currentTarget.closest('details')!.open = true
                     setAddingGameFor(franchise.id)
-                    setCreateError(null)
                   }}
                 >
                   Ajouter un jeu
@@ -306,7 +301,6 @@ export function EnrichmentPage() {
                             event.stopPropagation()
                             event.currentTarget.closest('details')!.open = true
                             setAddingTrackFor(game.id)
-                            setCreateError(null)
                           }}
                         >
                           Ajouter une musique
@@ -346,11 +340,7 @@ export function EnrichmentPage() {
                                 kind="khinsider"
                                 addingFor={addingKhinsiderFor}
                                 draft={khinsiderDraft}
-                                onStartAdding={() => {
-                                  setAddingKhinsiderFor(track.id)
-                                  setCreateError(null)
-                                  setKhinsiderFeedback(null)
-                                }}
+                                onStartAdding={() => setAddingKhinsiderFor(track.id)}
                                 onDraftChange={setKhinsiderDraft}
                                 onCancel={() => {
                                   setAddingKhinsiderFor(null)
@@ -363,10 +353,7 @@ export function EnrichmentPage() {
                                 kind="youtube"
                                 addingFor={addingYoutubeFor}
                                 draft={youtubeDraft}
-                                onStartAdding={() => {
-                                  setAddingYoutubeFor(track.id)
-                                  setCreateError(null)
-                                }}
+                                onStartAdding={() => setAddingYoutubeFor(track.id)}
                                 onDraftChange={setYoutubeDraft}
                                 onCancel={() => {
                                   setAddingYoutubeFor(null)

@@ -84,11 +84,10 @@ public class TrackController {
         }
         Game game = gameRepository.findByIdWithFranchise(request.gameId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jeu inconnu"));
-        Track track = trackRepository.findByGameAndName(game, request.name())
-            .orElseGet(() -> trackRepository.save(new Track(request.name(), game)));
-        // Une musique déjà existante est relue par une requête fraîche (findByGameAndName), son jeu et
-        // sa franchise ne sont donc pas forcément chargés : on les relit avant de répondre.
-        return TrackResponse.from(trackRepository.findByIdWithGameAndFranchise(track.getId()).orElseThrow());
+        if (trackRepository.findByGameAndName(game, request.name()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique « " + request.name() + " » existe déjà dans ce jeu");
+        }
+        return TrackResponse.from(trackRepository.save(new Track(request.name(), game)));
     }
 
     // Refuse d'écraser un lien déjà présent : la correction d'un lien existant sera réservée à un futur panneau admin.

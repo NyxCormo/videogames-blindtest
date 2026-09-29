@@ -3,6 +3,7 @@ import { fetchNextTrack, setKnowledge, type DiscoverTrack } from '../../api/disc
 import { fetchGames, type Game } from '../../api/games'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
+import { useNotification } from '../../context/NotificationContext'
 import './DiscoverPage.css'
 
 const SHOW_NAMES_KEY = 'blindtest.discoverShowNames'
@@ -25,6 +26,7 @@ function storeShowNames(value: boolean): void {
 
 export function DiscoverPage() {
   const { listener } = useCurrentListener()
+  const { notify } = useNotification()
   const [track, setTrack] = useState<DiscoverTrack | null>(null)
   const [error, setError] = useState(false)
   const [showNames, setShowNames] = useState(loadShowNames)
@@ -61,9 +63,16 @@ export function DiscoverPage() {
     storeShowNames(next)
   }
 
+  function saveVote(trackId: number, knows: boolean) {
+    if (!listener) return
+    setKnowledge(listener.id, trackId, knows).catch(() =>
+      notify("Ton vote n'a pas été enregistré : cette musique te sera reproposée plus tard.", 'error'),
+    )
+  }
+
   function answer(knows: boolean) {
     if (!listener || track === null || track.trackId === null) return
-    setKnowledge(listener.id, track.trackId, knows).catch(() => {})
+    saveVote(track.trackId, knows)
     if (showNames) {
       loadNext()
     } else {
@@ -75,7 +84,7 @@ export function DiscoverPage() {
     if (!listener || track === null || track.trackId === null) return
     const correct = selected.id === track.gameId
     setGuessCorrect(correct)
-    setKnowledge(listener.id, track.trackId, correct).catch(() => {})
+    saveVote(track.trackId, correct)
     setRevealed(true)
   }
 

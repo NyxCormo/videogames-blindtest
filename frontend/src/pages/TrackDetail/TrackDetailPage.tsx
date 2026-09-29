@@ -4,6 +4,7 @@ import { applyTagToGame, fetchGameTracks } from '../../api/games'
 import { fetchAllTags, fetchMostUsedTags, type Tag, type TagUsage } from '../../api/tags'
 import { addTrackTag, fetchTrack, fetchTrackTags, removeTrackTag, type Track } from '../../api/tracks'
 import { TagPicker } from '../../components/TagPicker/TagPicker'
+import { useNotification } from '../../context/NotificationContext'
 import { filterTags } from './filterTags'
 import './TrackDetailPage.css'
 
@@ -13,6 +14,7 @@ const GAME_LEVEL_TYPES = ['genre', 'plateforme']
 export function TrackDetailPage() {
     const { id } = useParams()
     const trackId = Number(id)
+    const { notify } = useNotification()
 
     const [track, setTrack] = useState<Track | null>(null)
     const [tags, setTags] = useState<Tag[] | null>(null)
@@ -23,7 +25,6 @@ export function TrackDetailPage() {
     const [allTagsFilter, setAllTagsFilter] = useState('')
     const [gameTracks, setGameTracks] = useState<Track[] | null>(null)
     const [selectedTrackIds, setSelectedTrackIds] = useState<Set<number>>(new Set())
-    const [gameTagMessage, setGameTagMessage] = useState<string | null>(null)
 
     useEffect(() => {
         const controller = new AbortController()
@@ -61,20 +62,31 @@ export function TrackDetailPage() {
     function handleShowAllTags() {
         setShowAllTags(true)
         if (allTags === null) {
-            fetchAllTags().then(setAllTags)
+            fetchAllTags()
+                .then(setAllTags)
+                .catch(() => {
+                    setShowAllTags(false)
+                    notify('Impossible de charger la liste des tags.', 'error')
+                })
         }
     }
 
     function handleAdd(tag: Tag) {
-        addTrackTag(trackId, tag.id).then(() => {
-            setTags((current) => (current?.some((existing) => existing.id === tag.id) ? current : [...(current ?? []), tag]))
-        })
+        addTrackTag(trackId, tag.id)
+            .then(() => {
+                setTags((current) => (current?.some((existing) => existing.id === tag.id) ? current : [...(current ?? []), tag]))
+                notify(`Tag « ${tag.name} » ajouté.`, 'success')
+            })
+            .catch(() => notify(`Impossible d'ajouter le tag « ${tag.name} ».`, 'error'))
     }
 
-    function handleRemove(tagId: number) {
-        removeTrackTag(trackId, tagId).then(() => {
-            setTags((current) => current?.filter((tag) => tag.id !== tagId) ?? null)
-        })
+    function handleRemove(tag: Tag) {
+        removeTrackTag(trackId, tag.id)
+            .then(() => {
+                setTags((current) => current?.filter((existing) => existing.id !== tag.id) ?? null)
+                notify(`Tag « ${tag.name} » retiré.`, 'success')
+            })
+            .catch(() => notify(`Impossible de retirer le tag « ${tag.name} ».`, 'error'))
     }
 
     if (error) {
@@ -92,9 +104,9 @@ export function TrackDetailPage() {
         if (!window.confirm(`Ajouter le tag « ${tag.name} » à toutes les musiques de ce jeu ?`)) {
             return
         }
-        applyTagToGame(gameId, tag.id).then(() => {
-            setGameTagMessage(`« ${tag.name} » ajouté à toutes les musiques du jeu.`)
-        })
+        applyTagToGame(gameId, tag.id)
+            .then(() => notify(`« ${tag.name} » ajouté à toutes les musiques du jeu.`, 'success'))
+            .catch(() => notify(`Impossible d'ajouter « ${tag.name} » aux musiques du jeu.`, 'error'))
     }
 
     function toggleTrackSelection(id: number) {
@@ -111,7 +123,10 @@ export function TrackDetailPage() {
 
     function handlePushTag(tag: Tag) {
         if (selectedTrackIds.size === 0) return
+        const count = selectedTrackIds.size
         Promise.all([...selectedTrackIds].map((selectedId) => addTrackTag(selectedId, tag.id)))
+            .then(() => notify(`« ${tag.name} » ajouté à ${count} musique${count > 1 ? 's' : ''}.`, 'success'))
+            .catch(() => notify(`« ${tag.name} » n'a pas pu être ajouté à toutes les musiques sélectionnées.`, 'error'))
     }
 
     function toggleSelectAll() {
@@ -131,7 +146,6 @@ export function TrackDetailPage() {
 
             <h2>Tags</h2>
             {tags.length === 0 && <p>Aucun tag pour l'instant.</p>}
-            {gameTagMessage && <p>{gameTagMessage}</p>}
             <ul className="tag-list">
                 {tags.map((tag) => (
                     <li key={tag.id}>
@@ -144,7 +158,7 @@ export function TrackDetailPage() {
                                     Appliquer au jeu
                                 </button>
                             )}
-                            <button type="button" onClick={() => handleRemove(tag.id)}>
+                            <button type="button" onClick={() => handleRemove(tag)}>
                                 Retirer
                             </button>
                         </div>

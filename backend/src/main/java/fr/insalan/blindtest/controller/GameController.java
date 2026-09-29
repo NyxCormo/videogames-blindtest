@@ -64,11 +64,10 @@ public class GameController {
         }
         Franchise franchise = franchiseRepository.findById(request.franchiseId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Franchise inconnue"));
-        Game game = gameRepository.findByFranchiseAndName(franchise, request.name())
-            .orElseGet(() -> gameRepository.save(new Game(request.name(), franchise)));
-        // Un jeu déjà existant est relu par une requête fraîche (findByFranchiseAndName), sa franchise
-        // n'est donc pas forcément chargée : on la relit avec findByIdWithFranchise avant de répondre.
-        return GameResponse.from(gameRepository.findByIdWithFranchise(game.getId()).orElseThrow());
+        if (gameRepository.findByFranchiseAndName(franchise, request.name()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le jeu « " + request.name() + " » existe déjà dans cette franchise");
+        }
+        return GameResponse.from(gameRepository.save(new Game(request.name(), franchise)));
     }
 
     @GetMapping("/{id}/tracks")

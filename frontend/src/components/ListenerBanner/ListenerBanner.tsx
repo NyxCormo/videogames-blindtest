@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { createListener, searchListeners, type Listener } from '../../api/listeners'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
+import { useNotification } from '../../context/NotificationContext'
 import './ListenerBanner.css'
 
 export function ListenerBanner() {
   const { listener, connect, disconnect } = useCurrentListener()
+  const { notify } = useNotification()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Listener[]>([])
@@ -38,9 +40,11 @@ export function ListenerBanner() {
   }
 
   function handleCreate() {
+    const name = query.trim()
     setCreating(true)
-    createListener(query.trim())
+    createListener(name)
       .then(select)
+      .catch(() => notify(`Impossible de créer le pseudo « ${name} ».`, 'error'))
       .finally(() => setCreating(false))
   }
 

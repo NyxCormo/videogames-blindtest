@@ -137,17 +137,16 @@ class TrackControllerTests {
 	}
 
 	@Test
-	void reusesAnExistingTrackWithTheSameNameInTheSameGame() throws Exception {
+	void rejectsATrackThatAlreadyExistsInTheSameGame() throws Exception {
 		Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
 		Game game = games.save(new Game("Stellar Blade", stellar));
-		Track existing = tracks.save(new Track("Dawn", game));
+		tracks.save(new Track("Dawn", game));
 		CreateTrackRequest request = new CreateTrackRequest("Dawn", game.getId());
 
 		mockMvc.perform(post("/api/tracks")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(objectMapper.writeValueAsString(request)))
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.id").value(existing.getId()));
+				.andExpect(status().isConflict());
 
 		assertThat(tracks.count()).isEqualTo(1);
 	}
