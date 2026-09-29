@@ -4,60 +4,78 @@ export function TutorialPage() {
   return (
     <div className="tutorial">
       <h1>Tutoriel</h1>
-      <p>Un petit guide pour se repérer sur le site. Chaque section correspond à une page du menu.</p>
+      <p>
+        Ce guide présente les différentes pages du site, dans l'ordre du menu.
+        Si jamais vous avez des recommandations de trucs à modifier je ne demande que ça.
+      </p>
 
       <h2>Musiques</h2>
       <p>
-        La liste de toutes les musiques de la base, avec leur franchise et leur jeu. Une barre de recherche
-        filtre par franchise, jeu ou musique, et un menu déroulant permet de ne garder que celles qui ont
-        une source (KHInsider ou YouTube) ou au contraire aucune.
+        Cette page liste toutes les musiques de la base avec leur franchise et leur jeu. La barre de recherche
+        filtre par franchise, par jeu ou par musique. Le menu déroulant permet de n'afficher que les musiques
+        qui ont une source (KHInsider ou YouTube), ou celles qui n'en ont pas.
       </p>
       <p>
-        Le bouton ▶ à côté d'une musique ne s'affiche que si elle est vraiment jouable dans le navigateur
-        (avoir une source ne suffit pas toujours). L'interrupteur « Lecture aléatoire » change ce que fait
-        le bouton « suivant » du lecteur en bas de page : dans l'ordre, ou au hasard parmi les musiques
-        actuellement affichées.
+        Le bouton de lecture n'apparaît que pour les musiques réellement jouables dans le navigateur, car avoir
+        une source ne suffit pas toujours. Le bouton « Lecture aléatoire » change le comportement du bouton
+        « suivant » du lecteur en bas de page. Désactivé, il passe à la musique suivante de la liste. Activé, il
+        en choisit une au hasard parmi celles affichées.
+      </p>
+      <p>
+        Un clic sur le nom d'une musique ouvre sa page, où l'on peut ajouter ou retirer des tags (genre,
+        ambiance, plateforme...). Les tags de genre et de plateforme peuvent aussi être appliqués à toutes les
+        musiques du jeu en une seule fois.
       </p>
 
       <h2>Blindtests</h2>
       <p>
-        Avant de jouer ou de créer un blindtest, connecte-toi avec ton pseudo (bandeau en haut à droite) —
-        cherche-le, ou crée-le s'il n'existe pas encore. Aucun mot de passe, c'est juste pour te reconnaître
-        et garder ton score.
+        Pour jouer ou créer un blindtest, il faut d'abord se connecter avec un pseudo grâce au bouton en haut à
+        droite. Il suffit de chercher son pseudo, ou de le créer s'il n'existe pas encore. Il n'y a pas de mot
+        de passe, le pseudo sert seulement à enregistrer les scores.
       </p>
       <p>
-        Un blindtest est une liste de musiques fixée à sa création (nombre de musiques, difficulté, tags...).
-        Une fois lancé, chaque musique se joue à son tour : cherche le jeu dans la liste proposée (jamais de
-        texte à taper au hasard). Si tu es bloqué, un bouton permet de valider juste la franchise pour un
-        point partiel. Le nombre d'essais est limité ; une fois épuisé, la musique est révélée. Le classement
-        est un tableau trié par défaut sur les bonnes réponses, mais chaque colonne peut être cliquée pour
-        trier autrement.
+        Les musiques d'un blindtest sont choisies une fois pour toutes à sa création, selon le nombre de
+        musiques, la difficulté et les tags demandés. Pendant la partie, les musiques passent une par une. Pour
+        répondre, il faut choisir le jeu dans la liste proposée. En cas de doute, un bouton permet de ne donner
+        que la franchise, ce qui rapporte un point partiel. Le nombre d'essais par musique est limité, et la
+        réponse est révélée une fois les essais épuisés.
+      </p>
+      <p>
+        Le classement est trié par défaut sur le nombre de bonnes réponses. Un clic sur l'en-tête d'une colonne
+        trie le tableau selon cette colonne.
       </p>
 
-      <h2>Ma culture</h2>
+      <h2>Ma culture (si vous avez un meilleur nom je suis preneur)</h2>
+      <p>Cette partie sert à indiquer quelles musiques on connaît, en dehors des blindtests. Elle propose deux pages.</p>
       <p>
-        Deux façons de dire ce que tu connais ou non, en dehors de tout blindtest :
+        <strong>Découvrir</strong> fait écouter, au hasard, une musique pour laquelle on n'a pas encore voté. Le
+        nom de la musique est caché par défaut. Dans ce cas, on peut chercher le jeu ou répondre directement
+        avec « Je connais » ou « Je ne sais pas ». Si le nom est affiché, il suffit de répondre par Oui ou par
+        Non.
       </p>
       <p>
-        <strong>Découvrir</strong> te propose une musique que tu n'as jamais votée, au hasard. Un
-        interrupteur affiche ou cache le nom (caché par défaut) : caché, tu peux chercher le jeu ou répondre
-        directement « Je connais »/« Je ne sais pas » ; affiché, deux boutons Oui/Non suffisent.
-      </p>
-      <p>
-        <strong>Liste</strong> affiche toutes les musiques avec un Oui/Non par ligne, déjà rempli avec ce que
-        tu as voté. Cliquer sur un bouton l'enregistre tout de suite ; recliquer dessus annule le vote.
+        <strong>Liste</strong> affiche toutes les musiques avec un bouton Oui et un bouton Non sur chaque ligne,
+        déjà remplis avec les votes existants. Un clic enregistre le vote immédiatement, et un second clic sur
+        le même bouton l'annule.
       </p>
 
       <h2>Enrichissement</h2>
       <p>
-        Cette page sert à compléter la base : ajouter des franchises, des jeux, des musiques, ou des liens
-        KHInsider/YouTube à une musique qui n'en a pas encore. Une fois qu'un lien existe, il ne peut plus
-        être changé depuis cette page (ça évite les erreurs) — seule son absence peut être comblée.
+        Cette page sert à compléter la base en ajoutant des franchises, des jeux, des musiques, ou des liens
+        KHInsider et YouTube aux musiques qui n'en ont pas. Un lien déjà enregistré ne peut pas être modifié
+        depuis cette page, pour éviter les erreurs. Il est aussi impossible d'ajouter un élément qui existe
+        déjà.
       </p>
       <p>
-        L'arbre franchise → jeu → musique affiche des compteurs pour repérer d'un coup d'œil ce qui manque.
-        Les filtres au-dessus permettent de n'afficher, par exemple, que les franchises sans jeu, les jeux
-        avec peu ou pas de musiques, ou les musiques sans aucun lien.
+        La base y est présentée sous forme d'arbre (franchises, puis jeux, puis musiques), avec des compteurs
+        qui montrent ce qui manque. Les filtres permettent par exemple de n'afficher que les franchises sans
+        jeu, les jeux avec peu de musiques ou les musiques sans lien.
+      </p>
+
+      <h2>Exporter en CSV</h2>
+      <p>
+        Ce lien du menu télécharge toute la base dans un fichier au même format que le Google Sheet d'origine,
+        avec une colonne par votant.
       </p>
     </div>
   )
