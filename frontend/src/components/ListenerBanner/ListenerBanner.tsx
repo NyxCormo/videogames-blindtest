@@ -44,9 +44,11 @@ export function ListenerBanner() {
     setCreating(true)
     createListener(name)
       .then(select)
-      .catch(() => notify(`Impossible de créer le pseudo « ${name} ».`, 'error'))
+      .catch((err: Error) => notify(err.message, 'error'))
       .finally(() => setCreating(false))
   }
+
+  const alreadyExists = results.some((result) => result.name.toLowerCase() === query.trim().toLowerCase())
 
   if (listener) {
     return (
@@ -85,7 +87,7 @@ export function ListenerBanner() {
           ))}
         </ul>
       )}
-      {query.trim().length >= 2 && (
+      {query.trim().length >= 2 && !alreadyExists && (
         <button type="button" onClick={handleCreate} disabled={creating}>
           Créer « {query.trim()} »
         </button>

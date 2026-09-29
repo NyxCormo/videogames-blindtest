@@ -2,7 +2,9 @@ package fr.insalan.blindtest.game;
 
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestScore;
@@ -143,13 +145,15 @@ public class BlindtestPlayer {
     // "Je le savais" après un passe : corrige knowledge, sans toucher au score (déjà décompté par pass()).
     @Transactional
     public void knowAnyway(Integer listenerId, Integer trackId) {
-        Track track = trackRepository.findById(trackId).orElseThrow();
+        Track track = trackRepository.findById(trackId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
         recordKnowledge(listenerId, track, true);
     }
 
         // save met à jour le vote s'il existe déjà, sinon il le crée (même principe que l'import du Google Sheet)
     private void recordKnowledge(Integer listenerId, Track track, boolean knows) {
-        Listener listener = listenerRepository.findById(listenerId).orElseThrow();
+        Listener listener = listenerRepository.findById(listenerId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Joueur introuvable"));
         knowledgeRepository.save(new Knowledge(listener, track, knows));
     }
 
@@ -163,8 +167,10 @@ public class BlindtestPlayer {
     public BlindtestScore score(Integer blindtestId, Integer listenerId) {
         return blindtestScoreRepository.findById(new BlindtestScoreId(blindtestId, listenerId))
             .orElseGet(() -> {
-                Blindtest blindtest = blindtestRepository.findById(blindtestId).orElseThrow();
-                Listener listener = listenerRepository.findById(listenerId).orElseThrow();
+                Blindtest blindtest = blindtestRepository.findById(blindtestId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blindtest introuvable"));
+                Listener listener = listenerRepository.findById(listenerId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Joueur introuvable"));
                 return blindtestScoreRepository.save(new BlindtestScore(blindtest, listener));
             });
     }

@@ -86,6 +86,30 @@ class FranchiseControllerTests {
     }
 
     @Test
+    void rejectsAFranchiseThatDiffersOnlyByCase() throws Exception {
+        franchises.save(new Franchise("Stellar Blade"));
+        CreateFranchiseRequest request = new CreateFranchiseRequest("stellar blade");
+
+        mockMvc.perform(post("/api/franchises")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict());
+
+        assertThat(franchises.count()).isEqualTo(1);
+    }
+
+    @Test
+    void trimsTheName() throws Exception {
+        CreateFranchiseRequest request = new CreateFranchiseRequest("  Stellar Blade ");
+
+        mockMvc.perform(post("/api/franchises")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.name").value("Stellar Blade"));
+    }
+
+    @Test
     void rejectsABlankName() throws Exception {
         CreateFranchiseRequest request = new CreateFranchiseRequest("  ");
 

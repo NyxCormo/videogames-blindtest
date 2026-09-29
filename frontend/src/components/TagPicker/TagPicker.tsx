@@ -63,6 +63,11 @@ export function TagPicker({ onPick }: Props) {
             .finally(() => setCreating(false))
     }
 
+    const selectedTypeName = tagTypes.find((type) => String(type.id) === typeId)?.name
+    const alreadyExists = results.some(
+        (tag) => tag.name.toLowerCase() === query.trim().toLowerCase() && tag.typeName === selectedTypeName,
+    )
+
     return (
         <div className="tag-picker">
             <input
@@ -97,9 +102,11 @@ export function TagPicker({ onPick }: Props) {
                             </option>
                         ))}
                     </select>
-                    <button type="button" onClick={handleCreate} disabled={creating}>
-                        Créer « {query.trim()} »
-                    </button>
+                    {!alreadyExists && (
+                        <button type="button" onClick={handleCreate} disabled={creating}>
+                            Créer « {query.trim()} »
+                        </button>
+                    )}
                     {createError && <p role="alert">{createError}</p>}
                 </div>
             )}

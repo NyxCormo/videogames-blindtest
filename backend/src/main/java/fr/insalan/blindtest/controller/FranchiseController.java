@@ -40,9 +40,10 @@ public class FranchiseController {
         if (request.name() == null || request.name().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
         }
-        if (franchiseRepository.findByName(request.name()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "La franchise « " + request.name() + " » existe déjà");
+        String name = request.name().trim();
+        if (franchiseRepository.existsByNameIgnoreCase(name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La franchise « " + name + " » existe déjà");
         }
-        return FranchiseResponse.from(franchiseRepository.save(new Franchise(request.name())));
+        return FranchiseResponse.from(franchiseRepository.save(new Franchise(name)));
     }
 }

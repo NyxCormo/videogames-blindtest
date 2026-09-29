@@ -42,7 +42,11 @@ public class ListenerController {
         if (request.name() == null || request.name().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
         }
-        Listener listener = listenerRepository.save(new Listener(request.name()));
+        String name = request.name().trim();
+        if (listenerRepository.existsByNameIgnoreCase(name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le pseudo « " + name + " » existe déjà");
+        }
+        Listener listener = listenerRepository.save(new Listener(name));
         return ListenerResponse.from(listener);
     }
 }

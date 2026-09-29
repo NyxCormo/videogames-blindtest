@@ -175,6 +175,20 @@ class GameControllerTests {
     }
 
     @Test
+    void rejectsAGameThatDiffersOnlyByCase() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        games.save(new Game("Stellar Blade", franchise));
+        CreateGameRequest request = new CreateGameRequest("STELLAR BLADE", franchise.getId());
+
+        mockMvc.perform(post("/api/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict());
+
+        assertThat(games.count()).isEqualTo(1);
+    }
+
+    @Test
     void rejectsAnUnknownFranchise() throws Exception {
         CreateGameRequest request = new CreateGameRequest("Nouveau jeu", 999999);
 
