@@ -12,12 +12,14 @@ import {
 import { loadStoredVolume, storeVolume } from '../../audioPreferences'
 import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
+import { useNotification } from '../../context/NotificationContext'
 import './BlindtestPlayPage.css'
 
 export function BlindtestPlayPage() {
   const { id } = useParams()
   const blindtestId = Number(id)
   const { listener } = useCurrentListener()
+  const { notify } = useNotification()
 
   const [session, setSession] = useState<BlindtestSession | null>(null)
   const [error, setError] = useState(false)
@@ -64,7 +66,9 @@ export function BlindtestPlayPage() {
         setWrongGuess(true)
         refreshAttemptsRemaining()
       }
-    }).finally(() => setSubmitting(false))
+    })
+      .catch(() => notify("Ta réponse n'a pas pu être envoyée, réessaie.", 'error'))
+      .finally(() => setSubmitting(false))
   }
 
   function handleGuessFranchise(franchiseId: number): Promise<{ correct: boolean; revealed: boolean }> {
@@ -80,7 +84,12 @@ export function BlindtestPlayPage() {
         refreshAttemptsRemaining()
       }
       return { correct: result.correct, revealed: result.reveal !== null }
-    }).finally(() => setSubmitting(false))
+    })
+      .catch((err: Error) => {
+        notify("Ta réponse n'a pas pu être envoyée, réessaie.", 'error')
+        throw err
+      })
+      .finally(() => setSubmitting(false))
   }
 
   function handlePass() {
@@ -91,12 +100,16 @@ export function BlindtestPlayPage() {
       setBonusCorrect(false)
       setRevealedAsUnknown(true)
       setCorrectedKnowledge(false)
-    }).finally(() => setSubmitting(false))
+    })
+      .catch(() => notify('Impossible de passer cette musique, réessaie.', 'error'))
+      .finally(() => setSubmitting(false))
   }
 
   function handleKnowAnyway() {
     if (!listener || !reveal) return
-    submitKnowAnyway(blindtestId, listener.id, reveal.trackId).then(() => setCorrectedKnowledge(true))
+    submitKnowAnyway(blindtestId, listener.id, reveal.trackId)
+      .then(() => setCorrectedKnowledge(true))
+      .catch(() => notify("Ta correction n'a pas pu être enregistrée, réessaie.", 'error'))
   }
 
   function handleNext() {

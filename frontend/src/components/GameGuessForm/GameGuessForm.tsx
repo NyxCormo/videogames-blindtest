@@ -86,6 +86,8 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
           setFranchise(null)
         }
       })
+      // L'erreur est affichée par la page ; la franchise choisie reste pour réessayer.
+      .catch(() => {})
       .finally(() => setFranchiseSubmitting(false))
   }
 
