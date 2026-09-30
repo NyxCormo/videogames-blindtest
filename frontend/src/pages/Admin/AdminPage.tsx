@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { checkAdmin, loginAdmin, logoutAdmin } from '../../api/admin'
 import { useNotification } from '../../context/NotificationContext'
 import { loadAdminToken, storeAdminToken } from './adminToken'
+import { TrackLinksSection } from './TrackLinksSection'
 import './AdminPage.css'
 
 export function AdminPage() {
@@ -96,7 +97,13 @@ export function AdminPage() {
           Se déconnecter
         </button>
       </div>
-      <p>Les outils d'administration arriveront ici.</p>
+      <TrackLinksSection
+        token={token}
+        onSessionExpired={() => {
+          saveToken(null)
+          setVerified(false)
+        }}
+      />
     </>
   )
 }

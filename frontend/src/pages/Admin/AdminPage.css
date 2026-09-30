@@ -15,3 +15,22 @@
   align-items: center;
   gap: 1rem;
 }
+
+.admin-section {
+  margin-top: 2rem;
+}
+
+.admin-link-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.admin-link-label {
+  width: 6rem;
+}
+
+.admin-link-row input {
+  flex: 1;
+}
