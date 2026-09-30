@@ -34,3 +34,6 @@ build/
 
 ## Base de données locale ###
 data/
+
+### Mot de passe admin ###
+.env

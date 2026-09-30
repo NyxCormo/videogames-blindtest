@@ -76,7 +76,7 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 
 ## Stack technique
 
-- **Backend** : Spring Boot 4 (Java 21), API REST, Jsoup, Apache Commons CSV dans [`backend/`](backend/).
+- **Backend** : Spring Boot 4 (Java 21), API REST, Spring Security, Jsoup, Apache Commons CSV dans [`backend/`](backend/).
 - **Base de données** : SQLite, accès via Spring Data JPA (Hibernate), schéma géré par Flyway.
 - **Frontend** : React 19 et TypeScript, construit avec Vite, dans [`frontend/`](frontend/).
 
@@ -84,6 +84,7 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 
 Prérequis : Java 21 et Node 22
 
+- **Mot de passe admin**: copier `backend/.env.example` en `backend/.env` et y choisir un mot de passe. Sans lui, le backend refuse de démarrer.
 - **Backend**: `cd backend && ./mvnw spring-boot:run` (http://localhost:4673).
 - **Frontend**: `cd frontend && npm install && npm run dev` (http://localhost:4672).
 - **Importer le Google Sheet**: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--import=../docs/ost-insalan-base.csv`.
