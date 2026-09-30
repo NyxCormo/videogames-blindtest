@@ -1,0 +1,17 @@
+.admin-login {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.admin-login label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-session {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}

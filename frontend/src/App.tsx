@@ -4,6 +4,7 @@ import { ListenerBanner } from './components/ListenerBanner/ListenerBanner'
 import { NotificationBanner } from './components/NotificationBanner/NotificationBanner'
 import { CurrentListenerProvider } from './context/CurrentListenerContext'
 import { NotificationProvider } from './context/NotificationContext'
+import { AdminPage } from './pages/Admin/AdminPage'
 import { BlindtestCreatePage } from './pages/BlindtestCreate/BlindtestCreatePage'
 import { BlindtestLeaderboardPage } from './pages/BlindtestLeaderboard/BlindtestLeaderboardPage'
 import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
@@ -29,6 +30,7 @@ function App() {
               <Link to="/knowledge">Ma culture</Link>
               <Link to="/enrichment">Enrichissement</Link>
               <Link to="/tutorial">Tutoriel</Link>
+              <Link to="/admin">Admin</Link>
               <a href="/api/export/sheet">Exporter en CSV</a>
             </div>
             <ListenerBanner />
@@ -48,6 +50,7 @@ function App() {
             <Route path="/knowledge/list" element={<KnowledgeListPage />} />
             <Route path="/enrichment" element={<EnrichmentPage />} />
             <Route path="/tutorial" element={<TutorialPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </main>
       </BrowserRouter>
