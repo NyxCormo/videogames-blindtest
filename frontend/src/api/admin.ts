@@ -108,3 +108,20 @@ export async function fetchListenerUsage(token: string): Promise<ListenerUsage[]
   const response = await adminRequest(token, '/api/admin/listeners')
   return response.json()
 }
+
+export type RefreshStatus = {
+  running: boolean
+  startedAt: string | null
+  finishedAt: string | null
+  lastReport: { checked: number; alive: number; refreshed: number; failed: number } | null
+}
+
+export async function fetchRefreshStatus(token: string): Promise<RefreshStatus> {
+  const response = await adminRequest(token, '/api/admin/audio-links/refresh')
+  return response.json()
+}
+
+export async function startRefresh(token: string): Promise<RefreshStatus> {
+  const response = await adminRequest(token, '/api/admin/audio-links/refresh', { method: 'POST' })
+  return response.json()
+}

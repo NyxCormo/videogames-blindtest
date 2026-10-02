@@ -54,7 +54,7 @@ public class AudioLinkRefreshService {
         return new AudioLinkRefreshReport(eligible.size(), alive, refreshed, failed);
     }
 
-    // Public : réutilisé pour résoudre le lien audio dès l'ajout manuel d'un lien KHInsider (TrackController),
+    // Public : réutilisé pour résoudre le lien audio dès l'ajout manuel d'un lien KHInsider (TrackLinkService),
     // sans attendre la prochaine passe planifiée.
     public boolean refreshOne(Track track) throws IOException {
         if (track.getAudioLink() != null && audioLinkChecker.isAlive(track.getAudioLink())) {
