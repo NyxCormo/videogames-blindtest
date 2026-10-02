@@ -47,6 +47,11 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
 
     boolean existsByGameAndNameIgnoreCaseAndIdNot(Game game, String name, Integer id);
 
+    long countByGameId(Integer gameId);
+
+    @Query(value = "SELECT count(*) FROM track t JOIN game g ON g.id = t.game_id WHERE g.franchise_id = :franchiseId", nativeQuery = true)
+    long countByFranchiseId(@Param("franchiseId") Integer franchiseId);
+
     Optional<Track> findFirstByKhinsiderLink(String khinsiderLink);
 
     Optional<Track> findFirstByYoutubeLink(String youtubeLink);

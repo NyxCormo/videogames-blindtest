@@ -1,17 +1,24 @@
 package fr.insalan.blindtest.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.deletion.DeletePreview;
+import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.GameResponse;
 import fr.insalan.blindtest.dto.MergeRequest;
 import fr.insalan.blindtest.dto.RenameRequest;
+import fr.insalan.blindtest.merge.MergePreview;
 import fr.insalan.blindtest.merge.MergeService;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.repository.GameRepository;
@@ -22,10 +29,12 @@ public class AdminGameController {
 
     private final GameRepository gameRepository;
     private final MergeService mergeService;
+    private final DeletionService deletionService;
 
-    public AdminGameController(GameRepository gameRepository, MergeService mergeService) {
+    public AdminGameController(GameRepository gameRepository, MergeService mergeService, DeletionService deletionService) {
         this.gameRepository = gameRepository;
         this.mergeService = mergeService;
+        this.deletionService = deletionService;
     }
 
     @PatchMapping("/{id}")
@@ -41,9 +50,25 @@ public class AdminGameController {
         return GameResponse.from(game);
     }
 
+    @GetMapping("/{id}/merge-preview")
+    public MergePreview mergePreview(@PathVariable Integer id, @RequestParam Integer into) {
+        return mergeService.previewGames(id, into);
+    }
+
     @PostMapping("/{id}/merge")
     public GameResponse merge(@PathVariable Integer id, @RequestBody MergeRequest request) {
         mergeService.mergeGames(id, request.targetId());
         return GameResponse.from(gameRepository.findByIdWithFranchise(request.targetId()).orElseThrow());
+    }
+
+    @GetMapping("/{id}/delete-preview")
+    public DeletePreview deletePreview(@PathVariable Integer id) {
+        return deletionService.previewGame(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Integer id) {
+        deletionService.deleteGame(id);
     }
 }

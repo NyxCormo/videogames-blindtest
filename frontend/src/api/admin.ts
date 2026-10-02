@@ -137,3 +137,23 @@ export async function fetchTagCounts(token: string): Promise<TagCount[]> {
   const response = await adminRequest(token, '/api/admin/tags')
   return response.json()
 }
+
+export type DeletePreview = {
+  allowed: boolean
+  impact: string
+}
+
+export async function fetchDeletePreview(token: string, kind: AdminKind, id: number): Promise<DeletePreview> {
+  const response = await adminRequest(token, `/api/admin/${kind}/${id}/delete-preview`)
+  return response.json()
+}
+
+export type MergePreview = {
+  allowed: boolean
+  summary: string
+}
+
+export async function fetchMergePreview(token: string, kind: AdminKind, id: number, targetId: number): Promise<MergePreview> {
+  const response = await adminRequest(token, `/api/admin/${kind}/${id}/merge-preview?into=${targetId}`)
+  return response.json()
+}

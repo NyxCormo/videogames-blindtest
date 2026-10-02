@@ -42,4 +42,17 @@ public interface BlindtestScoreRepository extends JpaRepository<BlindtestScore, 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "UPDATE blindtest_score SET listener_id = :targetId WHERE listener_id = :sourceId", nativeQuery = true)
     void moveScoresToListener(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Query(value = "SELECT count(*) FROM blindtest_score WHERE listener_id = :listenerId", nativeQuery = true)
+    long countByListenerId(@Param("listenerId") Integer listenerId);
+
+    @Query(value = "SELECT count(*) FROM blindtest_score WHERE blindtest_id = :blindtestId", nativeQuery = true)
+    long countByBlindtestId(@Param("blindtestId") Integer blindtestId);
+
+    @Query(value = """
+            SELECT count(*) FROM blindtest_score
+            WHERE listener_id = :sourceId
+              AND blindtest_id IN (SELECT blindtest_id FROM blindtest_score WHERE listener_id = :targetId)
+            """, nativeQuery = true)
+    long countBlindtestsPlayedByBoth(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
 }
