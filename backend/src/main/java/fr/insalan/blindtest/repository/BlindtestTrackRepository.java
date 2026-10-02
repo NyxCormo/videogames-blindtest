@@ -38,4 +38,7 @@ public interface BlindtestTrackRepository extends JpaRepository<BlindtestTrack, 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "DELETE FROM blindtest_track WHERE blindtest_id = :blindtestId", nativeQuery = true)
     void deleteByBlindtestId(@Param("blindtestId") Integer blindtestId);
+
+    @Query(value = "SELECT count(*) FROM blindtest_track WHERE blindtest_id = :blindtestId", nativeQuery = true)
+    long countByBlindtestId(@Param("blindtestId") Integer blindtestId);
 }

@@ -2,6 +2,7 @@ package fr.insalan.blindtest.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.MergeRequest;
 import fr.insalan.blindtest.dto.RenameRequest;
@@ -59,6 +61,11 @@ public class AdminTrackController {
     public TrackResponse merge(@PathVariable Integer id, @RequestBody MergeRequest request) {
         mergeService.mergeTracks(id, request.targetId());
         return TrackResponse.from(findTrack(request.targetId()));
+    }
+
+    @GetMapping("/{id}/delete-preview")
+    public DeletePreview deletePreview(@PathVariable Integer id) {
+        return deletionService.previewTrack(id);
     }
 
     @DeleteMapping("/{id}")

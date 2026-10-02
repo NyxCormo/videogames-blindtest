@@ -47,4 +47,7 @@ public interface KnowledgeRepository extends JpaRepository<Knowledge, KnowledgeI
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "UPDATE knowledge SET listener_id = :targetId WHERE listener_id = :sourceId", nativeQuery = true)
     void moveVotesToListener(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Query(value = "SELECT count(*) FROM knowledge WHERE listener_id = :listenerId", nativeQuery = true)
+    long countByListenerId(@Param("listenerId") Integer listenerId);
 }

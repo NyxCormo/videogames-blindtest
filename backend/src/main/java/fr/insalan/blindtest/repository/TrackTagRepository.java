@@ -64,4 +64,10 @@ public interface TrackTagRepository extends JpaRepository<TrackTag, TrackTagId> 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "DELETE FROM track_tag WHERE tag_id = :tagId", nativeQuery = true)
     void deleteByTagId(@Param("tagId") Integer tagId);
+
+    @Query(value = "SELECT count(*) FROM track_tag WHERE track_id = :trackId", nativeQuery = true)
+    long countByTrackId(@Param("trackId") Integer trackId);
+
+    @Query(value = "SELECT count(*) FROM track_tag WHERE tag_id = :tagId", nativeQuery = true)
+    long countByTagId(@Param("tagId") Integer tagId);
 }

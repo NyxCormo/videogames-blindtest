@@ -84,6 +84,12 @@
   border-radius: 0.5rem;
 }
 
+.entity-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .entity-row + .entity-row {
   border-top: 1px solid var(--border);
 }
@@ -94,7 +100,8 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 0.75rem;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 0.4rem 0.6rem;
   border: none;
   background: none;
@@ -151,4 +158,118 @@ button.entity-row-main:hover {
 
 .admin-muted {
   opacity: 0.7;
+}
+
+.entity-row-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  padding: 0.3rem 0.6rem;
+}
+
+.entity-row-edit input {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.entity-row-error {
+  color: #ef5350;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.admin-actions {
+  padding-right: 0.4rem;
+}
+
+.admin-actions-toggle {
+  width: 1.8rem;
+  text-align: center;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+
+.admin-actions-toggle:hover {
+  color: inherit;
+  background: color-mix(in srgb, CanvasText 10%, Canvas);
+}
+
+.admin-actions-menu {
+  display: flex;
+  gap: 0.25rem;
+  flex-basis: 100%;
+  padding: 0 0.6rem 0.4rem;
+}
+
+.admin-actions-menu button {
+  border: 1px solid var(--border);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+
+.admin-actions-menu button:hover {
+  background: color-mix(in srgb, CanvasText 10%, Canvas);
+}
+
+.admin-actions-menu .admin-danger,
+.admin-modal-blocked {
+  color: #ef5350;
+}
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 55%);
+}
+
+.admin-modal {
+  max-width: 32rem;
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: Canvas;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+
+.admin-modal h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+}
+
+.admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.admin-modal-actions .admin-danger {
+  background: #c62828;
+  color: white;
+  border: 1px solid #c62828;
+  border-radius: 0.3rem;
+  padding: 0.3rem 0.8rem;
+}
+
+.admin-modal-actions .admin-danger:disabled {
+  opacity: 0.6;
 }

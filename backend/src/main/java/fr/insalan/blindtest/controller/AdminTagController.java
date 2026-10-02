@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.MergeRequest;
 import fr.insalan.blindtest.dto.RenameRequest;
@@ -62,6 +63,11 @@ public class AdminTagController {
     public TagResponse merge(@PathVariable Integer id, @RequestBody MergeRequest request) {
         mergeService.mergeTags(id, request.targetId());
         return TagResponse.from(tagRepository.findByIdWithType(request.targetId()).orElseThrow());
+    }
+
+    @GetMapping("/{id}/delete-preview")
+    public DeletePreview deletePreview(@PathVariable Integer id) {
+        return deletionService.previewTag(id);
     }
 
     @DeleteMapping("/{id}")

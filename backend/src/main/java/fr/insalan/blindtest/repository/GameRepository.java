@@ -35,6 +35,8 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
 
     boolean existsByFranchiseAndNameIgnoreCaseAndIdNot(Franchise franchise, String name, Integer id);
 
+    long countByFranchiseId(Integer franchiseId);
+
     @Query(value = """
             SELECT s.name FROM game s
             JOIN game t ON lower(s.name) = lower(t.name)

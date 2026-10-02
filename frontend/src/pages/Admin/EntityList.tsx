@@ -11,6 +11,8 @@ type Props<T extends { id: number }> = {
   searchText?: (item: T) => string
   activeId?: number | null
   onOpen?: (item: T) => void
+  onRename?: (item: T, name: string) => Promise<unknown>
+  onDelete?: (item: T) => void
   emptyText: string
   // Par défaut, tri alphabétique ; false garde l'ordre reçu (les blindtests, du plus récent au plus ancien).
   sorted?: boolean
@@ -24,6 +26,8 @@ export function EntityList<T extends { id: number }>({
   searchText,
   activeId,
   onOpen,
+  onRename,
+  onDelete,
   emptyText,
   sorted = true,
 }: Props<T>) {
@@ -62,6 +66,8 @@ export function EntityList<T extends { id: number }>({
               detail={detail?.(item)}
               active={item.id === activeId}
               onOpen={onOpen && (() => onOpen(item))}
+              onRename={onRename && ((name) => onRename(item, name))}
+              onDelete={onDelete && (() => onDelete(item))}
             />
           ))}
         </ul>

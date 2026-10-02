@@ -119,9 +119,9 @@ export function AdminPage() {
         </button>
       </div>
       <AdminTabs tabs={TABS} active={tab} onChange={(id) => setSearchParams({ tab: id })} />
-      {tab === 'catalogue' && <CatalogTab onSessionExpired={handleSessionExpired} />}
+      {tab === 'catalogue' && <CatalogTab token={token} onSessionExpired={handleSessionExpired} />}
       {tab === 'tags' && <TagsTab token={token} onSessionExpired={handleSessionExpired} />}
-      {tab === 'blindtests' && <BlindtestsTab onSessionExpired={handleSessionExpired} />}
+      {tab === 'blindtests' && <BlindtestsTab token={token} onSessionExpired={handleSessionExpired} />}
       {tab === 'pseudos' && <ListenersTab token={token} onSessionExpired={handleSessionExpired} />}
       {tab === 'maintenance' && <MaintenanceTab token={token} onSessionExpired={handleSessionExpired} />}
     </>

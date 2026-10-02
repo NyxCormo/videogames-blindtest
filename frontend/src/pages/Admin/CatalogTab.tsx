@@ -5,8 +5,10 @@ import { fetchTracks, type Track } from '../../api/tracks'
 import { plural } from './adminText'
 import { EntityList } from './EntityList'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
+import { useEntityActions } from './useEntityActions'
 
 type Props = {
+  token: string
   onSessionExpired: () => void
 }
 
@@ -23,7 +25,7 @@ function groupBy<T>(items: T[], key: (item: T) => number): Map<number, T[]> {
   return groups
 }
 
-export function CatalogTab({ onSessionExpired }: Props) {
+export function CatalogTab({ token, onSessionExpired }: Props) {
   const handleError = useAdminErrorHandler(onSessionExpired)
   const [franchises, setFranchises] = useState<Franchise[] | null>(null)
   const [games, setGames] = useState<Game[]>([])
@@ -31,20 +33,42 @@ export function CatalogTab({ onSessionExpired }: Props) {
   const [franchiseId, setFranchiseId] = useState<number | null>(null)
   const [gameId, setGameId] = useState<number | null>(null)
 
-  useEffect(() => {
-    const controller = new AbortController()
-    Promise.all([fetchFranchises(controller.signal), fetchGames(controller.signal), fetchTracks(controller.signal)])
-      .then(([loadedFranchises, loadedGames, loadedTracks]) => {
+  function load(signal?: AbortSignal) {
+    return Promise.all([fetchFranchises(signal), fetchGames(signal), fetchTracks(signal)]).then(
+      ([loadedFranchises, loadedGames, loadedTracks]) => {
         setFranchises(loadedFranchises)
         setGames(loadedGames)
         setTracks(loadedTracks)
-      })
-      .catch((err: Error) => {
-        if (!controller.signal.aborted) handleError(err)
-      })
+      },
+    )
+  }
+
+  useEffect(() => {
+    const controller = new AbortController()
+    load(controller.signal).catch((err: Error) => {
+      if (!controller.signal.aborted) handleError(err)
+    })
     return () => controller.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const franchiseActions = useEntityActions<Franchise>({
+    token,
+    kind: 'franchises',
+    noun: 'la franchise',
+    onSessionExpired,
+    reload: load,
+    afterDelete: (item) => item.id === franchiseId && setFranchiseId(null),
+  })
+  const gameActions = useEntityActions<Game>({
+    token,
+    kind: 'games',
+    noun: 'le jeu',
+    onSessionExpired,
+    reload: load,
+    afterDelete: (item) => item.id === gameId && setGameId(null),
+  })
+  const trackActions = useEntityActions<Track>({ token, kind: 'tracks', noun: 'la musique', onSessionExpired, reload: load })
 
   const gamesByFranchise = useMemo(() => groupBy(games, (game) => game.franchiseId), [games])
   const tracksByGame = useMemo(() => groupBy(tracks, (track) => track.gameId), [tracks])
@@ -62,6 +86,9 @@ export function CatalogTab({ onSessionExpired }: Props) {
 
   return (
     <div className="admin-columns">
+      {franchiseActions.modal}
+      {gameActions.modal}
+      {trackActions.modal}
       <EntityList
         title="Franchises"
         items={franchises}
@@ -72,6 +99,8 @@ export function CatalogTab({ onSessionExpired }: Props) {
           setFranchiseId(item.id)
           setGameId(null)
         }}
+        onRename={franchiseActions.rename}
+        onDelete={franchiseActions.askDelete}
         emptyText="Aucune franchise."
       />
       {franchiseGames === null ? (
@@ -85,6 +114,8 @@ export function CatalogTab({ onSessionExpired }: Props) {
           detail={(item) => plural(tracksByGame.get(item.id)?.length ?? 0, 'musique', 'musiques')}
           activeId={gameId}
           onOpen={(item) => setGameId(item.id)}
+          onRename={gameActions.rename}
+          onDelete={gameActions.askDelete}
           emptyText="Aucun jeu dans cette franchise."
         />
       )}
@@ -96,6 +127,8 @@ export function CatalogTab({ onSessionExpired }: Props) {
           title={`Musiques de ${game?.name ?? ''}`}
           items={gameTracks}
           label={(item) => item.name}
+          onRename={trackActions.rename}
+          onDelete={trackActions.askDelete}
           emptyText="Aucune musique dans ce jeu."
         />
       )}
