@@ -31,4 +31,6 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
     Optional<Game> findByIdWithFranchise(@Param("id") Integer id);
 
     boolean existsByFranchiseAndNameIgnoreCase(Franchise franchise, String name);
+
+    boolean existsByFranchiseAndNameIgnoreCaseAndIdNot(Franchise franchise, String name, Integer id);
 }

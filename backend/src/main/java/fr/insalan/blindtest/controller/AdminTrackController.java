@@ -2,6 +2,7 @@ package fr.insalan.blindtest.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.dto.RenameRequest;
 import fr.insalan.blindtest.dto.SetLinkRequest;
 import fr.insalan.blindtest.dto.TrackResponse;
 import fr.insalan.blindtest.model.Track;
@@ -25,6 +27,18 @@ public class AdminTrackController {
     public AdminTrackController(TrackRepository trackRepository, TrackLinkService trackLinkService) {
         this.trackRepository = trackRepository;
         this.trackLinkService = trackLinkService;
+    }
+
+    @PatchMapping("/{id}")
+    public TrackResponse rename(@PathVariable Integer id, @RequestBody RenameRequest request) {
+        Track track = findTrack(id);
+        String name = AdminNames.require(request.name());
+        if (trackRepository.existsByGameAndNameIgnoreCaseAndIdNot(track.getGame(), name, id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique « " + name + " » existe déjà dans ce jeu");
+        }
+        track.setName(name);
+        trackRepository.save(track);
+        return TrackResponse.from(track);
     }
 
     @PutMapping("/{id}/khinsider-link")

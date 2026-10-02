@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { checkAdmin, loginAdmin, logoutAdmin } from '../../api/admin'
 import { useNotification } from '../../context/NotificationContext'
 import { loadAdminToken, storeAdminToken } from './adminToken'
+import { RenameSection } from './RenameSection'
 import { TrackLinksSection } from './TrackLinksSection'
 import './AdminPage.css'
 
@@ -61,6 +62,11 @@ export function AdminPage() {
     setVerified(false)
   }
 
+  function handleSessionExpired() {
+    saveToken(null)
+    setVerified(false)
+  }
+
   if (token === null) {
     return (
       <>
@@ -97,13 +103,8 @@ export function AdminPage() {
           Se déconnecter
         </button>
       </div>
-      <TrackLinksSection
-        token={token}
-        onSessionExpired={() => {
-          saveToken(null)
-          setVerified(false)
-        }}
-      />
+      <TrackLinksSection token={token} onSessionExpired={handleSessionExpired} />
+      <RenameSection token={token} onSessionExpired={handleSessionExpired} />
     </>
   )
 }

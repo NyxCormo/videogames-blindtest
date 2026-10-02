@@ -44,6 +44,8 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
 
     boolean existsByGameAndNameIgnoreCase(Game game, String name);
 
+    boolean existsByGameAndNameIgnoreCaseAndIdNot(Game game, String name, Integer id);
+
     Optional<Track> findFirstByKhinsiderLink(String khinsiderLink);
 
     Optional<Track> findFirstByYoutubeLink(String youtubeLink);

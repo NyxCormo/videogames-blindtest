@@ -56,6 +56,10 @@ public class Track {
 		return name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public Game getGame() {
 		return game;
 	}

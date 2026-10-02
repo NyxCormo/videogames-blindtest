@@ -110,7 +110,7 @@ function LinkRow({ label, current, onSave, onRemove }: LinkRowProps) {
   }
 
   return (
-    <form className="admin-link-row" onSubmit={handleSubmit}>
+    <form className="admin-row" onSubmit={handleSubmit}>
       <span className="admin-link-label">{label}</span>
       <input
         type="url"

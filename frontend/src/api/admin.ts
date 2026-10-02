@@ -73,3 +73,14 @@ export async function removeTrackLink(token: string, trackId: number, kind: Link
   const response = await adminRequest(token, `/api/admin/tracks/${trackId}/${kind}-link`, { method: 'DELETE' })
   return response.json()
 }
+
+export type RenameKind = 'franchises' | 'games' | 'tracks'
+
+export async function renameItem(token: string, kind: RenameKind, id: number, name: string): Promise<{ id: number; name: string }> {
+  const response = await adminRequest(token, `/api/admin/${kind}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+  return response.json()
+}
