@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,4 +31,16 @@ public interface TrackTagRepository extends JpaRepository<TrackTag, TrackTagId> 
             ORDER BY COUNT(tt) DESC
             """)
     List<Object[]> countTracksByTag(Pageable limit);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = """
+            DELETE FROM track_tag
+            WHERE track_id = :sourceId
+              AND tag_id IN (SELECT tag_id FROM track_tag WHERE track_id = :targetId)
+            """, nativeQuery = true)
+    void deleteTagsAlsoOnTarget(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "UPDATE track_tag SET track_id = :targetId WHERE track_id = :sourceId", nativeQuery = true)
+    void moveTags(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
 }

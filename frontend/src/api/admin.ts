@@ -84,3 +84,11 @@ export async function renameItem(token: string, kind: RenameKind, id: number, na
   })
   return response.json()
 }
+
+export async function mergeItem(token: string, kind: RenameKind, id: number, targetId: number): Promise<void> {
+  await adminRequest(token, `/api/admin/${kind}/${id}/merge`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ targetId }),
+  })
+}

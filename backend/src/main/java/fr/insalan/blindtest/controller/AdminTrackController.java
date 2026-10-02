@@ -4,15 +4,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.dto.MergeRequest;
 import fr.insalan.blindtest.dto.RenameRequest;
 import fr.insalan.blindtest.dto.SetLinkRequest;
 import fr.insalan.blindtest.dto.TrackResponse;
+import fr.insalan.blindtest.merge.MergeService;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.track.TrackLinkService;
@@ -23,10 +26,12 @@ public class AdminTrackController {
 
     private final TrackRepository trackRepository;
     private final TrackLinkService trackLinkService;
+    private final MergeService mergeService;
 
-    public AdminTrackController(TrackRepository trackRepository, TrackLinkService trackLinkService) {
+    public AdminTrackController(TrackRepository trackRepository, TrackLinkService trackLinkService, MergeService mergeService) {
         this.trackRepository = trackRepository;
         this.trackLinkService = trackLinkService;
+        this.mergeService = mergeService;
     }
 
     @PatchMapping("/{id}")
@@ -39,6 +44,12 @@ public class AdminTrackController {
         track.setName(name);
         trackRepository.save(track);
         return TrackResponse.from(track);
+    }
+
+    @PostMapping("/{id}/merge")
+    public TrackResponse merge(@PathVariable Integer id, @RequestBody MergeRequest request) {
+        mergeService.mergeTracks(id, request.targetId());
+        return TrackResponse.from(findTrack(request.targetId()));
     }
 
     @PutMapping("/{id}/khinsider-link")

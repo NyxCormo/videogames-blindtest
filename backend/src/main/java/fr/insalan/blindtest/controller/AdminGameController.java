@@ -3,13 +3,16 @@ package fr.insalan.blindtest.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.dto.GameResponse;
+import fr.insalan.blindtest.dto.MergeRequest;
 import fr.insalan.blindtest.dto.RenameRequest;
+import fr.insalan.blindtest.merge.MergeService;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.repository.GameRepository;
 
@@ -18,9 +21,11 @@ import fr.insalan.blindtest.repository.GameRepository;
 public class AdminGameController {
 
     private final GameRepository gameRepository;
+    private final MergeService mergeService;
 
-    public AdminGameController(GameRepository gameRepository) {
+    public AdminGameController(GameRepository gameRepository, MergeService mergeService) {
         this.gameRepository = gameRepository;
+        this.mergeService = mergeService;
     }
 
     @PatchMapping("/{id}")
@@ -34,5 +39,11 @@ public class AdminGameController {
         game.setName(name);
         gameRepository.save(game);
         return GameResponse.from(game);
+    }
+
+    @PostMapping("/{id}/merge")
+    public GameResponse merge(@PathVariable Integer id, @RequestBody MergeRequest request) {
+        mergeService.mergeGames(id, request.targetId());
+        return GameResponse.from(gameRepository.findByIdWithFranchise(request.targetId()).orElseThrow());
     }
 }

@@ -63,3 +63,12 @@
 .admin-cascade-picker select {
   width: 100%;
 }
+
+.admin-row .name-picker {
+  flex: 1;
+}
+
+.admin-row .name-picker input {
+  width: 100%;
+  box-sizing: border-box;
+}
