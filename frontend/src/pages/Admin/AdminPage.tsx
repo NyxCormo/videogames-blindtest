@@ -2,7 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { checkAdmin, loginAdmin, logoutAdmin } from '../../api/admin'
 import { useNotification } from '../../context/NotificationContext'
 import { loadAdminToken, storeAdminToken } from './adminToken'
+import { BlindtestsSection } from './BlindtestsSection'
 import { EditSection } from './EditSection'
+import { ListenersSection } from './ListenersSection'
 import { TrackLinksSection } from './TrackLinksSection'
 import './AdminPage.css'
 
@@ -105,6 +107,8 @@ export function AdminPage() {
       </div>
       <TrackLinksSection token={token} onSessionExpired={handleSessionExpired} />
       <EditSection token={token} onSessionExpired={handleSessionExpired} />
+      <BlindtestsSection token={token} onSessionExpired={handleSessionExpired} />
+      <ListenersSection token={token} onSessionExpired={handleSessionExpired} />
     </>
   )
 }

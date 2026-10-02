@@ -1,17 +1,16 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { AdminSessionExpired, mergeItem, renameItem, type RenameKind } from '../../api/admin'
+import { useEffect, useState, type FormEvent } from 'react'
+import { AdminSessionExpired, deleteItem, mergeItem, renameItem, type AdminKind } from '../../api/admin'
 import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGames, type Game } from '../../api/games'
 import { fetchTracks, type Track } from '../../api/tracks'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { useNotification } from '../../context/NotificationContext'
+import { MergeForm, type Named } from './MergeForm'
 
 type Props = {
   token: string
   onSessionExpired: () => void
 }
-
-type Named = { id: number; name: string }
 
 export function EditSection({ token, onSessionExpired }: Props) {
   const { notify } = useNotification()
@@ -65,7 +64,7 @@ export function EditSection({ token, onSessionExpired }: Props) {
     notify(err.message, 'error')
   }
 
-  function rename(kind: RenameKind, id: number, oldName: string, name: string) {
+  function rename(kind: AdminKind, id: number, oldName: string, name: string) {
     renameItem(token, kind, id, name)
       .then((updated) => {
         notify(`« ${oldName} » renommé en « ${updated.name} ».`, 'success')
@@ -75,12 +74,23 @@ export function EditSection({ token, onSessionExpired }: Props) {
   }
 
   // Après une fusion, la cascade affiche l'élément gardé.
-  function merge(kind: RenameKind, source: Named, target: Named, confirmation: string, onDone: () => void) {
+  function merge(kind: AdminKind, source: Named, target: Named, confirmation: string, onDone: () => void) {
     if (!window.confirm(confirmation)) return
     mergeItem(token, kind, source.id, target.id)
       .then(() => {
         onDone()
         notify(`« ${source.name} » fusionné dans « ${target.name} ».`, 'success')
+        return loadAll()
+      })
+      .catch(handleError)
+  }
+
+  function removeTrack(target: Track) {
+    if (!window.confirm(`Supprimer « ${target.name} » ? Seule une musique sans vote ni blindtest peut être supprimée.`)) return
+    deleteItem(token, 'tracks', target.id)
+      .then(() => {
+        setTrackId(null)
+        notify(`« ${target.name} » supprimée.`, 'success')
         return loadAll()
       })
       .catch(handleError)
@@ -215,6 +225,11 @@ export function EditSection({ token, onSessionExpired }: Props) {
                   )
                 }
               />
+              <div className="admin-row">
+                <button type="button" onClick={() => removeTrack(track)}>
+                  Supprimer la musique
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -249,33 +264,5 @@ function RenameForm({ current, onRename }: RenameFormProps) {
         Renommer
       </button>
     </form>
-  )
-}
-
-type MergeFormProps<T extends Named> = {
-  items: T[]
-  renderLabel?: (item: T) => ReactNode
-  getSearchText?: (item: T) => string
-  onMerge: (target: T) => void
-}
-
-function MergeForm<T extends Named>({ items, renderLabel, getSearchText, onMerge }: MergeFormProps<T>) {
-  const [target, setTarget] = useState<T | null>(null)
-
-  return (
-    <div className="admin-row">
-      <NamePicker
-        items={items}
-        selected={target}
-        onSelect={setTarget}
-        onClear={() => setTarget(null)}
-        placeholder="Fusionner dans…"
-        renderLabel={renderLabel}
-        getSearchText={getSearchText}
-      />
-      <button type="button" disabled={target === null} onClick={() => target && onMerge(target)}>
-        Fusionner
-      </button>
-    </div>
   )
 }

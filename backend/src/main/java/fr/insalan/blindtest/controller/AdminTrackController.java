@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.MergeRequest;
 import fr.insalan.blindtest.dto.RenameRequest;
 import fr.insalan.blindtest.dto.SetLinkRequest;
@@ -27,11 +29,18 @@ public class AdminTrackController {
     private final TrackRepository trackRepository;
     private final TrackLinkService trackLinkService;
     private final MergeService mergeService;
+    private final DeletionService deletionService;
 
-    public AdminTrackController(TrackRepository trackRepository, TrackLinkService trackLinkService, MergeService mergeService) {
+    public AdminTrackController(
+        TrackRepository trackRepository,
+        TrackLinkService trackLinkService,
+        MergeService mergeService,
+        DeletionService deletionService
+    ) {
         this.trackRepository = trackRepository;
         this.trackLinkService = trackLinkService;
         this.mergeService = mergeService;
+        this.deletionService = deletionService;
     }
 
     @PatchMapping("/{id}")
@@ -50,6 +59,12 @@ public class AdminTrackController {
     public TrackResponse merge(@PathVariable Integer id, @RequestBody MergeRequest request) {
         mergeService.mergeTracks(id, request.targetId());
         return TrackResponse.from(findTrack(request.targetId()));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Integer id) {
+        deletionService.deleteTrack(id);
     }
 
     @PutMapping("/{id}/khinsider-link")

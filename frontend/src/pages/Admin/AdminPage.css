@@ -72,3 +72,21 @@
   width: 100%;
   box-sizing: border-box;
 }
+
+.admin-list {
+  list-style: none;
+  padding: 0;
+  max-width: 40rem;
+}
+
+.admin-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+
+.admin-muted {
+  opacity: 0.7;
+}

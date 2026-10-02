@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.model.Track;
+import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
+import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import jakarta.transaction.Transactional;
@@ -26,6 +28,8 @@ public class MergeService {
     private final KnowledgeRepository knowledgeRepository;
     private final TrackTagRepository trackTagRepository;
     private final BlindtestTrackRepository blindtestTrackRepository;
+    private final ListenerRepository listenerRepository;
+    private final BlindtestScoreRepository blindtestScoreRepository;
 
     public MergeService(
         FranchiseRepository franchiseRepository,
@@ -33,7 +37,9 @@ public class MergeService {
         TrackRepository trackRepository,
         KnowledgeRepository knowledgeRepository,
         TrackTagRepository trackTagRepository,
-        BlindtestTrackRepository blindtestTrackRepository
+        BlindtestTrackRepository blindtestTrackRepository,
+        ListenerRepository listenerRepository,
+        BlindtestScoreRepository blindtestScoreRepository
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -41,6 +47,8 @@ public class MergeService {
         this.knowledgeRepository = knowledgeRepository;
         this.trackTagRepository = trackTagRepository;
         this.blindtestTrackRepository = blindtestTrackRepository;
+        this.listenerRepository = listenerRepository;
+        this.blindtestScoreRepository = blindtestScoreRepository;
     }
 
     @Transactional
@@ -103,6 +111,22 @@ public class MergeService {
         }
         gameRepository.moveGamesToFranchise(sourceId, targetId);
         franchiseRepository.deleteById(sourceId);
+    }
+
+    @Transactional
+    public void mergeListeners(Integer sourceId, Integer targetId) {
+        requireDifferent(sourceId, targetId);
+        if (!listenerRepository.existsById(sourceId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pseudo introuvable");
+        }
+        if (!listenerRepository.existsById(targetId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pseudo cible inconnu");
+        }
+        knowledgeRepository.deleteVotesAlsoByTarget(sourceId, targetId);
+        knowledgeRepository.moveVotesToListener(sourceId, targetId);
+        blindtestScoreRepository.deleteScoresAlsoOfTarget(sourceId, targetId);
+        blindtestScoreRepository.moveScoresToListener(sourceId, targetId);
+        listenerRepository.deleteById(sourceId);
     }
 
     private void requireDifferent(Integer sourceId, Integer targetId) {

@@ -74,9 +74,9 @@ export async function removeTrackLink(token: string, trackId: number, kind: Link
   return response.json()
 }
 
-export type RenameKind = 'franchises' | 'games' | 'tracks'
+export type AdminKind = 'franchises' | 'games' | 'tracks' | 'blindtests' | 'listeners'
 
-export async function renameItem(token: string, kind: RenameKind, id: number, name: string): Promise<{ id: number; name: string }> {
+export async function renameItem(token: string, kind: AdminKind, id: number, name: string): Promise<{ id: number; name: string }> {
   const response = await adminRequest(token, `/api/admin/${kind}/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -85,10 +85,26 @@ export async function renameItem(token: string, kind: RenameKind, id: number, na
   return response.json()
 }
 
-export async function mergeItem(token: string, kind: RenameKind, id: number, targetId: number): Promise<void> {
+export async function mergeItem(token: string, kind: AdminKind, id: number, targetId: number): Promise<void> {
   await adminRequest(token, `/api/admin/${kind}/${id}/merge`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ targetId }),
   })
+}
+
+export async function deleteItem(token: string, kind: AdminKind, id: number): Promise<void> {
+  await adminRequest(token, `/api/admin/${kind}/${id}`, { method: 'DELETE' })
+}
+
+export type ListenerUsage = {
+  id: number
+  name: string
+  votes: number
+  blindtests: number
+}
+
+export async function fetchListenerUsage(token: string): Promise<ListenerUsage[]> {
+  const response = await adminRequest(token, '/api/admin/listeners')
+  return response.json()
 }

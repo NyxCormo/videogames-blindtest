@@ -43,4 +43,8 @@ public interface TrackTagRepository extends JpaRepository<TrackTag, TrackTagId> 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "UPDATE track_tag SET track_id = :targetId WHERE track_id = :sourceId", nativeQuery = true)
     void moveTags(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "DELETE FROM track_tag WHERE track_id = :trackId", nativeQuery = true)
+    void deleteByTrackId(@Param("trackId") Integer trackId);
 }

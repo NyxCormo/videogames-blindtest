@@ -27,4 +27,24 @@ public interface KnowledgeRepository extends JpaRepository<Knowledge, KnowledgeI
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "UPDATE knowledge SET track_id = :targetId WHERE track_id = :sourceId", nativeQuery = true)
     void moveVotes(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Query(value = "SELECT count(*) FROM knowledge WHERE track_id = :trackId", nativeQuery = true)
+    long countByTrackId(@Param("trackId") Integer trackId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "DELETE FROM knowledge WHERE listener_id = :listenerId", nativeQuery = true)
+    void deleteByListenerId(@Param("listenerId") Integer listenerId);
+
+    // Fusion de pseudos : un vote déjà présent pour le pseudo gardé l'emporte sur celui du pseudo supprimé.
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = """
+            DELETE FROM knowledge
+            WHERE listener_id = :sourceId
+              AND track_id IN (SELECT track_id FROM knowledge WHERE listener_id = :targetId)
+            """, nativeQuery = true)
+    void deleteVotesAlsoByTarget(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "UPDATE knowledge SET listener_id = :targetId WHERE listener_id = :sourceId", nativeQuery = true)
+    void moveVotesToListener(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
 }
