@@ -3,6 +3,7 @@ package fr.insalan.blindtest.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,4 +27,15 @@ public interface BlindtestTrackRepository extends JpaRepository<BlindtestTrack, 
         @Param("blindtestId") Integer blindtestId,
         @Param("position") int position
     );
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "UPDATE blindtest_track SET track_id = :targetId WHERE track_id = :sourceId", nativeQuery = true)
+    void replaceTrack(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Query(value = "SELECT count(DISTINCT blindtest_id) FROM blindtest_track WHERE track_id = :trackId", nativeQuery = true)
+    long countBlindtestsWithTrack(@Param("trackId") Integer trackId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "DELETE FROM blindtest_track WHERE blindtest_id = :blindtestId", nativeQuery = true)
+    void deleteByBlindtestId(@Param("blindtestId") Integer blindtestId);
 }

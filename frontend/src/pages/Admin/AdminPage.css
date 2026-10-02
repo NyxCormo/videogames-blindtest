@@ -1,0 +1,96 @@
+.admin-login {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.admin-login label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-session {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-section {
+  margin-top: 2rem;
+}
+
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.admin-link-label {
+  width: 6rem;
+}
+
+.admin-row input {
+  flex: 1;
+}
+
+.admin-cascade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.admin-cascade-column {
+  flex: 1;
+  min-width: 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-cascade-column h3 {
+  margin: 0;
+}
+
+.admin-cascade-picker {
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.admin-cascade-picker select {
+  width: 100%;
+}
+
+.admin-row .name-picker {
+  flex: 1;
+}
+
+.admin-row .name-picker input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-list {
+  list-style: none;
+  padding: 0;
+  max-width: 40rem;
+}
+
+.admin-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+
+.admin-muted {
+  opacity: 0.7;
+}
+
+.admin-section > .admin-row {
+  max-width: 40rem;
+}

@@ -40,6 +40,10 @@ public class Game {
 		return name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public Franchise getFranchise() {
 		return franchise;
 	}

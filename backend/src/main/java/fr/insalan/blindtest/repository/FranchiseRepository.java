@@ -13,5 +13,7 @@ public interface FranchiseRepository extends JpaRepository<Franchise, Integer> {
 
     boolean existsByNameIgnoreCase(String name);
 
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Integer id);
+
     List<Franchise> findAllByOrderByNameAsc();
 }

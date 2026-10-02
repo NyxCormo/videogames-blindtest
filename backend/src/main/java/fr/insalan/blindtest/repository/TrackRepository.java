@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -44,6 +45,8 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
 
     boolean existsByGameAndNameIgnoreCase(Game game, String name);
 
+    boolean existsByGameAndNameIgnoreCaseAndIdNot(Game game, String name, Integer id);
+
     Optional<Track> findFirstByKhinsiderLink(String khinsiderLink);
 
     Optional<Track> findFirstByYoutubeLink(String youtubeLink);
@@ -58,4 +61,16 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
             AND t.id NOT IN (SELECT k.track.id FROM Knowledge k WHERE k.listener.id = :listenerId)
             """)
     List<Track> findPlayableUnknownByListener(@Param("listenerId") Integer listenerId);
+
+    @Query(value = """
+            SELECT s.name FROM track s
+            JOIN track t ON lower(s.name) = lower(t.name)
+            WHERE s.game_id = :sourceId AND t.game_id = :targetId
+            ORDER BY s.name
+            """, nativeQuery = true)
+    List<String> findNamesInBothGames(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = "UPDATE track SET game_id = :targetId WHERE game_id = :sourceId", nativeQuery = true)
+    void moveTracksToGame(@Param("sourceId") Integer sourceId, @Param("targetId") Integer targetId);
 }
