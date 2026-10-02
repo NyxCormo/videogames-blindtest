@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { AdminSessionExpired, deleteItem, mergeItem, renameItem, type AdminKind } from '../../api/admin'
 import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGames, type Game } from '../../api/games'
@@ -6,6 +6,7 @@ import { fetchTracks, type Track } from '../../api/tracks'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { useNotification } from '../../context/NotificationContext'
 import { MergeForm, type Named } from './MergeForm'
+import { RenameForm } from './RenameForm'
 
 type Props = {
   token: string
@@ -235,34 +236,5 @@ export function EditSection({ token, onSessionExpired }: Props) {
         </div>
       </div>
     </section>
-  )
-}
-
-type RenameFormProps = {
-  current: string
-  onRename: (name: string) => void
-}
-
-function RenameForm({ current, onRename }: RenameFormProps) {
-  const [draft, setDraft] = useState(current)
-  const trimmed = draft.trim()
-
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    onRename(trimmed)
-  }
-
-  return (
-    <form className="admin-row" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        aria-label="Nouveau nom"
-        value={draft}
-        onChange={(event) => setDraft(event.target.value)}
-      />
-      <button type="submit" disabled={trimmed === '' || trimmed === current}>
-        Renommer
-      </button>
-    </form>
   )
 }

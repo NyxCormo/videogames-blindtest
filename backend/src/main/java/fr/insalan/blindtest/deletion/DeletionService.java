@@ -11,6 +11,7 @@ import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
+import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import jakarta.transaction.Transactional;
@@ -27,6 +28,7 @@ public class DeletionService {
     private final BlindtestScoreRepository blindtestScoreRepository;
     private final BlindtestDifficultyBandRepository blindtestDifficultyBandRepository;
     private final ListenerRepository listenerRepository;
+    private final TagRepository tagRepository;
 
     public DeletionService(
         TrackRepository trackRepository,
@@ -36,7 +38,8 @@ public class DeletionService {
         BlindtestTrackRepository blindtestTrackRepository,
         BlindtestScoreRepository blindtestScoreRepository,
         BlindtestDifficultyBandRepository blindtestDifficultyBandRepository,
-        ListenerRepository listenerRepository
+        ListenerRepository listenerRepository,
+        TagRepository tagRepository
     ) {
         this.trackRepository = trackRepository;
         this.trackTagRepository = trackTagRepository;
@@ -46,6 +49,7 @@ public class DeletionService {
         this.blindtestScoreRepository = blindtestScoreRepository;
         this.blindtestDifficultyBandRepository = blindtestDifficultyBandRepository;
         this.listenerRepository = listenerRepository;
+        this.tagRepository = tagRepository;
     }
 
     // Une musique déjà votée ou jouée se fusionne : la supprimer ferait perdre ces données.
@@ -83,5 +87,15 @@ public class DeletionService {
         knowledgeRepository.deleteByListenerId(id);
         blindtestScoreRepository.deleteByListenerId(id);
         listenerRepository.deleteById(id);
+    }
+
+    // Retire le tag de toutes les musiques qui l'avaient, puis le supprime.
+    @Transactional
+    public void deleteTag(Integer id) {
+        if (!tagRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag introuvable");
+        }
+        trackTagRepository.deleteByTagId(id);
+        tagRepository.deleteById(id);
     }
 }

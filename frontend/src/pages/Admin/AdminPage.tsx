@@ -6,6 +6,7 @@ import { AudioLinksSection } from './AudioLinksSection'
 import { BlindtestsSection } from './BlindtestsSection'
 import { EditSection } from './EditSection'
 import { ListenersSection } from './ListenersSection'
+import { TagsSection } from './TagsSection'
 import { TrackLinksSection } from './TrackLinksSection'
 import './AdminPage.css'
 
@@ -109,6 +110,7 @@ export function AdminPage() {
       <TrackLinksSection token={token} onSessionExpired={handleSessionExpired} />
       <AudioLinksSection token={token} onSessionExpired={handleSessionExpired} />
       <EditSection token={token} onSessionExpired={handleSessionExpired} />
+      <TagsSection token={token} onSessionExpired={handleSessionExpired} />
       <BlindtestsSection token={token} onSessionExpired={handleSessionExpired} />
       <ListenersSection token={token} onSessionExpired={handleSessionExpired} />
     </>

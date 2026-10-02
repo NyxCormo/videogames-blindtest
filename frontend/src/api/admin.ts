@@ -74,7 +74,7 @@ export async function removeTrackLink(token: string, trackId: number, kind: Link
   return response.json()
 }
 
-export type AdminKind = 'franchises' | 'games' | 'tracks' | 'blindtests' | 'listeners'
+export type AdminKind = 'franchises' | 'games' | 'tracks' | 'blindtests' | 'listeners' | 'tags'
 
 export async function renameItem(token: string, kind: AdminKind, id: number, name: string): Promise<{ id: number; name: string }> {
   const response = await adminRequest(token, `/api/admin/${kind}/${id}`, {
@@ -123,5 +123,17 @@ export async function fetchRefreshStatus(token: string): Promise<RefreshStatus> 
 
 export async function startRefresh(token: string): Promise<RefreshStatus> {
   const response = await adminRequest(token, '/api/admin/audio-links/refresh', { method: 'POST' })
+  return response.json()
+}
+
+export type TagCount = {
+  id: number
+  name: string
+  typeName: string
+  tracks: number
+}
+
+export async function fetchTagCounts(token: string): Promise<TagCount[]> {
+  const response = await adminRequest(token, '/api/admin/tags')
   return response.json()
 }

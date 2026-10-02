@@ -13,6 +13,7 @@ import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
+import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,7 @@ public class MergeService {
     private final BlindtestTrackRepository blindtestTrackRepository;
     private final ListenerRepository listenerRepository;
     private final BlindtestScoreRepository blindtestScoreRepository;
+    private final TagRepository tagRepository;
 
     public MergeService(
         FranchiseRepository franchiseRepository,
@@ -39,7 +41,8 @@ public class MergeService {
         TrackTagRepository trackTagRepository,
         BlindtestTrackRepository blindtestTrackRepository,
         ListenerRepository listenerRepository,
-        BlindtestScoreRepository blindtestScoreRepository
+        BlindtestScoreRepository blindtestScoreRepository,
+        TagRepository tagRepository
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -49,6 +52,7 @@ public class MergeService {
         this.blindtestTrackRepository = blindtestTrackRepository;
         this.listenerRepository = listenerRepository;
         this.blindtestScoreRepository = blindtestScoreRepository;
+        this.tagRepository = tagRepository;
     }
 
     @Transactional
@@ -127,6 +131,20 @@ public class MergeService {
         blindtestScoreRepository.deleteScoresAlsoOfTarget(sourceId, targetId);
         blindtestScoreRepository.moveScoresToListener(sourceId, targetId);
         listenerRepository.deleteById(sourceId);
+    }
+
+    @Transactional
+    public void mergeTags(Integer sourceId, Integer targetId) {
+        requireDifferent(sourceId, targetId);
+        if (!tagRepository.existsById(sourceId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag introuvable");
+        }
+        if (!tagRepository.existsById(targetId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag cible inconnu");
+        }
+        trackTagRepository.deleteTracksAlsoTaggedWithTarget(sourceId, targetId);
+        trackTagRepository.moveToTag(sourceId, targetId);
+        tagRepository.deleteById(sourceId);
     }
 
     private void requireDifferent(Integer sourceId, Integer targetId) {
