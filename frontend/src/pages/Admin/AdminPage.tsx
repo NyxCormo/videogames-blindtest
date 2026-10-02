@@ -1,16 +1,27 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router'
 import { checkAdmin, loginAdmin, logoutAdmin } from '../../api/admin'
 import { useNotification } from '../../context/NotificationContext'
 import { loadAdminToken, storeAdminToken } from './adminToken'
-import { AudioLinksSection } from './AudioLinksSection'
-import { BlindtestsSection } from './BlindtestsSection'
-import { EditSection } from './EditSection'
-import { ListenersSection } from './ListenersSection'
-import { TagsSection } from './TagsSection'
-import { TrackLinksSection } from './TrackLinksSection'
+import { AdminTabs } from './AdminTabs'
+import { BlindtestsTab } from './BlindtestsTab'
+import { CatalogTab } from './CatalogTab'
+import { ListenersTab } from './ListenersTab'
+import { MaintenanceTab } from './MaintenanceTab'
+import { TagsTab } from './TagsTab'
 import './AdminPage.css'
 
+const TABS = [
+  { id: 'catalogue', label: 'Catalogue' },
+  { id: 'tags', label: 'Tags' },
+  { id: 'blindtests', label: 'Blindtests' },
+  { id: 'pseudos', label: 'Pseudos' },
+  { id: 'maintenance', label: 'Maintenance' },
+]
+
 export function AdminPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = TABS.some((item) => item.id === searchParams.get('tab')) ? searchParams.get('tab')! : TABS[0].id
   const { notify } = useNotification()
   const [token, setToken] = useState<string | null>(loadAdminToken)
   const [verified, setVerified] = useState(false)
@@ -107,12 +118,12 @@ export function AdminPage() {
           Se déconnecter
         </button>
       </div>
-      <TrackLinksSection token={token} onSessionExpired={handleSessionExpired} />
-      <AudioLinksSection token={token} onSessionExpired={handleSessionExpired} />
-      <EditSection token={token} onSessionExpired={handleSessionExpired} />
-      <TagsSection token={token} onSessionExpired={handleSessionExpired} />
-      <BlindtestsSection token={token} onSessionExpired={handleSessionExpired} />
-      <ListenersSection token={token} onSessionExpired={handleSessionExpired} />
+      <AdminTabs tabs={TABS} active={tab} onChange={(id) => setSearchParams({ tab: id })} />
+      {tab === 'catalogue' && <CatalogTab onSessionExpired={handleSessionExpired} />}
+      {tab === 'tags' && <TagsTab token={token} onSessionExpired={handleSessionExpired} />}
+      {tab === 'blindtests' && <BlindtestsTab onSessionExpired={handleSessionExpired} />}
+      {tab === 'pseudos' && <ListenersTab token={token} onSessionExpired={handleSessionExpired} />}
+      {tab === 'maintenance' && <MaintenanceTab token={token} onSessionExpired={handleSessionExpired} />}
     </>
   )
 }

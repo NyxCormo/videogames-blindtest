@@ -1,0 +1,71 @@
+import { useState } from 'react'
+import { filterByText, sortByText } from './adminText'
+import { EntityRow } from './EntityRow'
+
+type Props<T extends { id: number }> = {
+  title: string
+  // null tant que la liste se charge
+  items: T[] | null
+  label: (item: T) => string
+  detail?: (item: T) => string
+  searchText?: (item: T) => string
+  activeId?: number | null
+  onOpen?: (item: T) => void
+  emptyText: string
+  // Par défaut, tri alphabétique ; false garde l'ordre reçu (les blindtests, du plus récent au plus ancien).
+  sorted?: boolean
+}
+
+export function EntityList<T extends { id: number }>({
+  title,
+  items,
+  label,
+  detail,
+  searchText,
+  activeId,
+  onOpen,
+  emptyText,
+  sorted = true,
+}: Props<T>) {
+  const [query, setQuery] = useState('')
+  const ordered = items === null ? [] : sorted ? sortByText(items, label) : items
+  const shown = filterByText(ordered, query, searchText ?? label)
+
+  return (
+    <div className="entity-list">
+      <div className="entity-list-header">
+        <h3>{title}</h3>
+        {items !== null && (
+          <span className="entity-row-detail">
+            {shown.length === items.length ? items.length : `${shown.length} / ${items.length}`}
+          </span>
+        )}
+      </div>
+      <input
+        type="search"
+        placeholder="Filtrer"
+        aria-label={`Filtrer : ${title}`}
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        disabled={items === null || items.length === 0}
+      />
+      {items === null ? (
+        <p className="admin-muted">Chargement…</p>
+      ) : shown.length === 0 ? (
+        <p className="admin-muted">{items.length === 0 ? emptyText : 'Aucun résultat pour ce filtre.'}</p>
+      ) : (
+        <ul>
+          {shown.map((item) => (
+            <EntityRow
+              key={item.id}
+              label={label(item)}
+              detail={detail?.(item)}
+              active={item.id === activeId}
+              onOpen={onOpen && (() => onOpen(item))}
+            />
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
