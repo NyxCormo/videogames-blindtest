@@ -7,6 +7,8 @@ import { AdminTabs } from './AdminTabs'
 import { BlindtestsTab } from './BlindtestsTab'
 import { CatalogTab } from './CatalogTab'
 import { ListenersTab } from './ListenersTab'
+import { MergeFooter } from './MergeFooter'
+import { MergeSelectionContext, useMergeSelectionState } from './mergeSelection'
 import { MaintenanceTab } from './MaintenanceTab'
 import { TagsTab } from './TagsTab'
 import './AdminPage.css'
@@ -21,6 +23,7 @@ const TABS = [
 
 export function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const mergeSelection = useMergeSelectionState()
   const tab = TABS.some((item) => item.id === searchParams.get('tab')) ? searchParams.get('tab')! : TABS[0].id
   const { notify } = useNotification()
   const [token, setToken] = useState<string | null>(loadAdminToken)
@@ -118,12 +121,24 @@ export function AdminPage() {
           Se déconnecter
         </button>
       </div>
-      <AdminTabs tabs={TABS} active={tab} onChange={(id) => setSearchParams({ tab: id })} />
-      {tab === 'catalogue' && <CatalogTab token={token} onSessionExpired={handleSessionExpired} />}
-      {tab === 'tags' && <TagsTab token={token} onSessionExpired={handleSessionExpired} />}
-      {tab === 'blindtests' && <BlindtestsTab token={token} onSessionExpired={handleSessionExpired} />}
-      {tab === 'pseudos' && <ListenersTab token={token} onSessionExpired={handleSessionExpired} />}
-      {tab === 'maintenance' && <MaintenanceTab token={token} onSessionExpired={handleSessionExpired} />}
+      <MergeSelectionContext.Provider value={mergeSelection}>
+        <div className={mergeSelection.selection ? 'admin-with-footer' : undefined}>
+          <AdminTabs
+            tabs={TABS}
+            active={tab}
+            onChange={(id) => {
+              mergeSelection.clear()
+              setSearchParams({ tab: id })
+            }}
+          />
+          {tab === 'catalogue' && <CatalogTab token={token} onSessionExpired={handleSessionExpired} />}
+          {tab === 'tags' && <TagsTab token={token} onSessionExpired={handleSessionExpired} />}
+          {tab === 'blindtests' && <BlindtestsTab token={token} onSessionExpired={handleSessionExpired} />}
+          {tab === 'pseudos' && <ListenersTab token={token} onSessionExpired={handleSessionExpired} />}
+          {tab === 'maintenance' && <MaintenanceTab token={token} onSessionExpired={handleSessionExpired} />}
+        </div>
+        <MergeFooter token={token} onSessionExpired={handleSessionExpired} />
+      </MergeSelectionContext.Provider>
     </>
   )
 }

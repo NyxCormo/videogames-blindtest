@@ -273,3 +273,101 @@ button.entity-row-main:hover {
 .admin-modal-actions .admin-danger:disabled {
   opacity: 0.6;
 }
+
+.admin-with-footer {
+  padding-bottom: 5rem;
+}
+
+.entity-row-merge {
+  margin: 0 0 0 0.6rem;
+  accent-color: CanvasText;
+}
+
+.entity-row-merge-a {
+  box-shadow: inset 4px 0 0 #42a5f5;
+  background: color-mix(in srgb, #42a5f5 14%, Canvas);
+}
+
+.entity-row-merge-b {
+  box-shadow: inset 4px 0 0 #ffa726;
+  background: color-mix(in srgb, #ffa726 14%, Canvas);
+}
+
+.merge-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: Canvas;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 12px rgb(0 0 0 / 30%);
+}
+
+.merge-kind {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.merge-operator {
+  font-weight: 600;
+}
+
+.merge-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border: 2px solid var(--border);
+  border-radius: 0.4rem;
+  font: inherit;
+  color: inherit;
+  background: none;
+}
+
+.merge-slot button {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.merge-slot-a {
+  border-color: #42a5f5;
+  background: color-mix(in srgb, #42a5f5 18%, Canvas);
+}
+
+.merge-slot-b {
+  border-color: #ffa726;
+  background: color-mix(in srgb, #ffa726 18%, Canvas);
+}
+
+.merge-slot-empty {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.merge-result {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.merge-result:disabled {
+  cursor: default;
+}
+
+.merge-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.merge-confirm:not(:disabled) {
+  font-weight: 600;
+}

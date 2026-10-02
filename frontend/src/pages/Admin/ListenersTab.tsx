@@ -3,6 +3,7 @@ import { fetchListenerUsage, type ListenerUsage } from '../../api/admin'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { plural } from './adminText'
 import { EntityList } from './EntityList'
+import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
 
@@ -21,10 +22,12 @@ export function ListenersTab({ token, onSessionExpired }: Props) {
     return fetchListenerUsage(token).then(setListeners)
   }
 
+  const { lastMerge } = useMergeSelection()
+
   useEffect(() => {
     load().catch(handleError)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lastMerge])
 
   // Le navigateur connecté avec ce pseudo doit suivre le changement.
   const actions = useEntityActions<ListenerUsage>({
@@ -47,6 +50,7 @@ export function ListenersTab({ token, onSessionExpired }: Props) {
         detail={(listener) => `${plural(listener.votes, 'vote', 'votes')} · ${plural(listener.blindtests, 'blindtest', 'blindtests')}`}
         onRename={actions.rename}
         onDelete={actions.askDelete}
+        mergeKind="listeners"
         emptyText="Aucun pseudo."
       />
     </>

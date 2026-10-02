@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchBlindtests, type Blindtest } from '../../api/blindtests'
 import { EntityList } from './EntityList'
+import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
 
@@ -17,6 +18,8 @@ export function BlindtestsTab({ token, onSessionExpired }: Props) {
     return fetchBlindtests(signal).then(setBlindtests)
   }
 
+  const { lastMerge } = useMergeSelection()
+
   useEffect(() => {
     const controller = new AbortController()
     load(controller.signal).catch((err: Error) => {
@@ -24,7 +27,7 @@ export function BlindtestsTab({ token, onSessionExpired }: Props) {
     })
     return () => controller.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lastMerge])
 
   const actions = useEntityActions<Blindtest>({ token, kind: 'blindtests', noun: 'le blindtest', onSessionExpired, reload: load })
 

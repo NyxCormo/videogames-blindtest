@@ -4,6 +4,7 @@ import { fetchGames, type Game } from '../../api/games'
 import { fetchTracks, type Track } from '../../api/tracks'
 import { plural } from './adminText'
 import { EntityList } from './EntityList'
+import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
 
@@ -32,6 +33,7 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
   const [tracks, setTracks] = useState<Track[]>([])
   const [franchiseId, setFranchiseId] = useState<number | null>(null)
   const [gameId, setGameId] = useState<number | null>(null)
+  const { lastMerge } = useMergeSelection()
 
   function load(signal?: AbortSignal) {
     return Promise.all([fetchFranchises(signal), fetchGames(signal), fetchTracks(signal)]).then(
@@ -50,7 +52,14 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
     })
     return () => controller.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lastMerge])
+
+  // Si la franchise ou le jeu ouvert vient d'être fusionné, la colonne suit l'élément gardé.
+  useEffect(() => {
+    if (lastMerge?.kind === 'franchises' && lastMerge.sourceId === franchiseId) setFranchiseId(lastMerge.targetId)
+    if (lastMerge?.kind === 'games' && lastMerge.sourceId === gameId) setGameId(lastMerge.targetId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastMerge])
 
   const franchiseActions = useEntityActions<Franchise>({
     token,
@@ -79,10 +88,10 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
     return `${plural(franchiseGames.length, 'jeu', 'jeux')} · ${plural(trackCount, 'musique', 'musiques')}`
   }
 
-  const franchiseGames = franchiseId === null ? null : (gamesByFranchise.get(franchiseId) ?? [])
-  const gameTracks = gameId === null ? null : (tracksByGame.get(gameId) ?? [])
   const franchise = franchises?.find((item) => item.id === franchiseId)
-  const game = games.find((item) => item.id === gameId)
+  const franchiseGames = franchise ? (gamesByFranchise.get(franchise.id) ?? []) : null
+  const game = franchiseGames?.find((item) => item.id === gameId)
+  const gameTracks = game ? (tracksByGame.get(game.id) ?? []) : null
 
   return (
     <div className="admin-columns">
@@ -101,6 +110,7 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
         }}
         onRename={franchiseActions.rename}
         onDelete={franchiseActions.askDelete}
+        mergeKind="franchises"
         emptyText="Aucune franchise."
       />
       {franchiseGames === null ? (
@@ -116,6 +126,8 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
           onOpen={(item) => setGameId(item.id)}
           onRename={gameActions.rename}
           onDelete={gameActions.askDelete}
+          mergeKind="games"
+          mergeName={(item) => `${item.name} (${item.franchiseName})`}
           emptyText="Aucun jeu dans cette franchise."
         />
       )}
@@ -129,6 +141,8 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
           label={(item) => item.name}
           onRename={trackActions.rename}
           onDelete={trackActions.askDelete}
+          mergeKind="tracks"
+          mergeName={(item) => `${item.name} (${item.gameName})`}
           emptyText="Aucune musique dans ce jeu."
         />
       )}

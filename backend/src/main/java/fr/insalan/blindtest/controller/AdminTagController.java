@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,6 +21,7 @@ import fr.insalan.blindtest.dto.MergeRequest;
 import fr.insalan.blindtest.dto.RenameRequest;
 import fr.insalan.blindtest.dto.TagCountResponse;
 import fr.insalan.blindtest.dto.TagResponse;
+import fr.insalan.blindtest.merge.MergePreview;
 import fr.insalan.blindtest.merge.MergeService;
 import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.repository.TagRepository;
@@ -57,6 +59,11 @@ public class AdminTagController {
         tag.setName(name);
         tagRepository.save(tag);
         return TagResponse.from(tag);
+    }
+
+    @GetMapping("/{id}/merge-preview")
+    public MergePreview mergePreview(@PathVariable Integer id, @RequestParam Integer into) {
+        return mergeService.previewTags(id, into);
     }
 
     @PostMapping("/{id}/merge")

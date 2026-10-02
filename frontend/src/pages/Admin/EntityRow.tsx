@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type KeyboardEvent } from 'react'
 import { AdminActionsMenu } from './AdminActionsMenu'
+import type { MergeSlot } from './mergeSelection'
 
 type Props = {
   label: string
@@ -8,9 +9,11 @@ type Props = {
   onOpen?: () => void
   onRename?: (name: string) => Promise<unknown>
   onDelete?: () => void
+  // Absent : pas de fusion pour ce type (les blindtests).
+  merge?: { slot: MergeSlot | null; disabled: boolean; onToggle: () => void }
 }
 
-export function EntityRow({ label, detail, active = false, onOpen, onRename, onDelete }: Props) {
+export function EntityRow({ label, detail, active = false, onOpen, onRename, onDelete, merge }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const [saving, setSaving] = useState(false)
@@ -50,7 +53,22 @@ export function EntityRow({ label, detail, active = false, onOpen, onRename, onD
   )
 
   return (
-    <li className={active ? 'entity-row entity-row-active' : 'entity-row'}>
+    <li
+      className={['entity-row', active && 'entity-row-active', merge?.slot && `entity-row-merge-${merge.slot}`]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {merge && (
+        <input
+          type="checkbox"
+          className="entity-row-merge"
+          aria-label={`Sélectionner ${label} pour fusion`}
+          title="Sélectionner pour fusion"
+          checked={merge.slot !== null}
+          disabled={merge.disabled}
+          onChange={merge.onToggle}
+        />
+      )}
       {editing ? (
         <form className="entity-row-edit" onSubmit={handleSubmit}>
           <input

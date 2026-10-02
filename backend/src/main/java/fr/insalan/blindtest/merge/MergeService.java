@@ -6,6 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.model.Franchise;
+import fr.insalan.blindtest.model.Game;
+import fr.insalan.blindtest.model.Listener;
+import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
@@ -19,7 +23,7 @@ import fr.insalan.blindtest.repository.TrackTagRepository;
 import jakarta.transaction.Transactional;
 
 // Chaque fusion déplace tout vers l'élément gardé puis supprime l'autre, dans une seule transaction :
-// si une étape échoue, rien n'est modifié.
+// si une étape échoue, rien n'est modifié. Elle repasse par son aperçu, comme les suppressions.
 @Service
 public class MergeService {
 
@@ -55,13 +59,38 @@ public class MergeService {
         this.tagRepository = tagRepository;
     }
 
+    public MergePreview previewTracks(Integer sourceId, Integer targetId) {
+        requireDifferent(sourceId, targetId);
+        Track source = trackRepository.findByIdWithGameAndFranchise(sourceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
+        Track target = trackRepository.findByIdWithGameAndFranchise(targetId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Musique cible inconnue"));
+        // Le jeu entre parenthèses distingue deux musiques homonymes, le cas le plus courant de fusion.
+        StringBuilder summary = new StringBuilder("« " + source.getName() + " » (" + source.getGame().getName()
+            + ") sera supprimée. « " + target.getName() + " » (" + target.getGame().getName() + ") récupère " + plural(knowledgeRepository.countByTrackId(sourceId), "vote", "votes")
+            + ", " + plural(trackTagRepository.countByTrackId(sourceId), "tag", "tags")
+            + " et " + plural(blindtestTrackRepository.countBlindtestsWithTrack(sourceId), "blindtest", "blindtests"));
+        if (target.getKhinsiderLink() == null && source.getKhinsiderLink() != null) {
+            summary.append(", ainsi que son lien KHInsider");
+        }
+        if (target.getYoutubeLink() == null && source.getYoutubeLink() != null) {
+            summary.append(", ainsi que son lien YouTube");
+        }
+        summary.append(".");
+        long both = knowledgeRepository.countListenersWhoVotedForBoth(sourceId, targetId);
+        if (both > 0) {
+            summary.append(both == 1
+                ? " 1 personne a voté pour les deux : son vote pour « " + target.getName() + " » est gardé."
+                : " " + both + " personnes ont voté pour les deux : leur vote pour « " + target.getName() + " » est gardé.");
+        }
+        return new MergePreview(true, summary.toString());
+    }
+
     @Transactional
     public void mergeTracks(Integer sourceId, Integer targetId) {
-        requireDifferent(sourceId, targetId);
-        Track source = trackRepository.findById(sourceId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Musique introuvable"));
-        Track target = trackRepository.findById(targetId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Musique cible inconnue"));
+        previewTracks(sourceId, targetId);
+        Track source = trackRepository.findById(sourceId).orElseThrow();
+        Track target = trackRepository.findById(targetId).orElseThrow();
 
         if (target.getKhinsiderLink() == null && source.getKhinsiderLink() != null) {
             target.setKhinsiderLink(source.getKhinsiderLink());
@@ -81,51 +110,73 @@ public class MergeService {
         trackRepository.deleteById(sourceId);
     }
 
-    @Transactional
-    public void mergeGames(Integer sourceId, Integer targetId) {
+    public MergePreview previewGames(Integer sourceId, Integer targetId) {
         requireDifferent(sourceId, targetId);
-        if (!gameRepository.existsById(sourceId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Jeu introuvable");
-        }
-        if (!gameRepository.existsById(targetId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jeu cible inconnu");
-        }
+        Game source = gameRepository.findById(sourceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Jeu introuvable"));
+        Game target = gameRepository.findById(targetId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jeu cible inconnu"));
         List<String> clashes = trackRepository.findNamesInBothGames(sourceId, targetId);
         if (!clashes.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                "Musiques présentes dans les deux jeux, à fusionner d'abord : " + String.join(", ", clashes));
+            return new MergePreview(false, "Musiques présentes dans les deux jeux, à fusionner d'abord : " + String.join(", ", clashes));
         }
+        return new MergePreview(true, "« " + source.getName() + " » sera supprimé et son contenu ("
+            + plural(trackRepository.countByGameId(sourceId), "musique", "musiques")
+            + ") passera dans « " + target.getName() + " ».");
+    }
+
+    @Transactional
+    public void mergeGames(Integer sourceId, Integer targetId) {
+        requireAllowed(previewGames(sourceId, targetId));
         trackRepository.moveTracksToGame(sourceId, targetId);
         gameRepository.deleteById(sourceId);
     }
 
-    @Transactional
-    public void mergeFranchises(Integer sourceId, Integer targetId) {
+    public MergePreview previewFranchises(Integer sourceId, Integer targetId) {
         requireDifferent(sourceId, targetId);
-        if (!franchiseRepository.existsById(sourceId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Franchise introuvable");
-        }
-        if (!franchiseRepository.existsById(targetId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Franchise cible inconnue");
-        }
+        Franchise source = franchiseRepository.findById(sourceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Franchise introuvable"));
+        Franchise target = franchiseRepository.findById(targetId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Franchise cible inconnue"));
         List<String> clashes = gameRepository.findNamesInBothFranchises(sourceId, targetId);
         if (!clashes.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                "Jeux présents dans les deux franchises, à fusionner d'abord : " + String.join(", ", clashes));
+            return new MergePreview(false, "Jeux présents dans les deux franchises, à fusionner d'abord : " + String.join(", ", clashes));
         }
+        return new MergePreview(true, "« " + source.getName() + " » sera supprimée et son contenu ("
+            + plural(gameRepository.countByFranchiseId(sourceId), "jeu", "jeux") + ", "
+            + plural(trackRepository.countByFranchiseId(sourceId), "musique", "musiques")
+            + ") passera dans « " + target.getName() + " ».");
+    }
+
+    @Transactional
+    public void mergeFranchises(Integer sourceId, Integer targetId) {
+        requireAllowed(previewFranchises(sourceId, targetId));
         gameRepository.moveGamesToFranchise(sourceId, targetId);
         franchiseRepository.deleteById(sourceId);
     }
 
+    public MergePreview previewListeners(Integer sourceId, Integer targetId) {
+        requireDifferent(sourceId, targetId);
+        Listener source = listenerRepository.findById(sourceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pseudo introuvable"));
+        Listener target = listenerRepository.findById(targetId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pseudo cible inconnu"));
+        StringBuilder summary = new StringBuilder("« " + source.getName() + " » sera supprimé. « " + target.getName()
+            + " » récupère " + plural(knowledgeRepository.countByListenerId(sourceId), "vote", "votes")
+            + " et " + plural(blindtestScoreRepository.countByListenerId(sourceId), "score", "scores") + " de blindtest.");
+        long tracks = knowledgeRepository.countTracksVotedByBoth(sourceId, targetId);
+        long blindtests = blindtestScoreRepository.countBlindtestsPlayedByBoth(sourceId, targetId);
+        if (tracks > 0 || blindtests > 0) {
+            summary.append(" En commun : ").append(plural(tracks, "musique votée", "musiques votées"))
+                .append(" et ").append(plural(blindtests, "blindtest joué", "blindtests joués"))
+                .append(" : ce sont les votes et scores de « ").append(target.getName()).append(" » qui restent.");
+        }
+        return new MergePreview(true, summary.toString());
+    }
+
     @Transactional
     public void mergeListeners(Integer sourceId, Integer targetId) {
-        requireDifferent(sourceId, targetId);
-        if (!listenerRepository.existsById(sourceId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pseudo introuvable");
-        }
-        if (!listenerRepository.existsById(targetId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pseudo cible inconnu");
-        }
+        previewListeners(sourceId, targetId);
         knowledgeRepository.deleteVotesAlsoByTarget(sourceId, targetId);
         knowledgeRepository.moveVotesToListener(sourceId, targetId);
         blindtestScoreRepository.deleteScoresAlsoOfTarget(sourceId, targetId);
@@ -133,15 +184,24 @@ public class MergeService {
         listenerRepository.deleteById(sourceId);
     }
 
+    public MergePreview previewTags(Integer sourceId, Integer targetId) {
+        requireDifferent(sourceId, targetId);
+        Tag source = tagRepository.findById(sourceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag introuvable"));
+        Tag target = tagRepository.findById(targetId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag cible inconnu"));
+        StringBuilder summary = new StringBuilder("« " + source.getName() + " » sera supprimé et « " + target.getName()
+            + " » sera mis sur ses musiques (" + plural(trackTagRepository.countByTagId(sourceId), "musique", "musiques") + ").");
+        long both = trackTagRepository.countTracksTaggedWithBoth(sourceId, targetId);
+        if (both > 0) {
+            summary.append(" ").append(plural(both, "musique avait", "musiques avaient")).append(" déjà les deux.");
+        }
+        return new MergePreview(true, summary.toString());
+    }
+
     @Transactional
     public void mergeTags(Integer sourceId, Integer targetId) {
-        requireDifferent(sourceId, targetId);
-        if (!tagRepository.existsById(sourceId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag introuvable");
-        }
-        if (!tagRepository.existsById(targetId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag cible inconnu");
-        }
+        previewTags(sourceId, targetId);
         trackTagRepository.deleteTracksAlsoTaggedWithTarget(sourceId, targetId);
         trackTagRepository.moveToTag(sourceId, targetId);
         tagRepository.deleteById(sourceId);
@@ -154,5 +214,15 @@ public class MergeService {
         if (targetId.equals(sourceId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible de fusionner un élément avec lui-même");
         }
+    }
+
+    private void requireAllowed(MergePreview preview) {
+        if (!preview.allowed()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, preview.summary());
+        }
+    }
+
+    private static String plural(long count, String singular, String pluralForm) {
+        return count + " " + (count > 1 ? pluralForm : singular);
     }
 }
