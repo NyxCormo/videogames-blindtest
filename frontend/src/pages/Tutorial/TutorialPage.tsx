@@ -1,81 +1,62 @@
+import { Link } from 'react-router'
 import './TutorialPage.css'
 
 export function TutorialPage() {
   return (
     <div className="tutorial">
       <h1>Tutoriel</h1>
+
+      <h2>Comment jouer ?</h2>
+      <ol>
+        <li>
+          Appuyez sur le bouton <strong>Se connecter</strong> et tapez votre pseudo. Si vous n'avez
+          pas encore de compte, appuyez ensuite sur <strong>« Créer [Votre pseudo] »</strong>.
+        </li>
+        <li>
+          Ensuite, allez sur la page <Link to="/blindtests">Blindtests</Link> pour jouer à un
+          blindtest déjà existant et affronter ceux qui ont déjà participé, ou{' '}
+          <Link to="/blindtests/new">créez-en un</Link> !
+        </li>
+      </ol>
       <p>
-        Ce guide présente les différentes pages du site, dans l'ordre du menu.
-        Si jamais vous avez des recommandations de trucs à modifier je ne demande que ça.
+        Si vous avez envie de découvrir toutes les musiques disponibles, et de nous aider à avoir un
+        système de difficulté (basé sur vos scores), testez la page{' '}
+        <Link to="/knowledge">Ma culture</Link>.
+      </p>
+      <p>
+        Sinon, vous pouvez nous aider à mettre <strong>VOS</strong> musiques sur la page{' '}
+        <Link to="/enrichment">Enrichissement</Link> (tuto juste après).
       </p>
 
-      <h2>Musiques</h2>
+      <h2>Comment mettre VOS musiques ?</h2>
       <p>
-        Cette page liste toutes les musiques de la base avec leur franchise et leur jeu. La barre de recherche
-        filtre par franchise, par jeu ou par musique. Le menu déroulant permet de n'afficher que les musiques
-        qui ont une source (KHInsider ou YouTube), ou celles qui n'en ont pas.
+        Sur la page <Link to="/enrichment">Enrichissement</Link>, vous pouvez ajouter des licences
+        (ex : Zelda, Pokémon, Assassin's Creed) avec le bouton en haut, et vous pouvez ajouter des
+        jeux et des musiques.
       </p>
       <p>
-        Le bouton de lecture n'apparaît que pour les musiques réellement jouables dans le navigateur, car avoir
-        une source ne suffit pas toujours. Le bouton « Lecture aléatoire » change le comportement du bouton
-        « suivant » du lecteur en bas de page. Désactivé, il passe à la musique suivante de la liste. Activé, il
-        en choisit une au hasard parmi celles affichées.
-      </p>
-      <p>
-        Un clic sur le nom d'une musique ouvre sa page, où l'on peut ajouter ou retirer des tags (genre,
-        ambiance, plateforme...). Les tags de genre et de plateforme peuvent aussi être appliqués à toutes les
-        musiques du jeu en une seule fois.
+        <strong>
+          N'hésitez pas à ajouter des licences et des jeux même si vous ne mettez pas de musiques !!!
+        </strong>{' '}
+        Cela va pouvoir donner des idées pour les autres joueurs.
       </p>
 
-      <h2>Blindtests</h2>
+      <h3>Ajouter une musique</h3>
       <p>
-        Pour jouer ou créer un blindtest, il faut d'abord se connecter avec un pseudo grâce au bouton en haut à
-        droite. Il suffit de chercher son pseudo, ou de le créer s'il n'existe pas encore. Il n'y a pas de mot
-        de passe, le pseudo sert seulement à enregistrer les scores.
+        Pour pouvoir ajouter une musique, vous devez vous rendre sur le site{' '}
+        <a href="https://downloads.khinsider.com/" target="_blank" rel="noreferrer">
+          downloads.khinsider.com
+        </a>{' '}
+        et chercher votre musique :
       </p>
+      <ol>
+        <li>Trouvez un album et cliquez dessus.</li>
+        <li>Trouvez votre musique et cliquez dessus.</li>
+        <li>Vous devriez être sur la bonne page !</li>
+      </ol>
       <p>
-        Les musiques d'un blindtest sont choisies une fois pour toutes à sa création, selon le nombre de
-        musiques, la difficulté et les tags demandés. Pendant la partie, les musiques passent une par une. Pour
-        répondre, il faut choisir le jeu dans la liste proposée. En cas de doute, un bouton permet de ne donner
-        que la franchise, ce qui rapporte un point partiel. Le nombre d'essais par musique est limité, et la
-        réponse est révélée une fois les essais épuisés.
-      </p>
-      <p>
-        Le classement est trié par défaut sur le nombre de bonnes réponses. Un clic sur l'en-tête d'une colonne
-        trie le tableau selon cette colonne.
-      </p>
-
-      <h2>Ma culture (si vous avez un meilleur nom je suis preneur)</h2>
-      <p>Cette partie sert à indiquer quelles musiques on connaît, en dehors des blindtests. Elle propose deux pages.</p>
-      <p>
-        <strong>Découvrir</strong> fait écouter, au hasard, une musique pour laquelle on n'a pas encore voté. Le
-        nom de la musique est caché par défaut. Dans ce cas, on peut chercher le jeu ou répondre directement
-        avec « Je connais » ou « Je ne sais pas ». Si le nom est affiché, il suffit de répondre par Oui ou par
-        Non.
-      </p>
-      <p>
-        <strong>Liste</strong> affiche toutes les musiques avec un bouton Oui et un bouton Non sur chaque ligne,
-        déjà remplis avec les votes existants. Un clic enregistre le vote immédiatement, et un second clic sur
-        le même bouton l'annule.
-      </p>
-
-      <h2>Enrichissement</h2>
-      <p>
-        Cette page sert à compléter la base en ajoutant des franchises, des jeux, des musiques, ou des liens
-        KHInsider et YouTube aux musiques qui n'en ont pas. Un lien déjà enregistré ne peut pas être modifié
-        depuis cette page, pour éviter les erreurs. Il est aussi impossible d'ajouter un élément qui existe
-        déjà.
-      </p>
-      <p>
-        La base y est présentée sous forme d'arbre (franchises, puis jeux, puis musiques), avec des compteurs
-        qui montrent ce qui manque. Les filtres permettent par exemple de n'afficher que les franchises sans
-        jeu, les jeux avec peu de musiques ou les musiques sans lien.
-      </p>
-
-      <h2>Exporter en CSV</h2>
-      <p>
-        Ce lien du menu télécharge toute la base dans un fichier au même format que le Google Sheet d'origine,
-        avec une colonne par votant.
+        Regardez les liens de la page <Link to="/">Musiques</Link> pour avoir un exemple de comment
+        les liens marchent.
       </p>
     </div>
   )

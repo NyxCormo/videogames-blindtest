@@ -6,6 +6,19 @@
   margin-top: 2rem;
 }
 
-.tutorial p {
+.tutorial h3 {
+  margin-top: 1.5rem;
+}
+
+.tutorial p,
+.tutorial li {
   line-height: 1.5;
+}
+
+.tutorial ol {
+  padding-left: 1.5rem;
+}
+
+.tutorial li {
+  margin-bottom: 0.4rem;
 }
