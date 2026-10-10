@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
+import { EntityAddForm } from './EntityAddForm'
 import { EntityRow, type RowMerge } from './EntityRow'
 import { filterByText, sortByText } from './listText'
 import './EntityList.css'
@@ -16,6 +17,12 @@ type Props<T extends { id: number }> = {
   onDelete?: (item: T) => void
   // État de la case « Sélectionner pour fusion » de chaque ligne ; absent, la liste n'a pas de case.
   mergeFor?: (item: T) => RowMerge
+  extra?: (item: T) => ReactNode
+  // Bouton « + … » en bas de la liste ; la promesse rejetée laisse le champ ouvert pour corriger.
+  addLabel?: string
+  onAdd?: (name: string) => Promise<unknown>
+  // false : pas de champ « Filtrer », quand la page filtre déjà la liste elle-même.
+  filterable?: boolean
   emptyText: string
   // Par défaut, tri alphabétique ; false garde l'ordre reçu (les blindtests, du plus récent au plus ancien).
   sorted?: boolean
@@ -32,6 +39,10 @@ export function EntityList<T extends { id: number }>({
   onRename,
   onDelete,
   mergeFor,
+  extra,
+  addLabel,
+  onAdd,
+  filterable = true,
   emptyText,
   sorted = true,
 }: Props<T>) {
@@ -49,14 +60,16 @@ export function EntityList<T extends { id: number }>({
           </span>
         )}
       </div>
-      <input
-        type="search"
-        placeholder="Filtrer"
-        aria-label={`Filtrer : ${title}`}
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        disabled={items === null || items.length === 0}
-      />
+      {filterable && (
+        <input
+          type="search"
+          placeholder="Filtrer"
+          aria-label={`Filtrer : ${title}`}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          disabled={items === null || items.length === 0}
+        />
+      )}
       {items === null ? (
         <p className="entity-muted">Chargement…</p>
       ) : shown.length === 0 ? (
@@ -73,10 +86,12 @@ export function EntityList<T extends { id: number }>({
               onRename={onRename && ((name) => onRename(item, name))}
               onDelete={onDelete && (() => onDelete(item))}
               merge={mergeFor?.(item)}
+              extra={extra?.(item)}
             />
           ))}
         </ul>
       )}
+      {addLabel && onAdd && items !== null && <EntityAddForm label={addLabel} onAdd={onAdd} />}
     </div>
   )
 }

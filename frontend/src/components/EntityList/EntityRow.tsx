@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { EntityActionsMenu } from './EntityActionsMenu'
 
 export type MergeSlot = 'a' | 'b'
@@ -13,9 +13,11 @@ type Props = {
   onDelete?: () => void
   // Absent : pas de case « Sélectionner pour fusion » sur cette ligne.
   merge?: RowMerge
+  // Contenu libre affiché sur une seconde ligne, sous le nom (les liens d'une musique).
+  extra?: ReactNode
 }
 
-export function EntityRow({ label, detail, active = false, onOpen, onRename, onDelete, merge }: Props) {
+export function EntityRow({ label, detail, active = false, onOpen, onRename, onDelete, merge, extra }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const [saving, setSaving] = useState(false)
@@ -95,6 +97,7 @@ export function EntityRow({ label, detail, active = false, onOpen, onRename, onD
         <div className="entity-row-main">{content}</div>
       )}
       {!editing && onRename && onDelete && <EntityActionsMenu onRename={startEditing} onDelete={onDelete} />}
+      {extra && <div className="entity-row-extra">{extra}</div>}
     </li>
   )
 }
