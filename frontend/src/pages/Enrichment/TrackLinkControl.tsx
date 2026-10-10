@@ -19,7 +19,7 @@ type Props = {
   onSubmit: (event: FormEvent) => void
 }
 
-// Un badge si le lien existe déjà (jamais modifiable ici, réservé à un futur panneau admin), sinon un
+// Un badge si le lien existe déjà (il se modifie dans le panneau admin, pas ici), sinon un
 // bouton qui ouvre un petit formulaire pour l'ajouter.
 export function TrackLinkControl({ track, kind, addingFor, draft, onStartAdding, onDraftChange, onCancel, onSubmit }: Props) {
   const link = kind === 'khinsider' ? track.khinsiderLink : track.youtubeLink

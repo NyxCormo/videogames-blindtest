@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { fetchListenerUsage, type ListenerUsage } from '../../api/admin'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
-import { plural } from './adminText'
-import { EntityList } from './EntityList'
+import { EntityList } from '../../components/EntityList/EntityList'
+import { plural } from '../../components/EntityList/listText'
 import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
@@ -22,7 +22,7 @@ export function ListenersTab({ token, onSessionExpired }: Props) {
     return fetchListenerUsage(token).then(setListeners)
   }
 
-  const { lastMerge } = useMergeSelection()
+  const { lastMerge, rowMerge } = useMergeSelection()
 
   useEffect(() => {
     load().catch(handleError)
@@ -50,7 +50,7 @@ export function ListenersTab({ token, onSessionExpired }: Props) {
         detail={(listener) => `${plural(listener.votes, 'vote', 'votes')} · ${plural(listener.blindtests, 'blindtest', 'blindtests')}`}
         onRename={actions.rename}
         onDelete={actions.askDelete}
-        mergeKind="listeners"
+        mergeFor={(listener) => rowMerge('listeners', listener)}
         emptyText="Aucun pseudo."
       />
     </>

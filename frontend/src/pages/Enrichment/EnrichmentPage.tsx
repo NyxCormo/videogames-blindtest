@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { createFranchise, fetchFranchises, type Franchise } from '../../api/franchises'
 import { createGame, fetchGames, type Game } from '../../api/games'
-import { addKhinsiderLink, addYoutubeLink, createTrack, fetchTracks, type Track } from '../../api/tracks'
+import { addKhinsiderLink, addYoutubeLink, createTrack, fetchTracks, hasSource, type Track } from '../../api/tracks'
+import { EntityList } from '../../components/EntityList/EntityList'
+import { plural } from '../../components/EntityList/listText'
 import { useNotification } from '../../context/NotificationContext'
 import { filterEnrichment } from './filterEnrichment'
 import { TrackLinkControl } from './TrackLinkControl'
@@ -21,12 +23,8 @@ export function EnrichmentPage() {
   const [maxTracksPerGame, setMaxTracksPerGame] = useState(MAX_TRACKS_PER_GAME)
   const [onlyTracksWithoutLinks, setOnlyTracksWithoutLinks] = useState(false)
 
-  const [addingFranchise, setAddingFranchise] = useState(false)
-  const [franchiseDraft, setFranchiseDraft] = useState('')
-  const [addingGameFor, setAddingGameFor] = useState<number | null>(null)
-  const [gameDraft, setGameDraft] = useState('')
-  const [addingTrackFor, setAddingTrackFor] = useState<number | null>(null)
-  const [trackDraft, setTrackDraft] = useState('')
+  const [franchiseId, setFranchiseId] = useState<number | null>(null)
+  const [gameId, setGameId] = useState<number | null>(null)
   const [addingKhinsiderFor, setAddingKhinsiderFor] = useState<number | null>(null)
   const [khinsiderDraft, setKhinsiderDraft] = useState('')
   const [addingYoutubeFor, setAddingYoutubeFor] = useState<number | null>(null)
@@ -76,46 +74,44 @@ export function EnrichmentPage() {
     ],
   )
 
-  function submitNewFranchise(event: FormEvent) {
-    event.preventDefault()
-    const name = franchiseDraft.trim()
-    if (!name) return
-    createFranchise(name)
-      .then(() => {
-        setFranchiseDraft('')
-        setAddingFranchise(false)
-        notify(`Franchise « ${name} » ajoutée.`, 'success')
+  // La promesse rejetée laisse le champ d'ajout ouvert pour corriger le nom.
+  function addFranchise(name: string) {
+    return createFranchise(name)
+      .then((created) => {
+        notify(`Franchise « ${created.name} » ajoutée.`, 'success')
+        setFranchiseId(created.id)
+        setGameId(null)
         return loadAll()
       })
-      .catch((err: Error) => notify(err.message, 'error'))
+      .catch((err: Error) => {
+        notify(err.message, 'error')
+        throw err
+      })
   }
 
-  function submitNewGame(event: FormEvent, franchiseId: number) {
-    event.preventDefault()
-    const name = gameDraft.trim()
-    if (!name) return
-    createGame(name, franchiseId)
-      .then(() => {
-        setGameDraft('')
-        setAddingGameFor(null)
-        notify(`Jeu « ${name} » ajouté.`, 'success')
+  function addGame(name: string, toFranchiseId: number) {
+    return createGame(name, toFranchiseId)
+      .then((created) => {
+        notify(`Jeu « ${created.name} » ajouté.`, 'success')
+        setGameId(created.id)
         return loadAll()
       })
-      .catch((err: Error) => notify(err.message, 'error'))
+      .catch((err: Error) => {
+        notify(err.message, 'error')
+        throw err
+      })
   }
 
-  function submitNewTrack(event: FormEvent, gameId: number) {
-    event.preventDefault()
-    const name = trackDraft.trim()
-    if (!name) return
-    createTrack(name, gameId)
-      .then(() => {
-        setTrackDraft('')
-        setAddingTrackFor(null)
-        notify(`Musique « ${name} » ajoutée.`, 'success')
+  function addTrack(name: string, toGameId: number) {
+    return createTrack(name, toGameId)
+      .then((created) => {
+        notify(`Musique « ${created.name} » ajoutée.`, 'success')
         return loadAll()
       })
-      .catch((err: Error) => notify(err.message, 'error'))
+      .catch((err: Error) => {
+        notify(err.message, 'error')
+        throw err
+      })
   }
 
   function submitKhinsiderLink(event: FormEvent, trackId: number) {
@@ -156,44 +152,23 @@ export function EnrichmentPage() {
   if (error) {
     return <p role="alert">Impossible de charger les données.</p>
   }
-  if (franchises === null) {
-    return <p>Chargement...</p>
+
+  // Les compteurs portent sur toute la base, pas sur ce que les filtres laissent passer.
+  function franchiseDetail(franchise: Franchise): string {
+    const franchiseGames = games.filter((game) => game.franchiseId === franchise.id)
+    const trackCount = tracks.filter((track) => franchiseGames.some((game) => game.id === track.gameId)).length
+    return `${plural(franchiseGames.length, 'jeu', 'jeux')} · ${plural(trackCount, 'musique', 'musiques')}`
   }
+
+  const selected = shown.find((entry) => entry.franchise.id === franchiseId)
+  const game = selected?.games.find((item) => item.id === gameId)
+  const gameTracks = game
+    ? tracks.filter((track) => track.gameId === game.id && (!onlyTracksWithoutLinks || !hasSource(track)))
+    : null
 
   return (
     <>
       <h1>Enrichissement</h1>
-
-      {addingFranchise ? (
-        <form className="enrichment-add-form" onSubmit={submitNewFranchise}>
-          <input
-            type="text"
-            placeholder="Nom de la franchise"
-            aria-label="Nom de la franchise"
-            value={franchiseDraft}
-            onChange={(event) => setFranchiseDraft(event.target.value)}
-            autoFocus
-          />
-          <button type="submit">Créer</button>
-          <button
-            type="button"
-            onClick={() => {
-              setAddingFranchise(false)
-              setFranchiseDraft('')
-            }}
-          >
-            Annuler
-          </button>
-        </form>
-      ) : (
-        <button
-          type="button"
-          className="enrichment-add-franchise"
-          onClick={() => setAddingFranchise(true)}
-        >
-          Ajouter une franchise
-        </button>
-      )}
 
       <div className="controls">
         <input
@@ -238,142 +213,85 @@ export function EnrichmentPage() {
           />
         </label>
       </div>
-      {shown.length === 0 ? (
-        <p>Aucune franchise ne correspond.</p>
-      ) : (
-      <div className="enrichment-tree">
-        {shown.map(({ franchise, games: franchiseGames }) => {
-          const totalGames = games.filter((game) => game.franchiseId === franchise.id).length
-          const totalTracks = games
-            .filter((game) => game.franchiseId === franchise.id)
-            .reduce((total, game) => total + tracks.filter((track) => track.gameId === game.id).length, 0)
-          return (
-            <details key={franchise.id} className="enrichment-franchise" open>
-              <summary>
-                <span>
-                  {franchise.name} ({totalGames}) ({totalTracks})
-                </span>
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    event.currentTarget.closest('details')!.open = true
-                    setAddingGameFor(franchise.id)
+
+      <div className="entity-columns enrichment-columns">
+        <EntityList
+          title="Franchises"
+          items={franchises === null ? null : shown.map((entry) => entry.franchise)}
+          label={(item) => item.name}
+          detail={franchiseDetail}
+          activeId={selected?.franchise.id}
+          onOpen={(item) => {
+            setFranchiseId(item.id)
+            setGameId(null)
+          }}
+          addLabel="Ajouter une franchise"
+          onAdd={addFranchise}
+          emptyText="Aucune franchise ne correspond."
+          filterable={false}
+        />
+        {selected ? (
+          <EntityList
+            key={`jeux-${selected.franchise.id}`}
+            title={`Jeux de ${selected.franchise.name}`}
+            items={selected.games}
+            label={(item) => item.name}
+            detail={(item) => plural(tracks.filter((track) => track.gameId === item.id).length, 'musique', 'musiques')}
+            activeId={game?.id}
+            onOpen={(item) => setGameId(item.id)}
+            addLabel="Ajouter un jeu"
+            onAdd={(name) => addGame(name, selected.franchise.id)}
+            emptyText="Aucun jeu ne correspond dans cette franchise."
+            filterable={false}
+          />
+        ) : (
+          <p className="entity-muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
+        )}
+        {game && gameTracks ? (
+          <EntityList
+            key={`musiques-${game.id}`}
+            title={`Musiques de ${game.name}`}
+            items={gameTracks}
+            label={(item) => item.name}
+            extra={(track) => (
+              <>
+                <TrackLinkControl
+                  track={track}
+                  kind="khinsider"
+                  addingFor={addingKhinsiderFor}
+                  draft={khinsiderDraft}
+                  onStartAdding={() => setAddingKhinsiderFor(track.id)}
+                  onDraftChange={setKhinsiderDraft}
+                  onCancel={() => {
+                    setAddingKhinsiderFor(null)
+                    setKhinsiderDraft('')
                   }}
-                >
-                  Ajouter un jeu
-                </button>
-              </summary>
-              <div className="enrichment-games">
-                {addingGameFor === franchise.id && (
-                  <form className="enrichment-add-form" onSubmit={(event) => submitNewGame(event, franchise.id)}>
-                    <input
-                      type="text"
-                      placeholder="Nom du jeu"
-                      aria-label="Nom du jeu"
-                      value={gameDraft}
-                      onChange={(event) => setGameDraft(event.target.value)}
-                      autoFocus
-                    />
-                    <button type="submit">Créer</button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAddingGameFor(null)
-                        setGameDraft('')
-                      }}
-                    >
-                      Annuler
-                    </button>
-                  </form>
-                )}
-                {franchiseGames.map((game) => {
-                  const gameTracks = tracks.filter((track) => track.gameId === game.id)
-                  return (
-                    <details key={game.id} className="enrichment-game">
-                      <summary>
-                        <span>
-                          {game.name} ({gameTracks.length})
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            event.currentTarget.closest('details')!.open = true
-                            setAddingTrackFor(game.id)
-                          }}
-                        >
-                          Ajouter une musique
-                        </button>
-                      </summary>
-                      <ul className="enrichment-tracks">
-                        {addingTrackFor === game.id && (
-                          <li>
-                            <form className="enrichment-add-form" onSubmit={(event) => submitNewTrack(event, game.id)}>
-                              <input
-                                type="text"
-                                placeholder="Nom de la musique"
-                                aria-label="Nom de la musique"
-                                value={trackDraft}
-                                onChange={(event) => setTrackDraft(event.target.value)}
-                                autoFocus
-                              />
-                              <button type="submit">Créer</button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setAddingTrackFor(null)
-                                  setTrackDraft('')
-                                }}
-                              >
-                                Annuler
-                              </button>
-                            </form>
-                          </li>
-                        )}
-                        {gameTracks.map((track) => (
-                          <li key={track.id} className="enrichment-track">
-                            <span>{track.name}</span>
-                            <span className="enrichment-track-links">
-                              <TrackLinkControl
-                                track={track}
-                                kind="khinsider"
-                                addingFor={addingKhinsiderFor}
-                                draft={khinsiderDraft}
-                                onStartAdding={() => setAddingKhinsiderFor(track.id)}
-                                onDraftChange={setKhinsiderDraft}
-                                onCancel={() => {
-                                  setAddingKhinsiderFor(null)
-                                  setKhinsiderDraft('')
-                                }}
-                                onSubmit={(event) => submitKhinsiderLink(event, track.id)}
-                              />
-                              <TrackLinkControl
-                                track={track}
-                                kind="youtube"
-                                addingFor={addingYoutubeFor}
-                                draft={youtubeDraft}
-                                onStartAdding={() => setAddingYoutubeFor(track.id)}
-                                onDraftChange={setYoutubeDraft}
-                                onCancel={() => {
-                                  setAddingYoutubeFor(null)
-                                  setYoutubeDraft('')
-                                }}
-                                onSubmit={(event) => submitYoutubeLink(event, track.id)}
-                              />
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
-                  )
-                })}
-              </div>
-            </details>
-          )
-        })}
+                  onSubmit={(event) => submitKhinsiderLink(event, track.id)}
+                />
+                <TrackLinkControl
+                  track={track}
+                  kind="youtube"
+                  addingFor={addingYoutubeFor}
+                  draft={youtubeDraft}
+                  onStartAdding={() => setAddingYoutubeFor(track.id)}
+                  onDraftChange={setYoutubeDraft}
+                  onCancel={() => {
+                    setAddingYoutubeFor(null)
+                    setYoutubeDraft('')
+                  }}
+                  onSubmit={(event) => submitYoutubeLink(event, track.id)}
+                />
+              </>
+            )}
+            addLabel="Ajouter une musique"
+            onAdd={(name) => addTrack(name, game.id)}
+            emptyText={onlyTracksWithoutLinks ? 'Toutes les musiques de ce jeu ont un lien.' : 'Aucune musique dans ce jeu.'}
+            filterable={false}
+          />
+        ) : (
+          <p className="entity-muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
+        )}
       </div>
-      )}
     </>
   )
 }

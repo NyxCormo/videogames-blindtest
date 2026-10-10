@@ -1,19 +1,3 @@
-.enrichment-add-franchise {
-  margin-bottom: 1rem;
-}
-
-.enrichment-add-form {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.4rem 0;
-}
-
-.enrichment-add-form input {
-  flex: 1 1 16rem;
-  padding: 0.4rem;
-  font: inherit;
-}
-
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -33,72 +17,20 @@
   gap: 0.5rem;
 }
 
-.enrichment-tree {
-  margin-top: 1rem;
-  border-bottom: 2px solid var(--border);
+.enrichment-columns {
+  margin-top: 1.5rem;
 }
 
-.enrichment-franchise {
-  border-top: 2px solid var(--border);
-}
-
-.enrichment-franchise > summary {
+.enrichment-add-form {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.enrichment-games {
-  padding-left: 1.5rem;
-}
-
-.enrichment-game {
-  border-top: 1px solid var(--border);
-  border-left: 2px solid var(--border);
-  padding-left: 0.75rem;
-}
-
-.enrichment-game > summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.4rem 0;
-  cursor: pointer;
-}
-
-.enrichment-tracks {
-  list-style: none;
-  margin: 0;
-  padding: 0.2rem 0 0.4rem 1.5rem;
-  border-left: 2px solid var(--border);
-}
-
-.enrichment-tracks li {
-  padding: 0.15rem 0;
-  color: var(--muted);
-}
-
-.enrichment-tracks li:has(.enrichment-add-form) {
-  color: inherit;
-}
-
-.enrichment-track {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
   flex-wrap: wrap;
+  flex-basis: 100%;
+  gap: 0.4rem;
 }
 
-.enrichment-track-links {
-  display: flex;
-  gap: 0.4rem;
-  align-items: center;
+.enrichment-add-form input {
+  flex: 1;
+  min-width: 8rem;
 }
 
 .enrichment-badge {

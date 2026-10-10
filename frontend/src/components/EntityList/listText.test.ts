@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { filterByText, plural, sortByText } from './adminText'
+import { filterByText, plural, sortByText } from './listText'
 
 describe('plural', () => {
   it('accorde selon le nombre', () => {
