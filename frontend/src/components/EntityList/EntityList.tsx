@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import type { AdminKind } from '../../api/admin'
-import { filterByText, sortByText } from './adminText'
-import { EntityRow } from './EntityRow'
-import { useMergeSelection } from './mergeSelection'
+import { EntityRow, type RowMerge } from './EntityRow'
+import { filterByText, sortByText } from './listText'
+import './EntityList.css'
 
 type Props<T extends { id: number }> = {
   title: string
@@ -15,10 +14,8 @@ type Props<T extends { id: number }> = {
   onOpen?: (item: T) => void
   onRename?: (item: T, name: string) => Promise<unknown>
   onDelete?: (item: T) => void
-  // Type utilisé pour la fusion ; absent, la liste n'a pas de case « Sélectionner pour fusion ».
-  mergeKind?: AdminKind
-  // Nom affiché dans le bandeau de fusion, quand le nom seul ne suffit pas (deux musiques homonymes).
-  mergeName?: (item: T) => string
+  // État de la case « Sélectionner pour fusion » de chaque ligne ; absent, la liste n'a pas de case.
+  mergeFor?: (item: T) => RowMerge
   emptyText: string
   // Par défaut, tri alphabétique ; false garde l'ordre reçu (les blindtests, du plus récent au plus ancien).
   sorted?: boolean
@@ -34,12 +31,10 @@ export function EntityList<T extends { id: number }>({
   onOpen,
   onRename,
   onDelete,
-  mergeKind,
-  mergeName,
+  mergeFor,
   emptyText,
   sorted = true,
 }: Props<T>) {
-  const mergeSelection = useMergeSelection()
   const [query, setQuery] = useState('')
   const ordered = items === null ? [] : sorted ? sortByText(items, label) : items
   const shown = filterByText(ordered, query, searchText ?? label)
@@ -63,9 +58,9 @@ export function EntityList<T extends { id: number }>({
         disabled={items === null || items.length === 0}
       />
       {items === null ? (
-        <p className="admin-muted">Chargement…</p>
+        <p className="entity-muted">Chargement…</p>
       ) : shown.length === 0 ? (
-        <p className="admin-muted">{items.length === 0 ? emptyText : 'Aucun résultat pour ce filtre.'}</p>
+        <p className="entity-muted">{items.length === 0 ? emptyText : 'Aucun résultat pour ce filtre.'}</p>
       ) : (
         <ul>
           {shown.map((item) => (
@@ -77,13 +72,7 @@ export function EntityList<T extends { id: number }>({
               onOpen={onOpen && (() => onOpen(item))}
               onRename={onRename && ((name) => onRename(item, name))}
               onDelete={onDelete && (() => onDelete(item))}
-              merge={
-                mergeKind && {
-                  slot: mergeSelection.slotOf(mergeKind, item.id),
-                  disabled: !mergeSelection.canSelect(mergeKind, item.id),
-                  onToggle: () => mergeSelection.toggle(mergeKind, { id: item.id, name: (mergeName ?? label)(item) }),
-                }
-              }
+              merge={mergeFor?.(item)}
             />
           ))}
         </ul>

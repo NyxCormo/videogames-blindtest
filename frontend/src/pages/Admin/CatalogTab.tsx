@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGames, type Game } from '../../api/games'
 import { fetchTracks, type Track } from '../../api/tracks'
-import { plural } from './adminText'
-import { EntityList } from './EntityList'
+import { EntityList } from '../../components/EntityList/EntityList'
+import { plural } from '../../components/EntityList/listText'
 import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
@@ -33,7 +33,7 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
   const [tracks, setTracks] = useState<Track[]>([])
   const [franchiseId, setFranchiseId] = useState<number | null>(null)
   const [gameId, setGameId] = useState<number | null>(null)
-  const { lastMerge } = useMergeSelection()
+  const { lastMerge, rowMerge } = useMergeSelection()
 
   function load(signal?: AbortSignal) {
     return Promise.all([fetchFranchises(signal), fetchGames(signal), fetchTracks(signal)]).then(
@@ -94,7 +94,7 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
   const gameTracks = game ? (tracksByGame.get(game.id) ?? []) : null
 
   return (
-    <div className="admin-columns">
+    <div className="entity-columns">
       {franchiseActions.modal}
       {gameActions.modal}
       {trackActions.modal}
@@ -110,11 +110,11 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
         }}
         onRename={franchiseActions.rename}
         onDelete={franchiseActions.askDelete}
-        mergeKind="franchises"
+        mergeFor={(item) => rowMerge('franchises', item)}
         emptyText="Aucune franchise."
       />
       {franchiseGames === null ? (
-        <p className="admin-muted admin-column-hint">Choisir une franchise pour voir ses jeux.</p>
+        <p className="entity-muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
       ) : (
         <EntityList
           key={`jeux-${franchiseId}`}
@@ -126,13 +126,12 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
           onOpen={(item) => setGameId(item.id)}
           onRename={gameActions.rename}
           onDelete={gameActions.askDelete}
-          mergeKind="games"
-          mergeName={(item) => `${item.name} (${item.franchiseName})`}
+          mergeFor={(item) => rowMerge('games', { id: item.id, name: `${item.name} (${item.franchiseName})` })}
           emptyText="Aucun jeu dans cette franchise."
         />
       )}
       {gameTracks === null ? (
-        <p className="admin-muted admin-column-hint">Choisir un jeu pour voir ses musiques.</p>
+        <p className="entity-muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
       ) : (
         <EntityList
           key={`musiques-${gameId}`}
@@ -141,8 +140,7 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
           label={(item) => item.name}
           onRename={trackActions.rename}
           onDelete={trackActions.askDelete}
-          mergeKind="tracks"
-          mergeName={(item) => `${item.name} (${item.gameName})`}
+          mergeFor={(item) => rowMerge('tracks', { id: item.id, name: `${item.name} (${item.gameName})` })}
           emptyText="Aucune musique dans ce jeu."
         />
       )}

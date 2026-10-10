@@ -1,7 +1,8 @@
 import { createContext, useContext, useState } from 'react'
 import type { AdminKind } from '../../api/admin'
+import type { MergeSlot, RowMerge } from '../../components/EntityList/EntityRow'
 
-export type MergeSlot = 'a' | 'b'
+export type { MergeSlot }
 export type MergeItem = { id: number; name: string }
 export type MergeSelection = { kind: AdminKind; a: MergeItem | null; b: MergeItem | null; keep: MergeSlot }
 export type LastMerge = { kind: AdminKind; sourceId: number; targetId: number }
@@ -11,6 +12,8 @@ type MergeSelectionValue = {
   slotOf: (kind: AdminKind, id: number) => MergeSlot | null
   canSelect: (kind: AdminKind, id: number) => boolean
   toggle: (kind: AdminKind, item: MergeItem) => void
+  // Ce qu'une ligne de liste doit afficher pour cet élément (case cochée, désactivée, couleur).
+  rowMerge: (kind: AdminKind, item: MergeItem) => RowMerge
   remove: (slot: MergeSlot) => void
   switchKeep: () => void
   clear: () => void
@@ -74,6 +77,11 @@ export function useMergeSelectionState(): MergeSelectionValue {
     slotOf,
     canSelect,
     toggle,
+    rowMerge: (kind, item) => ({
+      slot: slotOf(kind, item.id),
+      disabled: !canSelect(kind, item.id),
+      onToggle: () => toggle(kind, item),
+    }),
     remove,
     switchKeep: () => setSelection((current) => current && { ...current, keep: current.keep === 'a' ? 'b' : 'a' }),
     clear: () => setSelection(null),

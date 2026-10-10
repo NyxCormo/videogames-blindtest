@@ -39,100 +39,6 @@
   font-weight: 600;
 }
 
-.admin-columns {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  align-items: start;
-}
-
-@media (max-width: 800px) {
-  .admin-columns {
-    grid-template-columns: 1fr;
-  }
-}
-
-.admin-column-hint {
-  margin-top: 2.5rem;
-}
-
-.entity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.entity-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.5rem;
-}
-
-.entity-list h3 {
-  margin: 0;
-}
-
-.entity-list ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 60vh;
-  overflow-y: auto;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-}
-
-.entity-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.entity-row + .entity-row {
-  border-top: 1px solid var(--border);
-}
-
-.entity-row-main {
-  box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
-  padding: 0.4rem 0.6rem;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-}
-
-button.entity-row-main {
-  cursor: pointer;
-}
-
-button.entity-row-main:hover {
-  background: color-mix(in srgb, CanvasText 6%, Canvas);
-}
-
-.entity-row-active .entity-row-main {
-  background: color-mix(in srgb, CanvasText 14%, Canvas);
-  font-weight: 600;
-}
-
-.entity-row-label {
-  overflow-wrap: anywhere;
-}
-
-.entity-row-detail {
-  color: var(--muted);
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
 .admin-section {
   margin-top: 2rem;
 }
@@ -160,72 +66,10 @@ button.entity-row-main:hover {
   opacity: 0.7;
 }
 
-.entity-row-edit {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
-  flex: 1;
-  padding: 0.3rem 0.6rem;
-}
-
-.entity-row-edit input {
-  flex: 1;
-  min-width: 8rem;
-}
-
-.entity-row-error {
+.admin-modal-blocked {
   color: #ef5350;
-  font-size: 0.85rem;
-  width: 100%;
 }
 
-.admin-actions {
-  padding-right: 0.4rem;
-}
-
-.admin-actions-toggle {
-  width: 1.8rem;
-  text-align: center;
-  border: none;
-  background: none;
-  color: var(--muted);
-  font: inherit;
-  font-size: 1.1rem;
-  line-height: 1;
-  padding: 0.2rem 0.4rem;
-  border-radius: 0.3rem;
-  cursor: pointer;
-}
-
-.admin-actions-toggle:hover {
-  color: inherit;
-  background: color-mix(in srgb, CanvasText 10%, Canvas);
-}
-
-.admin-actions-menu {
-  display: flex;
-  gap: 0.25rem;
-  flex-basis: 100%;
-  padding: 0 0.6rem 0.4rem;
-}
-
-.admin-actions-menu button {
-  border: 1px solid var(--border);
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-size: 0.85rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: 0.3rem;
-  cursor: pointer;
-}
-
-.admin-actions-menu button:hover {
-  background: color-mix(in srgb, CanvasText 10%, Canvas);
-}
-
-.admin-actions-menu .admin-danger,
 .admin-modal-blocked {
   color: #ef5350;
 }
@@ -276,21 +120,6 @@ button.entity-row-main:hover {
 
 .admin-with-footer {
   padding-bottom: 5rem;
-}
-
-.entity-row-merge {
-  margin: 0 0 0 0.6rem;
-  accent-color: CanvasText;
-}
-
-.entity-row-merge-a {
-  box-shadow: inset 4px 0 0 #42a5f5;
-  background: color-mix(in srgb, #42a5f5 14%, Canvas);
-}
-
-.entity-row-merge-b {
-  box-shadow: inset 4px 0 0 #ffa726;
-  background: color-mix(in srgb, #ffa726 14%, Canvas);
 }
 
 .merge-footer {

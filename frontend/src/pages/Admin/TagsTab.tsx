@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchTagCounts, type TagCount } from '../../api/admin'
-import { plural } from './adminText'
-import { EntityList } from './EntityList'
+import { EntityList } from '../../components/EntityList/EntityList'
+import { plural } from '../../components/EntityList/listText'
 import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
@@ -19,7 +19,7 @@ export function TagsTab({ token, onSessionExpired }: Props) {
     return fetchTagCounts(token).then(setTags)
   }
 
-  const { lastMerge } = useMergeSelection()
+  const { lastMerge, rowMerge } = useMergeSelection()
 
   useEffect(() => {
     load().catch(handleError)
@@ -39,7 +39,7 @@ export function TagsTab({ token, onSessionExpired }: Props) {
         searchText={(tag) => `${tag.name} ${tag.typeName}`}
         onRename={actions.rename}
         onDelete={actions.askDelete}
-        mergeKind="tags"
+        mergeFor={(tag) => rowMerge('tags', tag)}
         emptyText="Aucun tag."
       />
     </>

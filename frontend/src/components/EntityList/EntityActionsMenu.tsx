@@ -7,7 +7,7 @@ type Props = {
 }
 
 // Les actions restent cachées derrière « ⋯ » pour éviter un clic par erreur dans une longue liste.
-export function AdminActionsMenu({ onRename, onDelete, disabled = false }: Props) {
+export function EntityActionsMenu({ onRename, onDelete, disabled = false }: Props) {
   const [open, setOpen] = useState(false)
 
   function choose(action: () => void) {
@@ -21,11 +21,11 @@ export function AdminActionsMenu({ onRename, onDelete, disabled = false }: Props
 
   return (
     <>
-      <div className="admin-actions" onKeyDown={closeOnEscape}>
+      <div className="entity-actions" onKeyDown={closeOnEscape}>
         <button
           type="button"
-          className="admin-actions-toggle"
-          aria-label={open ? 'Fermer les actions' : 'Actions admin'}
+          className="entity-actions-toggle"
+          aria-label={open ? 'Fermer les actions' : 'Actions'}
           aria-expanded={open}
           onClick={() => setOpen(!open)}
           disabled={disabled}
@@ -34,11 +34,11 @@ export function AdminActionsMenu({ onRename, onDelete, disabled = false }: Props
         </button>
       </div>
       {open && (
-        <div className="admin-actions-menu" onKeyDown={closeOnEscape}>
+        <div className="entity-actions-menu" onKeyDown={closeOnEscape}>
           <button type="button" onClick={() => choose(onRename)} autoFocus>
             Renommer
           </button>
-          <button type="button" className="admin-danger" onClick={() => choose(onDelete)}>
+          <button type="button" className="entity-danger" onClick={() => choose(onDelete)}>
             Supprimer
           </button>
         </div>

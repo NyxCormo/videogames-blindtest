@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchBlindtests, type Blindtest } from '../../api/blindtests'
-import { EntityList } from './EntityList'
+import { EntityList } from '../../components/EntityList/EntityList'
 import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
