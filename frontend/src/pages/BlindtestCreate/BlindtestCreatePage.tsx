@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { createBlindtest, type DifficultyBand } from '../../api/blindtests'
 import { fetchAllTags, type Tag } from '../../api/tags'
 import { DifficultyRangeSlider } from '../../components/DifficultyRangeSlider/DifficultyRangeSlider'
+import { Select } from '../../components/Select/Select'
 import './BlindtestCreatePage.css'
 
 const STRATEGIES = [
@@ -188,13 +189,7 @@ export function BlindtestCreatePage() {
         </label>
         <label>
           Stratégie de sélection
-          <select value={strategy} onChange={(event) => setStrategy(event.target.value)}>
-            {STRATEGIES.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <Select options={STRATEGIES} value={strategy} onChange={setStrategy} />
         </label>
 
         {tagsByType.size > 0 && (

@@ -26,6 +26,7 @@
 
 .admin-tab {
   border: none;
+  border-radius: 0;
   border-bottom: 2px solid transparent;
   background: none;
   color: inherit;
@@ -35,7 +36,7 @@
 }
 
 .admin-tab-active {
-  border-bottom-color: CanvasText;
+  border-bottom-color: var(--text);
   font-weight: 600;
 }
 
@@ -67,11 +68,7 @@
 }
 
 .admin-modal-blocked {
-  color: #ef5350;
-}
-
-.admin-modal-blocked {
-  color: #ef5350;
+  color: var(--danger);
 }
 
 .admin-modal-backdrop {
@@ -89,7 +86,7 @@
   max-width: 32rem;
   width: 100%;
   padding: 1.25rem 1.5rem;
-  background: Canvas;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 0.6rem;
 }
@@ -107,11 +104,10 @@
 }
 
 .admin-modal-actions .admin-danger {
-  background: #c62828;
+  background: var(--danger);
   color: white;
-  border: 1px solid #c62828;
-  border-radius: 0.3rem;
-  padding: 0.3rem 0.8rem;
+  border-color: var(--danger);
+  font-weight: 700;
 }
 
 .admin-modal-actions .admin-danger:disabled {
@@ -133,7 +129,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: Canvas;
+  background: var(--bg);
   border-top: 1px solid var(--border);
   box-shadow: 0 -4px 12px rgb(0 0 0 / 30%);
 }
@@ -168,13 +164,17 @@
 }
 
 .merge-slot-a {
-  border-color: #42a5f5;
-  background: color-mix(in srgb, #42a5f5 18%, Canvas);
+  border-color: var(--merge-a);
+  background: var(--merge-a);
+  color: var(--bg);
+  font-weight: 600;
 }
 
 .merge-slot-b {
-  border-color: #ffa726;
-  background: color-mix(in srgb, #ffa726 18%, Canvas);
+  border-color: var(--merge-b);
+  background: var(--merge-b);
+  color: var(--bg);
+  font-weight: 600;
 }
 
 .merge-slot-empty {

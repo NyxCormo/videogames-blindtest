@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteKnowledge, fetchKnowledge, setKnowledge } from '../../api/discover'
 import { fetchTracks, type Track } from '../../api/tracks'
+import { Select, type SelectOption } from '../../components/Select/Select'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
 import { filterKnowledge, type VoteFilter } from './filterKnowledge'
 import './KnowledgeListPage.css'
+
+const VOTE_OPTIONS: SelectOption<VoteFilter>[] = [
+  { value: 'all', label: 'Tous les votes' },
+  { value: 'yes', label: 'Connues' },
+  { value: 'no', label: 'Pas connues' },
+  { value: 'none', label: 'Pas encore votées' },
+]
 
 export function KnowledgeListPage() {
   const { listener } = useCurrentListener()
@@ -81,12 +89,7 @@ export function KnowledgeListPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        <select aria-label="Filtrer par vote" value={vote} onChange={(event) => setVote(event.target.value as VoteFilter)}>
-          <option value="all">Tous les votes</option>
-          <option value="yes">Connues</option>
-          <option value="no">Pas connues</option>
-          <option value="none">Pas encore votées</option>
-        </select>
+        <Select ariaLabel="Filtrer par vote" options={VOTE_OPTIONS} value={vote} onChange={setVote} />
       </div>
       <p className="summary">
         {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}.

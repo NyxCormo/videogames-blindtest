@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createTag, fetchTagTypes, searchTags, type Tag, type TagType } from '../../api/tags'
+import { Select } from '../Select/Select'
 import './TagPicker.css'
 
 type Props = {
@@ -90,18 +91,15 @@ export function TagPicker({ onPick }: Props) {
             )}
             {query.trim().length >= 2 && (
                 <div className="tag-picker-create">
-                    <select
-                        aria-label="Type du nouveau tag"
+                    <Select
+                        ariaLabel="Type du nouveau tag"
+                        options={[
+                            { value: '', label: 'Choisir un type' },
+                            ...tagTypes.map((type) => ({ value: String(type.id), label: type.name })),
+                        ]}
                         value={typeId}
-                        onChange={(event) => setTypeId(event.target.value)}
-                    >
-                        <option value="">Choisir un type</option>
-                        {tagTypes.map((type) => (
-                            <option key={type.id} value={type.id}>
-                                {type.name}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={setTypeId}
+                    />
                     {!alreadyExists && (
                         <button type="button" onClick={handleCreate} disabled={creating}>
                             Créer « {query.trim()} »

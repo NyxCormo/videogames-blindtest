@@ -1,6 +1,8 @@
 import { useEffect, useRef, useMemo, useState } from 'react'
 import { fetchTracks, hasSource, type Track } from '../../api/tracks'
 import { AudioPlayer } from '../../components/AudioPlayer/AudioPlayer'
+import { PlayIcon, ShuffleIcon } from '../../components/icons'
+import { Select, type SelectOption } from '../../components/Select/Select'
 import { TrackTable } from '../../components/TrackTable/TrackTable'
 import { filterTracks, type SourceFilter } from './filterTracks'
 import { nextTrack, previousTrack, shuffleTracks } from './playback'
@@ -11,6 +13,12 @@ function startingWith(track: Track, tracks: Track[]): Track[] {
   const others = tracks.filter((other) => other.id !== track.id)
   return others.length < tracks.length ? [track, ...others] : tracks
 }
+
+const SOURCE_OPTIONS: SelectOption<SourceFilter>[] = [
+  { value: 'all', label: 'Toutes les sources' },
+  { value: 'with', label: 'Avec source' },
+  { value: 'without', label: 'Sans source' },
+]
 
 export function TrackListPage() {
   const [tracks, setTracks] = useState<Track[] | null>(null)
@@ -113,7 +121,7 @@ export function TrackListPage() {
 
   return (
     <>
-      <h1>Music Blindtest</h1>
+      <h1>Musiques</h1>
       {error && <p role="alert">Impossible de charger les musiques. Le backend est-il lancé ?</p>}
       {!error && tracks === null && <p>Chargement...</p>}
       {tracks !== null && tracks.length === 0 && (
@@ -129,25 +137,17 @@ export function TrackListPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-            <select
-              aria-label="Filtrer par source"
-              value={source}
-              onChange={(event) => setSource(event.target.value as SourceFilter)}
-            >
-              <option value="all">Toutes les sources</option>
-              <option value="with">Avec source</option>
-              <option value="without">Sans source</option>
-            </select>
+            <Select ariaLabel="Filtrer par source" options={SOURCE_OPTIONS} value={source} onChange={setSource} />
             <button
               type="button"
               disabled={queueSource.length === 0}
               aria-pressed={shuffle}
               onClick={handleToggleShuffle}
             >
-              🔀 Lecture aléatoire {shuffle && '(activée)'}
+              <ShuffleIcon /> Lecture aléatoire {shuffle && '(activée)'}
             </button>
             <button type="button" disabled={playable.length === 0} onClick={handleListenToSelection}>
-              ▶ Écouter la sélection
+              <PlayIcon /> Écouter la sélection
             </button>
           </div>
           <p className="summary">

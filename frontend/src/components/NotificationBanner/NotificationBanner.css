@@ -4,7 +4,22 @@
   align-items: center;
   gap: 1rem;
   padding: 0.5rem 1rem;
+  border-left: 0.4rem solid;
   font-weight: 600;
+}
+
+.notification-banner span {
+  flex: 1;
+}
+
+.notification-banner::before {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  color: var(--bg);
+  font-weight: 800;
 }
 
 .notification-banner button {
@@ -14,17 +29,38 @@
   font: inherit;
   font-size: 1.25rem;
   line-height: 1;
+  padding: 0;
   cursor: pointer;
 }
 
 .notification-success {
-  background: color-mix(in srgb, #2e7d32 20%, Canvas);
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 20%, var(--bg));
+}
+
+.notification-success::before {
+  content: '✓';
+  background: var(--success);
 }
 
 .notification-warning {
-  background: color-mix(in srgb, #ed6c02 20%, Canvas);
+  border-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 20%, var(--bg));
+}
+
+.notification-warning::before {
+  content: '!';
+  border-radius: 0.3rem;
+  background: var(--warning);
 }
 
 .notification-error {
-  background: color-mix(in srgb, #d32f2f 20%, Canvas);
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 20%, var(--bg));
+}
+
+.notification-error::before {
+  content: '✕';
+  border-radius: 0;
+  background: var(--danger);
 }

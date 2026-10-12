@@ -16,7 +16,7 @@
   list-style: none;
   margin: 0.25rem 0 0;
   padding: 0.25rem;
-  background: Canvas;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   min-width: 14rem;

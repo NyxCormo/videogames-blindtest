@@ -80,6 +80,6 @@ describe('TrackTable', () => {
       </MemoryRouter>,
     )
 
-    expect(html).toContain('⏸')
+    expect(html).toContain('aria-pressed="true"')
   })
 })

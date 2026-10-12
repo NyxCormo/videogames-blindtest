@@ -8,10 +8,8 @@
   flex: 1 1 16rem;
 }
 
-.controls input,
-.controls select {
+.controls input {
   padding: 0.5rem;
-  font: inherit;
 }
 
 .summary {

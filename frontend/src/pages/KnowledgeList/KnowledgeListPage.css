@@ -20,11 +20,6 @@
   gap: 0.5rem;
 }
 
-.knowledge-actions button[aria-pressed='true'] {
-  background: CanvasText;
-  color: Canvas;
-}
-
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -35,10 +30,8 @@
   flex: 1 1 16rem;
 }
 
-.controls input,
-.controls select {
+.controls input {
   padding: 0.5rem;
-  font: inherit;
 }
 
 .summary {

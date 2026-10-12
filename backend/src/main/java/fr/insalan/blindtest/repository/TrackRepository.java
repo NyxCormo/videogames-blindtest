@@ -67,6 +67,15 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
             """)
     List<Track> findPlayableUnknownByListener(@Param("listenerId") Integer listenerId);
 
+    @Query("""
+            SELECT count(t) FROM Track t
+            WHERE t.audioLink IS NOT NULL
+            AND t.id NOT IN (SELECT k.track.id FROM Knowledge k WHERE k.listener.id = :listenerId)
+            """)
+    long countPlayableUnknownByListener(@Param("listenerId") Integer listenerId);
+
+    long countByAudioLinkIsNotNull();
+
     @Query(value = """
             SELECT s.name FROM track s
             JOIN track t ON lower(s.name) = lower(t.name)
