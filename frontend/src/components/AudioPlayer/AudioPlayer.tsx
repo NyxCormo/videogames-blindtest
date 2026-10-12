@@ -1,5 +1,6 @@
 import { forwardRef, useState } from 'react'
 import type { Track } from '../../api/tracks'
+import { NextIcon, PreviousIcon, RepeatIcon } from '../icons'
 import { ReportButton } from '../ReportButton/ReportButton'
 import './AudioPlayer.css'
 
@@ -39,10 +40,10 @@ return (
         }}
       />
       <button type="button" aria-label="Musique précédente" disabled={!canGoBack} onClick={onPrevious}>
-        ⏮
+        <PreviousIcon />
       </button>
       <button type="button" aria-label="Musique suivante" onClick={onNext}>
-        ⏭
+        <NextIcon />
       </button>
       <button
         type="button"
@@ -51,7 +52,7 @@ return (
         aria-pressed={loop}
         onClick={() => setLoop(!loop)}
       >
-        🔁
+        <RepeatIcon />
       </button>
       {track && <ReportButton trackId={track.id} />}
     </div>

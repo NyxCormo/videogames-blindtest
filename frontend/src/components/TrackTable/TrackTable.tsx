@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { hasSource, type Track } from '../../api/tracks'
+import { PauseIcon, PlayIcon } from '../icons'
 import './TrackTable.css'
 
 type Props = {
@@ -34,8 +35,14 @@ export function TrackTable({ tracks, onPlay, playingTrackId }: Props) {
               </td>
               <td>
                 {track.audioLink && (
-                  <button type="button" aria-label={`Écouter ${track.name}`} onClick={() => onPlay(track)}>
-                    {track.id === playingTrackId ? '⏸' : '▶'}
+                  <button
+                    type="button"
+                    className="track-table-play"
+                    aria-label={`Écouter ${track.name}`}
+                    aria-pressed={track.id === playingTrackId}
+                    onClick={() => onPlay(track)}
+                  >
+                    {track.id === playingTrackId ? <PauseIcon /> : <PlayIcon />}
                   </button>
                 )}
               </td>

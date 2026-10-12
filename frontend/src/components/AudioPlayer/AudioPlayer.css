@@ -11,6 +11,10 @@
   border-top: 1px solid var(--border);
 }
 
+.audio-player[hidden] {
+  display: none;
+}
+
 .audio-player-title {
   font-weight: 600;
 }
@@ -19,7 +23,9 @@
   flex: 1 1 16rem;
 }
 
-.audio-player-loop[aria-pressed='true'] {
-  background: var(--text);
-  color: var(--bg);
+.audio-player > button:not(.report-button) {
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border-radius: 50%;
 }

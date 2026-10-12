@@ -13,6 +13,11 @@
   border: 2px solid var(--border);
 }
 
+:where(.reveal) button {
+  border-color: inherit;
+  background: none;
+}
+
 .reveal-title {
   margin: 0;
   font-weight: 700;

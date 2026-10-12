@@ -26,6 +26,7 @@
 
 .admin-tab {
   border: none;
+  border-radius: 0;
   border-bottom: 2px solid transparent;
   background: none;
   color: inherit;
@@ -103,11 +104,10 @@
 }
 
 .admin-modal-actions .admin-danger {
-  background: color-mix(in srgb, var(--danger) 75%, black);
+  background: var(--danger);
   color: white;
-  border: 1px solid color-mix(in srgb, var(--danger) 75%, black);
-  border-radius: 0.3rem;
-  padding: 0.3rem 0.8rem;
+  border-color: var(--danger);
+  font-weight: 700;
 }
 
 .admin-modal-actions .admin-danger:disabled {
@@ -164,13 +164,17 @@
 }
 
 .merge-slot-a {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, var(--bg));
+  border-color: var(--merge-a);
+  background: var(--merge-a);
+  color: var(--bg);
+  font-weight: 600;
 }
 
 .merge-slot-b {
-  border-color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 18%, var(--bg));
+  border-color: var(--merge-b);
+  background: var(--merge-b);
+  color: var(--bg);
+  font-weight: 600;
 }
 
 .merge-slot-empty {
