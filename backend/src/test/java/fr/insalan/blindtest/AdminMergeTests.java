@@ -27,6 +27,8 @@ import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.model.TagType;
 import fr.insalan.blindtest.model.Track;
+import fr.insalan.blindtest.model.TrackReport;
+import fr.insalan.blindtest.model.TrackReportId;
 import fr.insalan.blindtest.model.TrackTag;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
@@ -36,6 +38,7 @@ import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TagTypeRepository;
+import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import fr.insalan.blindtest.security.TokenStore;
@@ -84,9 +87,13 @@ class AdminMergeTests {
     @Autowired
     BlindtestTrackRepository blindtestTracks;
 
+    @Autowired
+    TrackReportRepository reports;
+
     @AfterEach
     void cleanDatabase() {
         // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
+        reports.deleteAll();
         blindtestTracks.deleteAll();
         blindtests.deleteAll();
         knowledge.deleteAll();
@@ -158,6 +165,25 @@ class AdminMergeTests {
         assertThat(blindtestTracks.findAll())
             .singleElement()
             .satisfies(entry -> assertThat(entry.getTrack().getId()).isEqualTo(dawn.getId()));
+    }
+
+    @Test
+    void mergingTracksMovesReportsWithoutDuplicates() throws Exception {
+        Game game = stellarBlade();
+        Track dawn = tracks.save(new Track("Dawn", game));
+        Track copy = tracks.save(new Track("Dawn (bis)", game));
+        Listener nyx = listeners.save(new Listener("Nyx"));
+        Listener awing = listeners.save(new Listener("Awing"));
+        reports.save(new TrackReport(dawn, nyx));
+        reports.save(new TrackReport(copy, nyx));
+        reports.save(new TrackReport(copy, awing));
+
+        merge("/api/admin/tracks/" + copy.getId() + "/merge", dawn.getId())
+            .andExpect(status().isOk());
+
+        assertThat(reports.count()).isEqualTo(2);
+        assertThat(reports.existsById(new TrackReportId(dawn.getId(), nyx.getId()))).isTrue();
+        assertThat(reports.existsById(new TrackReportId(dawn.getId(), awing.getId()))).isTrue();
     }
 
     @Test

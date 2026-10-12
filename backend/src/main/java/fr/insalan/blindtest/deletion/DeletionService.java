@@ -19,6 +19,7 @@ import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TagRepository;
+import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import jakarta.transaction.Transactional;
@@ -39,6 +40,7 @@ public class DeletionService {
     private final BlindtestDifficultyBandRepository blindtestDifficultyBandRepository;
     private final ListenerRepository listenerRepository;
     private final TagRepository tagRepository;
+    private final TrackReportRepository trackReportRepository;
 
     public DeletionService(
         FranchiseRepository franchiseRepository,
@@ -51,7 +53,8 @@ public class DeletionService {
         BlindtestScoreRepository blindtestScoreRepository,
         BlindtestDifficultyBandRepository blindtestDifficultyBandRepository,
         ListenerRepository listenerRepository,
-        TagRepository tagRepository
+        TagRepository tagRepository,
+        TrackReportRepository trackReportRepository
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -64,6 +67,7 @@ public class DeletionService {
         this.blindtestDifficultyBandRepository = blindtestDifficultyBandRepository;
         this.listenerRepository = listenerRepository;
         this.tagRepository = tagRepository;
+        this.trackReportRepository = trackReportRepository;
     }
 
     // Une franchise ou un jeu qui contient encore quelque chose se fusionne ou se vide d'abord : pas de suppression en chaîne.
@@ -121,6 +125,7 @@ public class DeletionService {
     public void deleteTrack(Integer id) {
         requireAllowed(previewTrack(id));
         trackTagRepository.deleteByTrackId(id);
+        trackReportRepository.deleteByTrackId(id);
         trackRepository.deleteById(id);
     }
 
@@ -157,6 +162,7 @@ public class DeletionService {
         requireAllowed(previewListener(id));
         knowledgeRepository.deleteByListenerId(id);
         blindtestScoreRepository.deleteByListenerId(id);
+        trackReportRepository.deleteByListenerId(id);
         listenerRepository.deleteById(id);
     }
 

@@ -18,6 +18,7 @@ import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TagRepository;
+import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import jakarta.transaction.Transactional;
@@ -36,6 +37,7 @@ public class MergeService {
     private final ListenerRepository listenerRepository;
     private final BlindtestScoreRepository blindtestScoreRepository;
     private final TagRepository tagRepository;
+    private final TrackReportRepository trackReportRepository;
 
     public MergeService(
         FranchiseRepository franchiseRepository,
@@ -46,7 +48,8 @@ public class MergeService {
         BlindtestTrackRepository blindtestTrackRepository,
         ListenerRepository listenerRepository,
         BlindtestScoreRepository blindtestScoreRepository,
-        TagRepository tagRepository
+        TagRepository tagRepository,
+        TrackReportRepository trackReportRepository
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -57,6 +60,7 @@ public class MergeService {
         this.listenerRepository = listenerRepository;
         this.blindtestScoreRepository = blindtestScoreRepository;
         this.tagRepository = tagRepository;
+        this.trackReportRepository = trackReportRepository;
     }
 
     public MergePreview previewTracks(Integer sourceId, Integer targetId) {
@@ -107,6 +111,8 @@ public class MergeService {
         trackTagRepository.deleteTagsAlsoOnTarget(sourceId, targetId);
         trackTagRepository.moveTags(sourceId, targetId);
         blindtestTrackRepository.replaceTrack(sourceId, targetId);
+        trackReportRepository.deleteReportsAlsoOnTarget(sourceId, targetId);
+        trackReportRepository.moveReports(sourceId, targetId);
         trackRepository.deleteById(sourceId);
     }
 
@@ -181,6 +187,8 @@ public class MergeService {
         knowledgeRepository.moveVotesToListener(sourceId, targetId);
         blindtestScoreRepository.deleteScoresAlsoOfTarget(sourceId, targetId);
         blindtestScoreRepository.moveScoresToListener(sourceId, targetId);
+        trackReportRepository.deleteReportsAlsoByTarget(sourceId, targetId);
+        trackReportRepository.moveReportsToListener(sourceId, targetId);
         listenerRepository.deleteById(sourceId);
     }
 
