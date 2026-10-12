@@ -28,6 +28,8 @@ export function TutorialPage() {
         <Link to="/enrichment">Enrichissement</Link> (tuto juste après).
       </p>
 
+      <hr></hr>
+
       <h2>Comment mettre VOS musiques ?</h2>
       <p>
         Sur la page <Link to="/enrichment">Enrichissement</Link>, vous pouvez ajouter des licences
@@ -57,6 +59,21 @@ export function TutorialPage() {
       <p>
         Regardez les liens de la page <Link to="/">Musiques</Link> pour avoir un exemple de comment
         les liens marchent.
+      </p>
+
+      <hr></hr>
+
+      <h2>La musique ne correspond pas à son nom ?</h2>
+      <p>
+        Si le son joué n'est pas le bon, appuyez sur le bouton{' '}
+        <strong>Signaler un mauvais son</strong> (il faut être connecté). Vous le trouverez à côté
+        du lecteur de la page <Link to="/">Musiques</Link>, sur la page{' '}
+        <Link to="/knowledge/discover">Découvrir</Link> et dans les blindtests une fois la réponse
+        affichée.
+      </p>
+      <p>
+        Un bouton rouge veut dire que la musique a déjà été signalée. Vous pouvez la signaler vous
+        aussi, ou appuyer à nouveau pour annuler votre signalement.
       </p>
     </div>
   )
