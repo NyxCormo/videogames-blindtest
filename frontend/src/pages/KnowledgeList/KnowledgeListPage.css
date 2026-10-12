@@ -21,8 +21,8 @@
 }
 
 .knowledge-actions button[aria-pressed='true'] {
-  background: CanvasText;
-  color: Canvas;
+  background: var(--text);
+  color: var(--bg);
 }
 
 .controls {

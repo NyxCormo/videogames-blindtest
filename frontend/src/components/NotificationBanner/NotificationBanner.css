@@ -18,13 +18,13 @@
 }
 
 .notification-success {
-  background: color-mix(in srgb, #2e7d32 20%, Canvas);
+  background: color-mix(in srgb, var(--success) 20%, var(--bg));
 }
 
 .notification-warning {
-  background: color-mix(in srgb, #ed6c02 20%, Canvas);
+  background: color-mix(in srgb, var(--warning) 20%, var(--bg));
 }
 
 .notification-error {
-  background: color-mix(in srgb, #d32f2f 20%, Canvas);
+  background: color-mix(in srgb, var(--danger) 20%, var(--bg));
 }

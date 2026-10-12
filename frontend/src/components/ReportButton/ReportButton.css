@@ -5,6 +5,6 @@
 }
 
 .report-button-flagged {
-  color: #ef5350;
-  border-color: #ef5350;
+  color: var(--danger);
+  border-color: var(--danger);
 }

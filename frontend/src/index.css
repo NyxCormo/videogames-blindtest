@@ -1,7 +1,13 @@
 :root {
   color-scheme: light dark;
-  --border: color-mix(in srgb, CanvasText 20%, transparent);
-  --muted: color-mix(in srgb, CanvasText 60%, transparent);
+  --bg: Canvas;
+  --text: CanvasText;
+  --accent: #42a5f5;
+  --danger: #ef5350;
+  --success: #2e7d32;
+  --warning: #ffa726;
+  --border: color-mix(in srgb, var(--text) 20%, transparent);
+  --muted: color-mix(in srgb, var(--text) 60%, transparent);
   font-family: system-ui, sans-serif;
   justify-content: space-between;
   align-items: center;
@@ -9,6 +15,8 @@
 
 body {
   margin: 0;
+  background: var(--bg);
+  color: var(--text);
 }
 
 main {
@@ -21,7 +29,7 @@ main {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: Canvas;
+  background: var(--bg);
 }
 
 nav {

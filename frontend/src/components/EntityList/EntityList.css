@@ -74,11 +74,11 @@ button.entity-row-main {
 }
 
 button.entity-row-main:hover {
-  background: color-mix(in srgb, CanvasText 6%, Canvas);
+  background: color-mix(in srgb, var(--text) 6%, var(--bg));
 }
 
 .entity-row-active .entity-row-main {
-  background: color-mix(in srgb, CanvasText 14%, Canvas);
+  background: color-mix(in srgb, var(--text) 14%, var(--bg));
   font-weight: 600;
 }
 
@@ -107,7 +107,7 @@ button.entity-row-main:hover {
 }
 
 .entity-row-error {
-  color: #ef5350;
+  color: var(--danger);
   font-size: 0.85rem;
   width: 100%;
 }
@@ -132,7 +132,7 @@ button.entity-row-main:hover {
 
 .entity-actions-toggle:hover {
   color: inherit;
-  background: color-mix(in srgb, CanvasText 10%, Canvas);
+  background: color-mix(in srgb, var(--text) 10%, var(--bg));
 }
 
 .entity-actions-menu {
@@ -154,26 +154,26 @@ button.entity-row-main:hover {
 }
 
 .entity-actions-menu button:hover {
-  background: color-mix(in srgb, CanvasText 10%, Canvas);
+  background: color-mix(in srgb, var(--text) 10%, var(--bg));
 }
 
 .entity-actions-menu .entity-danger {
-  color: #ef5350;
+  color: var(--danger);
 }
 
 .entity-row-merge {
   margin: 0 0 0 0.6rem;
-  accent-color: CanvasText;
+  accent-color: var(--text);
 }
 
 .entity-row-merge-a {
-  box-shadow: inset 4px 0 0 #42a5f5;
-  background: color-mix(in srgb, #42a5f5 14%, Canvas);
+  box-shadow: inset 4px 0 0 var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg));
 }
 
 .entity-row-merge-b {
-  box-shadow: inset 4px 0 0 #ffa726;
-  background: color-mix(in srgb, #ffa726 14%, Canvas);
+  box-shadow: inset 4px 0 0 var(--warning);
+  background: color-mix(in srgb, var(--warning) 14%, var(--bg));
 }
 
 .entity-muted {

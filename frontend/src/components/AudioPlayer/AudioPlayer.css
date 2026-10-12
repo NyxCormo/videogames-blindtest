@@ -7,7 +7,7 @@
   flex-wrap: wrap;
   margin-top: 1rem;
   padding: 0.6rem 1rem;
-  background: Canvas;
+  background: var(--bg);
   border-top: 1px solid var(--border);
 }
 
@@ -20,6 +20,6 @@
 }
 
 .audio-player-loop[aria-pressed='true'] {
-  background: CanvasText;
-  color: Canvas;
+  background: var(--text);
+  color: var(--bg);
 }

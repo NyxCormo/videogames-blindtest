@@ -20,8 +20,8 @@
 }
 
 .reveal-success {
-  border-color: #2e7d32;
-  background: color-mix(in srgb, #2e7d32 12%, transparent);
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
 }
 
 .reveal-failure {
