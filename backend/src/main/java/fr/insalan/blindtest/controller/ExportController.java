@@ -76,6 +76,9 @@ public class ExportController {
         }
 
         try (CSVPrinter printer = new CSVPrinter(response.getWriter(), CSVFormat.DEFAULT)) {
+            printer.printRecord("Export Music Blindtest du " + LocalDate.now());
+            printer.printRecord("Votes : 1 si la musique est reconnue en blindtest, 0 sinon");
+            printer.printRecord("Vote moyenne : part des votants qui reconnaissent la musique, entre 0 et 1");
             printer.printRecord(header(listeners));
             for (Franchise franchise : franchises) {
                 List<Game> games = gamesByFranchise.getOrDefault(franchise.getId(), List.of()).stream()
