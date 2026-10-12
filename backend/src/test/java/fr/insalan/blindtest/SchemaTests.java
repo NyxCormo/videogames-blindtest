@@ -40,6 +40,7 @@ public class SchemaTests {
                 "tag",
                 "tag_type",
                 "track",
+                "track_report",
                 "track_tag"
             ),
             tables
