@@ -51,6 +51,9 @@ public interface KnowledgeRepository extends JpaRepository<Knowledge, KnowledgeI
     @Query(value = "SELECT count(*) FROM knowledge WHERE listener_id = :listenerId", nativeQuery = true)
     long countByListenerId(@Param("listenerId") Integer listenerId);
 
+    @Query(value = "SELECT count(*) FROM knowledge WHERE listener_id = :listenerId AND knows = 1", nativeQuery = true)
+    long countKnownByListenerId(@Param("listenerId") Integer listenerId);
+
     // Aperçus de fusion : ce que les deux éléments ont en commun.
     @Query(value = """
             SELECT count(*) FROM knowledge
