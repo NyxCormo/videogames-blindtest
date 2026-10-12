@@ -7,6 +7,9 @@ type CurrentListenerContextValue = {
   listener: Listener | null
   connect: (listener: Listener) => void
   disconnect: () => void
+  loginOpen: boolean
+  openLogin: () => void
+  closeLogin: () => void
 }
 
 const CurrentListenerContext = createContext<CurrentListenerContextValue | null>(null)
@@ -17,6 +20,8 @@ export function CurrentListenerProvider({ children }: { children: ReactNode }) {
     return stored ? JSON.parse(stored) : null
   })
 
+  const [loginOpen, setLoginOpen] = useState(false)
+
   useEffect(() => {
     if (listener) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(listener))
@@ -26,7 +31,16 @@ export function CurrentListenerProvider({ children }: { children: ReactNode }) {
   }, [listener])
 
   return (
-    <CurrentListenerContext.Provider value={{ listener, connect: setListener, disconnect: () => setListener(null) }}>
+    <CurrentListenerContext.Provider
+      value={{
+        listener,
+        connect: setListener,
+        disconnect: () => setListener(null),
+        loginOpen,
+        openLogin: () => setLoginOpen(true),
+        closeLogin: () => setLoginOpen(false),
+      }}
+    >
       {children}
     </CurrentListenerContext.Provider>
   )

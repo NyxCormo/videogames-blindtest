@@ -113,7 +113,7 @@ export function TrackListPage() {
 
   return (
     <>
-      <h1>Music Blindtest</h1>
+      <h1>Musiques</h1>
       {error && <p role="alert">Impossible de charger les musiques. Le backend est-il lancé ?</p>}
       {!error && tracks === null && <p>Chargement...</p>}
       {tracks !== null && tracks.length === 0 && (

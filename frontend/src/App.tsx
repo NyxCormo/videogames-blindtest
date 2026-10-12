@@ -1,4 +1,4 @@
-import { BrowserRouter, Link, Route, Routes } from 'react-router'
+import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router'
 import './index.css'
 import { ListenerBanner } from './components/ListenerBanner/ListenerBanner'
 import { NotificationBanner } from './components/NotificationBanner/NotificationBanner'
@@ -11,11 +11,11 @@ import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
 import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
 import { DiscoverPage } from './pages/Discover/DiscoverPage'
 import { EnrichmentPage } from './pages/Enrichment/EnrichmentPage'
+import { HomePage } from './pages/Home/HomePage'
 import { KnowledgePage } from './pages/Knowledge/KnowledgePage'
 import { KnowledgeListPage } from './pages/KnowledgeList/KnowledgeListPage'
 import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
 import { TrackListPage } from './pages/TrackList/TrackListPage'
-import { TutorialPage } from './pages/Tutorial/TutorialPage'
 
 function App() {
   return (
@@ -25,11 +25,11 @@ function App() {
         <header className="site-header">
           <nav>
             <div className="nav-links">
-              <Link to="/">Musiques</Link>
+              <Link to="/">Accueil</Link>
+              <Link to="/tracks">Musiques</Link>
               <Link to="/blindtests">Blindtests</Link>
               <Link to="/knowledge">Ma culture</Link>
               <Link to="/enrichment">Enrichissement</Link>
-              <Link to="/tutorial">Tutoriel</Link>
               <Link to="/admin">Admin</Link>
               <a href="/api/export/sheet">Exporter en CSV</a>
             </div>
@@ -39,7 +39,8 @@ function App() {
         </header>
         <main>
           <Routes>
-            <Route path="/" element={<TrackListPage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/tracks" element={<TrackListPage />} />
             <Route path="/tracks/:id" element={<TrackDetailPage />} />
             <Route path="/blindtests" element={<BlindtestListPage />} />
             <Route path="/blindtests/new" element={<BlindtestCreatePage />} />
@@ -49,7 +50,7 @@ function App() {
             <Route path="/knowledge/discover" element={<DiscoverPage />} />
             <Route path="/knowledge/list" element={<KnowledgeListPage />} />
             <Route path="/enrichment" element={<EnrichmentPage />} />
-            <Route path="/tutorial" element={<TutorialPage />} />
+            <Route path="/tutorial" element={<Navigate to="/" replace />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </main>

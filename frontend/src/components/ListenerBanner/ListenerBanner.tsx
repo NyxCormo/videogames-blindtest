@@ -5,9 +5,8 @@ import { useNotification } from '../../context/NotificationContext'
 import './ListenerBanner.css'
 
 export function ListenerBanner() {
-  const { listener, connect, disconnect } = useCurrentListener()
+  const { listener, connect, disconnect, loginOpen, openLogin, closeLogin } = useCurrentListener()
   const { notify } = useNotification()
-  const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Listener[]>([])
   const [creating, setCreating] = useState(false)
@@ -34,7 +33,7 @@ export function ListenerBanner() {
 
   function select(selected: Listener) {
     connect(selected)
-    setOpen(false)
+    closeLogin()
     setQuery('')
     setResults([])
   }
@@ -59,10 +58,10 @@ export function ListenerBanner() {
     )
   }
 
-  if (!open) {
+  if (!loginOpen) {
     return (
       <div className="listener-banner">
-        <button type="button" onClick={() => setOpen(true)}>Se connecter</button>
+        <button type="button" onClick={openLogin}>Se connecter</button>
       </div>
     )
   }
@@ -77,7 +76,7 @@ export function ListenerBanner() {
         onChange={(event) => setQuery(event.target.value)}
         autoFocus
       />
-      <button type="button" onClick={() => setOpen(false)}>Annuler</button>
+      <button type="button" onClick={closeLogin}>Annuler</button>
       {results.length > 0 && (
         <ul className="listener-results">
           {results.map((result) => (
