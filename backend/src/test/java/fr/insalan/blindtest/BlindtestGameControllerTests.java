@@ -17,8 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
 
-import fr.insalan.blindtest.dto.GuessFranchiseRequest;
-import fr.insalan.blindtest.dto.GuessRequest;
+import fr.insalan.blindtest.dto.blindtest.GuessFranchiseRequest;
+import fr.insalan.blindtest.dto.blindtest.GuessRequest;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestTrack;
 import fr.insalan.blindtest.model.Franchise;

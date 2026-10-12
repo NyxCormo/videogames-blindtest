@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import tools.jackson.databind.ObjectMapper;
 
-import fr.insalan.blindtest.dto.RenameRequest;
+import fr.insalan.blindtest.dto.admin.RenameRequest;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
