@@ -26,7 +26,7 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
         </p>
         <p>
           Sinon, vous pouvez nous aider à mettre <strong>VOS</strong> musiques dans l'onglet{' '}
-          <Link to="/tracks?tab=enrichir">Enrichir</Link> de la page Musiques (tuto juste après).
+          <Link to="/tracks?tab=ajouter">Ajouter</Link> de la page Musiques (tuto juste après).
         </p>
       </>
     ),
@@ -36,7 +36,7 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
     content: (
       <>
         <p>
-          Dans l'onglet <Link to="/tracks?tab=enrichir">Enrichir</Link> de la page Musiques, vous
+          Dans l'onglet <Link to="/tracks?tab=ajouter">Ajouter</Link> de la page Musiques, vous
           pouvez ajouter des licences (ex : Zelda, Pokémon, Assassin's Creed) avec le bouton en haut,
           et vous pouvez ajouter des jeux et des musiques.
         </p>

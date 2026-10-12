@@ -12,7 +12,7 @@ import './TracksPage.css'
 
 const TABS = [
   { id: 'ecouter', label: 'Écouter' },
-  { id: 'enrichir', label: 'Enrichir' },
+  { id: 'ajouter', label: 'Ajouter' },
   { id: 'votes', label: 'Mes votes' },
 ]
 
@@ -24,7 +24,7 @@ export function TracksPage() {
   const audioRef = useRef<HTMLAudioElement>(null)
   const player = usePlayer(tracks, audioRef)
 
-  // Rechargée à chaque retour sur l'onglet : une musique ajoutée dans « Enrichir » y apparaît.
+  // Rechargée à chaque retour sur l'onglet : une musique ajoutée dans « Ajouter » y apparaît.
   useEffect(() => {
     if (tab !== 'ecouter') return
     const controller = new AbortController()
@@ -47,7 +47,7 @@ export function TracksPage() {
       <h1>Musiques</h1>
       <Tabs tabs={TABS} active={tab} onChange={(id) => setSearchParams(id === TABS[0].id ? {} : { tab: id })} />
       {tab === 'ecouter' && <ListenTab tracks={tracks} error={error} player={player} />}
-      {tab === 'enrichir' && <EnrichTab />}
+      {tab === 'ajouter' && <EnrichTab />}
       {tab === 'votes' && <VotesTab />}
       <AudioPlayer
         ref={audioRef}

@@ -46,7 +46,7 @@ function App() {
             <Route path="/knowledge" element={<Navigate to="/discover" replace />} />
             <Route path="/knowledge/discover" element={<Navigate to="/discover" replace />} />
             <Route path="/knowledge/list" element={<Navigate to="/tracks?tab=votes" replace />} />
-            <Route path="/enrichment" element={<Navigate to="/tracks?tab=enrichir" replace />} />
+            <Route path="/enrichment" element={<Navigate to="/tracks?tab=ajouter" replace />} />
             <Route path="/tutorial" element={<Navigate to="/" replace />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
