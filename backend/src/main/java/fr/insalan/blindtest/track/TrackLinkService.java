@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.audiolink.AudioLinkRefreshService;
 import fr.insalan.blindtest.model.Track;
+import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
 @Service
@@ -20,10 +21,16 @@ public class TrackLinkService {
 
     private final TrackRepository trackRepository;
     private final AudioLinkRefreshService audioLinkRefreshService;
+    private final TrackReportRepository trackReportRepository;
 
-    public TrackLinkService(TrackRepository trackRepository, AudioLinkRefreshService audioLinkRefreshService) {
+    public TrackLinkService(
+        TrackRepository trackRepository,
+        AudioLinkRefreshService audioLinkRefreshService,
+        TrackReportRepository trackReportRepository
+    ) {
         this.trackRepository = trackRepository;
         this.audioLinkRefreshService = audioLinkRefreshService;
+        this.trackReportRepository = trackReportRepository;
     }
 
     public void setKhinsiderLink(Track track, String link) {
@@ -37,6 +44,7 @@ public class TrackLinkService {
         track.setAudioLink(null);
         track.setAudioLinkResolvedAt(null);
         trackRepository.save(track);
+        trackReportRepository.deleteByTrackId(track.getId());
         try {
             audioLinkRefreshService.refreshOne(track);
         } catch (IOException e) {
@@ -49,6 +57,7 @@ public class TrackLinkService {
         track.setAudioLink(null);
         track.setAudioLinkResolvedAt(null);
         trackRepository.save(track);
+        trackReportRepository.deleteByTrackId(track.getId());
     }
 
     public void setYoutubeLink(Track track, String link) {
