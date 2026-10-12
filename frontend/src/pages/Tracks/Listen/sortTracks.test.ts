@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Track } from '../../api/tracks'
+import type { Track } from '../../../api/tracks'
 import { sortTracks } from './sortTracks'
 
 function track(id: number, franchiseName: string, gameName: string, name: string): Track {

@@ -25,8 +25,8 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
           <Link to="/knowledge">Ma culture</Link>.
         </p>
         <p>
-          Sinon, vous pouvez nous aider à mettre <strong>VOS</strong> musiques sur la page{' '}
-          <Link to="/enrichment">Enrichissement</Link> (tuto juste après).
+          Sinon, vous pouvez nous aider à mettre <strong>VOS</strong> musiques dans l'onglet{' '}
+          <Link to="/tracks?tab=enrichir">Enrichir</Link> de la page Musiques (tuto juste après).
         </p>
       </>
     ),
@@ -36,9 +36,9 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
     content: (
       <>
         <p>
-          Sur la page <Link to="/enrichment">Enrichissement</Link>, vous pouvez ajouter des licences
-          (ex : Zelda, Pokémon, Assassin's Creed) avec le bouton en haut, et vous pouvez ajouter des
-          jeux et des musiques.
+          Dans l'onglet <Link to="/tracks?tab=enrichir">Enrichir</Link> de la page Musiques, vous
+          pouvez ajouter des licences (ex : Zelda, Pokémon, Assassin's Creed) avec le bouton en haut,
+          et vous pouvez ajouter des jeux et des musiques.
         </p>
         <p>
           <strong>

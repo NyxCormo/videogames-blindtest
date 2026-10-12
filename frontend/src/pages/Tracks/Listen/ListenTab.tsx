@@ -1,13 +1,12 @@
 import { useEffect, useRef, useMemo, useState } from 'react'
-import { fetchTracks, hasSource, type Track } from '../../api/tracks'
-import { AudioPlayer } from '../../components/AudioPlayer/AudioPlayer'
-import { PlayIcon, ShuffleIcon } from '../../components/icons'
-import { Select, type SelectOption } from '../../components/Select/Select'
-import { TrackTable } from '../../components/TrackTable/TrackTable'
+import { fetchTracks, hasSource, type Track } from '../../../api/tracks'
+import { AudioPlayer } from '../../../components/AudioPlayer/AudioPlayer'
+import { PlayIcon, ShuffleIcon } from '../../../components/icons'
+import { Select, type SelectOption } from '../../../components/Select/Select'
+import { TrackTable } from '../../../components/TrackTable/TrackTable'
 import { filterTracks, type SourceFilter } from './filterTracks'
 import { nextTrack, previousTrack, shuffleTracks } from './playback'
 import { sortTracks } from './sortTracks'
-import './TrackListPage.css'
 
 function startingWith(track: Track, tracks: Track[]): Track[] {
   const others = tracks.filter((other) => other.id !== track.id)
@@ -20,7 +19,7 @@ const SOURCE_OPTIONS: SelectOption<SourceFilter>[] = [
   { value: 'without', label: 'Sans source' },
 ]
 
-export function TrackListPage() {
+export function ListenTab() {
   const [tracks, setTracks] = useState<Track[] | null>(null)
   const [error, setError] = useState(false)
   const [query, setQuery] = useState('')
@@ -121,7 +120,6 @@ export function TrackListPage() {
 
   return (
     <>
-      <h1>Musiques</h1>
       {error && <p role="alert">Impossible de charger les musiques. Le backend est-il lancé ?</p>}
       {!error && tracks === null && <p>Chargement...</p>}
       {tracks !== null && tracks.length === 0 && (

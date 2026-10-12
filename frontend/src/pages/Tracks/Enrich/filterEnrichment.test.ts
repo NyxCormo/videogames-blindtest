@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import type { Franchise } from '../../api/franchises'
-import type { Game } from '../../api/games'
-import type { Track } from '../../api/tracks'
+import type { Franchise } from '../../../api/franchises'
+import type { Game } from '../../../api/games'
+import type { Track } from '../../../api/tracks'
 import { filterEnrichment } from './filterEnrichment'
 
 const franchiseA: Franchise = { id: 1, name: 'Stellar Blade' }

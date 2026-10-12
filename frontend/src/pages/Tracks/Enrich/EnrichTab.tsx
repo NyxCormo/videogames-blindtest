@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { createFranchise, fetchFranchises, type Franchise } from '../../api/franchises'
-import { createGame, fetchGames, type Game } from '../../api/games'
-import { addKhinsiderLink, addYoutubeLink, createTrack, fetchTracks, hasSource, type Track } from '../../api/tracks'
-import { EntityList } from '../../components/EntityList/EntityList'
-import { plural } from '../../components/EntityList/listText'
-import { useNotification } from '../../context/NotificationContext'
+import { createFranchise, fetchFranchises, type Franchise } from '../../../api/franchises'
+import { createGame, fetchGames, type Game } from '../../../api/games'
+import { addKhinsiderLink, addYoutubeLink, createTrack, fetchTracks, hasSource, type Track } from '../../../api/tracks'
+import { EntityList } from '../../../components/EntityList/EntityList'
+import { plural } from '../../../components/EntityList/listText'
+import { useNotification } from '../../../context/NotificationContext'
 import { filterEnrichment } from './filterEnrichment'
 import { TrackLinkControl } from './TrackLinkControl'
-import './EnrichmentPage.css'
+import './EnrichTab.css'
 
 const MAX_TRACKS_PER_GAME = 25
 
-export function EnrichmentPage() {
+export function EnrichTab() {
   const { notify } = useNotification()
   const [franchises, setFranchises] = useState<Franchise[] | null>(null)
   const [games, setGames] = useState<Game[]>([])
@@ -168,8 +168,6 @@ export function EnrichmentPage() {
 
   return (
     <>
-      <h1>Enrichissement</h1>
-
       <div className="controls">
         <input
           type="search"

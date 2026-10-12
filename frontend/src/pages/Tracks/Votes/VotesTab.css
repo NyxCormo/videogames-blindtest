@@ -20,20 +20,10 @@
   gap: 0.5rem;
 }
 
-.controls {
+.votes-login {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.controls input {
-  flex: 1 1 16rem;
-}
-
-.controls input {
-  padding: 0.5rem;
-}
-
-.summary {
-  color: var(--muted);
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 2.5rem 0;
 }

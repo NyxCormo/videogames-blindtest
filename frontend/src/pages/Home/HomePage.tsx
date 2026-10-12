@@ -42,10 +42,10 @@ export function HomePage() {
         <h1>Music Blindtest</h1>
         <p>Les musiques de jeux vidéo d'InsaLan, à écouter, à deviner et à compléter.</p>
         <div className="home-actions">
-          <Link className="home-button home-button-primary" to="/blindtests">
+          <Link className="button button-primary" to="/blindtests">
             Jouer à un blindtest
           </Link>
-          <Link className="home-button" to="/knowledge/discover">
+          <Link className="button" to="/knowledge/discover">
             Découvrir des musiques
           </Link>
         </div>
@@ -70,7 +70,7 @@ export function HomePage() {
 
       <section className="home-mine" aria-label="Vos chiffres">
         {!listener && (
-          <button type="button" className="home-button home-button-primary home-button-large" onClick={openLogin}>
+          <button type="button" className="button button-primary button-large" onClick={openLogin}>
             Se connecter
           </button>
         )}

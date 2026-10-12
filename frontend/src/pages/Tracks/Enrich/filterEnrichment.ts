@@ -1,6 +1,6 @@
-import type { Franchise } from '../../api/franchises'
-import type { Game } from '../../api/games'
-import { hasSource, type Track } from '../../api/tracks'
+import type { Franchise } from '../../../api/franchises'
+import type { Game } from '../../../api/games'
+import { hasSource, type Track } from '../../../api/tracks'
 
 // Normalzation : "Shaël" -> "shael"
 function normalize(text: string): string {

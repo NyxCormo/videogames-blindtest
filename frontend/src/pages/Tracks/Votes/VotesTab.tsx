@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { deleteKnowledge, fetchKnowledge, setKnowledge } from '../../api/discover'
-import { fetchTracks, type Track } from '../../api/tracks'
-import { Select, type SelectOption } from '../../components/Select/Select'
-import { useCurrentListener } from '../../context/CurrentListenerContext'
-import { useNotification } from '../../context/NotificationContext'
+import { deleteKnowledge, fetchKnowledge, setKnowledge } from '../../../api/discover'
+import { fetchTracks, type Track } from '../../../api/tracks'
+import { Select, type SelectOption } from '../../../components/Select/Select'
+import { useCurrentListener } from '../../../context/CurrentListenerContext'
+import { useNotification } from '../../../context/NotificationContext'
 import { filterKnowledge, type VoteFilter } from './filterKnowledge'
-import './KnowledgeListPage.css'
+import './VotesTab.css'
 
 const VOTE_OPTIONS: SelectOption<VoteFilter>[] = [
   { value: 'all', label: 'Tous les votes' },
@@ -14,8 +14,8 @@ const VOTE_OPTIONS: SelectOption<VoteFilter>[] = [
   { value: 'none', label: 'Pas encore votées' },
 ]
 
-export function KnowledgeListPage() {
-  const { listener } = useCurrentListener()
+export function VotesTab() {
+  const { listener, openLogin } = useCurrentListener()
   const { notify } = useNotification()
   const [tracks, setTracks] = useState<Track[] | null>(null)
   const [knowledge, setKnowledgeMap] = useState<Map<number, boolean>>(new Map())
@@ -69,7 +69,14 @@ export function KnowledgeListPage() {
   }
 
   if (!listener) {
-    return <p>Connecte-toi pour voir et modifier tes connaissances.</p>
+    return (
+      <div className="votes-login">
+        <p>Les votes sont enregistrés par pseudo.</p>
+        <button type="button" className="button button-primary button-large" onClick={openLogin}>
+          Se connecter
+        </button>
+      </div>
+    )
   }
   if (error) {
     return <p role="alert">Impossible de charger les musiques.</p>
@@ -80,7 +87,6 @@ export function KnowledgeListPage() {
 
   return (
     <>
-      <h1>Musiques connues</h1>
       <div className="controls">
         <input
           type="search"

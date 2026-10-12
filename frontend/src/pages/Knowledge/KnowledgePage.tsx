@@ -8,7 +8,7 @@ export function KnowledgePage() {
       <p>Découvre les musiques que tu ne connais pas encore, ou complète directement la liste à la main.</p>
       <div className="knowledge-home-links">
         <Link to="/knowledge/discover">Découvrir</Link>
-        <Link to="/knowledge/list">Liste des musiques</Link>
+        <Link to="/tracks?tab=votes">Liste des musiques</Link>
       </div>
     </>
   )

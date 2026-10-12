@@ -1,4 +1,4 @@
-import type { Track } from '../../api/tracks'
+import type { Track } from '../../../api/tracks'
 
 // La musique suivante dans la liste (celle qui vient après currentTrackId). Si currentTrackId
 // n'est pas dans la liste (rien ne joue encore, ou le filtre a changé), on repart du début.
