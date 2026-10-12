@@ -200,3 +200,20 @@
 .merge-confirm:not(:disabled) {
   font-weight: 600;
 }
+
+.admin-reports {
+  list-style: none;
+  padding: 0;
+}
+
+.admin-reports li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.admin-reports audio {
+  height: 2rem;
+}

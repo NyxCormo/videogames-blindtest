@@ -138,6 +138,20 @@ export async function fetchTagCounts(token: string): Promise<TagCount[]> {
   return response.json()
 }
 
+export type ReportedTrack = {
+  track: Track
+  reporters: string[]
+}
+
+export async function fetchReportedTracks(token: string): Promise<ReportedTrack[]> {
+  const response = await adminRequest(token, '/api/admin/reports')
+  return response.json()
+}
+
+export async function dismissReports(token: string, trackId: number): Promise<void> {
+  await adminRequest(token, `/api/admin/reports/${trackId}`, { method: 'DELETE' })
+}
+
 export type DeletePreview = {
   allowed: boolean
   impact: string
