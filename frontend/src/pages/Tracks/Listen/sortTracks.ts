@@ -1,4 +1,4 @@
-import type { Track } from '../../api/tracks'
+import type { Track } from '../../../api/tracks'
 
 // Tri avec casse et acents ignorés (SQLite ne sait pas faire cela)
 const collator = new Intl.Collator('fr', { sensitivity: 'base' })

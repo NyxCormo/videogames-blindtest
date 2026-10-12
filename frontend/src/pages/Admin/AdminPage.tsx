@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
 import { checkAdmin, loginAdmin, logoutAdmin } from '../../api/admin'
+import { Tabs } from '../../components/Tabs/Tabs'
 import { useNotification } from '../../context/NotificationContext'
 import { loadAdminToken, storeAdminToken } from './adminToken'
-import { AdminTabs } from './AdminTabs'
 import { BlindtestsTab } from './BlindtestsTab'
 import { CatalogTab } from './CatalogTab'
 import { ListenersTab } from './ListenersTab'
@@ -123,7 +123,7 @@ export function AdminPage() {
       </div>
       <MergeSelectionContext.Provider value={mergeSelection}>
         <div className={mergeSelection.selection ? 'admin-with-footer' : undefined}>
-          <AdminTabs
+          <Tabs
             tabs={TABS}
             active={tab}
             onChange={(id) => {

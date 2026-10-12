@@ -10,12 +10,9 @@ import { BlindtestLeaderboardPage } from './pages/BlindtestLeaderboard/Blindtest
 import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
 import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
 import { DiscoverPage } from './pages/Discover/DiscoverPage'
-import { EnrichmentPage } from './pages/Enrichment/EnrichmentPage'
 import { HomePage } from './pages/Home/HomePage'
-import { KnowledgePage } from './pages/Knowledge/KnowledgePage'
-import { KnowledgeListPage } from './pages/KnowledgeList/KnowledgeListPage'
 import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
-import { TrackListPage } from './pages/TrackList/TrackListPage'
+import { TracksPage } from './pages/Tracks/TracksPage'
 
 function App() {
   return (
@@ -28,8 +25,7 @@ function App() {
               <Link to="/">Accueil</Link>
               <Link to="/tracks">Musiques</Link>
               <Link to="/blindtests">Blindtests</Link>
-              <Link to="/knowledge">Ma culture</Link>
-              <Link to="/enrichment">Enrichissement</Link>
+              <Link to="/discover">Découvrir</Link>
               <Link to="/admin">Admin</Link>
               <a href="/api/export/sheet">Exporter en CSV</a>
             </div>
@@ -40,16 +36,17 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/tracks" element={<TrackListPage />} />
+            <Route path="/tracks" element={<TracksPage />} />
             <Route path="/tracks/:id" element={<TrackDetailPage />} />
             <Route path="/blindtests" element={<BlindtestListPage />} />
             <Route path="/blindtests/new" element={<BlindtestCreatePage />} />
             <Route path="/blindtests/:id/play" element={<BlindtestPlayPage />} />
             <Route path="/blindtests/:id/leaderboard" element={<BlindtestLeaderboardPage />} />
-            <Route path="/knowledge" element={<KnowledgePage />} />
-            <Route path="/knowledge/discover" element={<DiscoverPage />} />
-            <Route path="/knowledge/list" element={<KnowledgeListPage />} />
-            <Route path="/enrichment" element={<EnrichmentPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/knowledge" element={<Navigate to="/discover" replace />} />
+            <Route path="/knowledge/discover" element={<Navigate to="/discover" replace />} />
+            <Route path="/knowledge/list" element={<Navigate to="/tracks?tab=votes" replace />} />
+            <Route path="/enrichment" element={<Navigate to="/tracks?tab=ajouter" replace />} />
             <Route path="/tutorial" element={<Navigate to="/" replace />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>

@@ -26,38 +26,6 @@
   margin-top: 1.5rem;
 }
 
-.home-button {
-  padding: 0.7rem 1.4rem;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 150ms;
-}
-
-.home-button:hover {
-  background: color-mix(in srgb, var(--text) 8%, transparent);
-}
-
-.home-button-primary {
-  border-color: var(--text);
-  background: var(--text);
-  color: var(--bg);
-}
-
-.home-button-primary:hover {
-  background: color-mix(in srgb, var(--text) 85%, var(--bg));
-}
-
-.home-button-large {
-  padding: 1rem 2.5rem;
-  font-size: 1.15rem;
-}
-
 .home-stats {
   display: flex;
   border: 1px solid var(--border);

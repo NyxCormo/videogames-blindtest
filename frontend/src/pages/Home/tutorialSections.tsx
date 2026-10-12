@@ -22,11 +22,11 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
         <p>
           Si vous avez envie de découvrir toutes les musiques disponibles, et de nous aider à avoir un
           système de difficulté (basé sur vos scores), testez la page{' '}
-          <Link to="/knowledge">Ma culture</Link>.
+          <Link to="/discover">Découvrir</Link>.
         </p>
         <p>
-          Sinon, vous pouvez nous aider à mettre <strong>VOS</strong> musiques sur la page{' '}
-          <Link to="/enrichment">Enrichissement</Link> (tuto juste après).
+          Sinon, vous pouvez nous aider à mettre <strong>VOS</strong> musiques dans l'onglet{' '}
+          <Link to="/tracks?tab=ajouter">Ajouter</Link> de la page Musiques (tuto juste après).
         </p>
       </>
     ),
@@ -36,9 +36,9 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
     content: (
       <>
         <p>
-          Sur la page <Link to="/enrichment">Enrichissement</Link>, vous pouvez ajouter des licences
-          (ex : Zelda, Pokémon, Assassin's Creed) avec le bouton en haut, et vous pouvez ajouter des
-          jeux et des musiques.
+          Dans l'onglet <Link to="/tracks?tab=ajouter">Ajouter</Link> de la page Musiques, vous
+          pouvez ajouter des licences (ex : Zelda, Pokémon, Assassin's Creed) avec le bouton en haut,
+          et vous pouvez ajouter des jeux et des musiques.
         </p>
         <p>
           <strong>
@@ -75,7 +75,7 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
           Si le son joué n'est pas le bon, appuyez sur le bouton{' '}
           <strong>Signaler un mauvais son</strong> (il faut être connecté). Vous le trouverez à côté
           du lecteur de la page <Link to="/tracks">Musiques</Link>, sur la page{' '}
-          <Link to="/knowledge/discover">Découvrir</Link> et dans les blindtests une fois la réponse
+          <Link to="/discover">Découvrir</Link> et dans les blindtests une fois la réponse
           affichée.
         </p>
         <p>

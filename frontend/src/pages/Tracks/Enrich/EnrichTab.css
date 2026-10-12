@@ -1,16 +1,3 @@
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
-}
-
-.controls input[type='search'] {
-  flex: 1 1 16rem;
-  padding: 0.5rem;
-  font: inherit;
-}
-
 .enrichment-slider {
   display: flex;
   align-items: center;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Track } from '../../api/tracks'
+import type { Track } from '../../../api/tracks'
 import { nextTrack, previousTrack, shuffleTracks } from './playback'
 
 function track(id: number, name: string): Track {

@@ -1,4 +1,4 @@
-import type { Track } from '../../api/tracks'
+import type { Track } from '../../../api/tracks'
 
 export type VoteFilter = 'all' | 'yes' | 'no' | 'none'
 

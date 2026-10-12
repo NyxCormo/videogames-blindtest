@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react'
-import type { Track } from '../../api/tracks'
+import type { Track } from '../../../api/tracks'
 
 type LinkKind = 'khinsider' | 'youtube'
 
