@@ -11,7 +11,6 @@ import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
 import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
 import { DiscoverPage } from './pages/Discover/DiscoverPage'
 import { HomePage } from './pages/Home/HomePage'
-import { KnowledgePage } from './pages/Knowledge/KnowledgePage'
 import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
 import { TracksPage } from './pages/Tracks/TracksPage'
 
@@ -26,7 +25,7 @@ function App() {
               <Link to="/">Accueil</Link>
               <Link to="/tracks">Musiques</Link>
               <Link to="/blindtests">Blindtests</Link>
-              <Link to="/knowledge">Ma culture</Link>
+              <Link to="/discover">Découvrir</Link>
               <Link to="/admin">Admin</Link>
               <a href="/api/export/sheet">Exporter en CSV</a>
             </div>
@@ -43,8 +42,9 @@ function App() {
             <Route path="/blindtests/new" element={<BlindtestCreatePage />} />
             <Route path="/blindtests/:id/play" element={<BlindtestPlayPage />} />
             <Route path="/blindtests/:id/leaderboard" element={<BlindtestLeaderboardPage />} />
-            <Route path="/knowledge" element={<KnowledgePage />} />
-            <Route path="/knowledge/discover" element={<DiscoverPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/knowledge" element={<Navigate to="/discover" replace />} />
+            <Route path="/knowledge/discover" element={<Navigate to="/discover" replace />} />
             <Route path="/knowledge/list" element={<Navigate to="/tracks?tab=votes" replace />} />
             <Route path="/enrichment" element={<Navigate to="/tracks?tab=enrichir" replace />} />
             <Route path="/tutorial" element={<Navigate to="/" replace />} />

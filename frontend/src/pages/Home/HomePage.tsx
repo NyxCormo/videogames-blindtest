@@ -45,7 +45,7 @@ export function HomePage() {
           <Link className="button button-primary" to="/blindtests">
             Jouer à un blindtest
           </Link>
-          <Link className="button" to="/knowledge/discover">
+          <Link className="button" to="/discover">
             Découvrir des musiques
           </Link>
         </div>
