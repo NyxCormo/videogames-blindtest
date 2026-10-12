@@ -8,14 +8,18 @@ export function nextTrack(tracks: Track[], currentTrackId?: number): Track | und
   return tracks[(index + 1) % tracks.length]
 }
 
-// Une musique au hasard, différente de celle en cours quand c'est possible (pas de répétition
-// immédiate s'il y a le choix). `random` est injectable pour pouvoir tester sans dépendre du hasard.
-export function randomTrack(
-  tracks: Track[],
-  currentTrackId?: number,
-  random: () => number = Math.random,
-): Track | undefined {
-  if (tracks.length === 0) return undefined
-  const candidates = tracks.length > 1 ? tracks.filter((track) => track.id !== currentTrackId) : tracks
-  return candidates[Math.floor(random() * candidates.length)]
+export function previousTrack(tracks: Track[], currentTrackId?: number): Track | undefined {
+  const index = tracks.findIndex((track) => track.id === currentTrackId)
+  return index > 0 ? tracks[index - 1] : undefined
+}
+
+export function shuffleTracks(tracks: Track[], random: () => number = Math.random): Track[] {
+  const shuffled = [...tracks]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    const swapped = shuffled[i]
+    shuffled[i] = shuffled[j]
+    shuffled[j] = swapped
+  }
+  return shuffled
 }

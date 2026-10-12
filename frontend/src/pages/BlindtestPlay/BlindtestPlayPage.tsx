@@ -162,6 +162,7 @@ export function BlindtestPlayPage() {
         }}
         controls
         autoPlay
+        loop
         src={session.audioLink ?? undefined}
         onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
       />

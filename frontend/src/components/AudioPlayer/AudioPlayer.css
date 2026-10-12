@@ -18,3 +18,8 @@
 .audio-player audio {
   flex: 1 1 16rem;
 }
+
+.audio-player-loop[aria-pressed='true'] {
+  background: CanvasText;
+  color: Canvas;
+}

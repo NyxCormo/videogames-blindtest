@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Track } from '../../api/tracks'
-import { nextTrack, randomTrack } from './playback'
+import { nextTrack, previousTrack, shuffleTracks } from './playback'
 
 function track(id: number, name: string): Track {
   return {
@@ -43,22 +43,36 @@ describe('nextTrack', () => {
   })
 })
 
-describe('randomTrack', () => {
-  it('choisit selon la fonction random fournie', () => {
-    expect(randomTrack(tracks, undefined, () => 0)).toBe(dawn)
-    expect(randomTrack(tracks, undefined, () => 0.99)).toBe(shael)
+describe('previousTrack', () => {
+  it('renvoie la musique précédente dans la liste', () => {
+    expect(previousTrack(tracks, shael.id)).toBe(raven)
+    expect(previousTrack(tracks, raven.id)).toBe(dawn)
   })
 
-  it('ne rechoisit jamais la même musique quand il y a le choix', () => {
-    // random() = 0 choisirait normalement la première candidate ; ça ne doit jamais être dawn ici
-    expect(randomTrack(tracks, dawn.id, () => 0)).toBe(raven)
+  it('ne renvoie rien avant la première', () => {
+    expect(previousTrack(tracks, dawn.id)).toBeUndefined()
   })
 
-  it('peut renvoyer la même musique si elle est seule dans la liste', () => {
-    expect(randomTrack([dawn], dawn.id, () => 0)).toBe(dawn)
+  it('ne renvoie rien si la musique en cours est absente de la liste', () => {
+    expect(previousTrack(tracks, undefined)).toBeUndefined()
+    expect(previousTrack(tracks, 999)).toBeUndefined()
+  })
+})
+
+describe('shuffleTracks', () => {
+  it('mélange selon la fonction random fournie', () => {
+    expect(shuffleTracks(tracks, () => 0)).toEqual([raven, shael, dawn])
+    expect(shuffleTracks(tracks, () => 0.99)).toEqual([dawn, raven, shael])
   })
 
-  it('renvoie undefined si la liste est vide', () => {
-    expect(randomTrack([], undefined)).toBeUndefined()
+  it('garde toutes les musiques, une fois chacune', () => {
+    const shuffled = shuffleTracks(tracks)
+    expect(shuffled).toHaveLength(3)
+    expect(shuffled).toEqual(expect.arrayContaining(tracks))
+  })
+
+  it('ne modifie pas la liste reçue', () => {
+    shuffleTracks(tracks, () => 0)
+    expect(tracks).toEqual([dawn, raven, shael])
   })
 })

@@ -3,9 +3,14 @@ import { fetchTracks, hasSource, type Track } from '../../api/tracks'
 import { AudioPlayer } from '../../components/AudioPlayer/AudioPlayer'
 import { TrackTable } from '../../components/TrackTable/TrackTable'
 import { filterTracks, type SourceFilter } from './filterTracks'
-import { nextTrack, randomTrack } from './playback'
+import { nextTrack, previousTrack, shuffleTracks } from './playback'
 import { sortTracks } from './sortTracks'
 import './TrackListPage.css'
+
+function startingWith(track: Track, tracks: Track[]): Track[] {
+  const others = tracks.filter((other) => other.id !== track.id)
+  return others.length < tracks.length ? [track, ...others] : tracks
+}
 
 export function TrackListPage() {
   const [tracks, setTracks] = useState<Track[] | null>(null)
@@ -14,7 +19,8 @@ export function TrackListPage() {
   const [source, setSource] = useState<SourceFilter>('all')
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [shuffle, setShuffle] = useState(false)
+  const [selection, setSelection] = useState<Track[] | null>(null)
+  const [shuffled, setShuffled] = useState<Track[] | null>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
@@ -35,10 +41,13 @@ export function TrackListPage() {
     [tracks, query, source],
   )
   const withoutSource = useMemo(() => (tracks ?? []).filter((track) => !hasSource(track)).length, [tracks])
-  // "Suivant" et le mode aléatoire ne portent que sur les musiques affichées (recherche + filtre
-  // en cours) et effectivement jouables maintenant : avoir un lien KHInsider ou YouTube ne suffit
-  // pas, il faut que audio_link ait déjà été résolu.
+  // Jouable maintenant : avoir un lien KHInsider ou YouTube ne suffit pas, il faut que audio_link
+  // ait déjà été résolu.
+  const allPlayable = useMemo(() => (tracks ?? []).filter((track) => track.audioLink !== null), [tracks])
   const playable = useMemo(() => shown.filter((track) => track.audioLink !== null), [shown])
+  const queueSource = selection ?? allPlayable
+  const queue = shuffled ?? queueSource
+  const shuffle = shuffled !== null
 
   // Le .play() est appelé directement dans un clic : c'est ce qui compte comme une interaction
   // utilisateur pour le navigateur (une mise à jour de state React, elle, serait trop tardive).
@@ -62,26 +71,44 @@ export function TrackListPage() {
       return
     }
 
+    if (!queue.some((queued) => queued.id === track.id)) {
+      setSelection(null)
+      setShuffled(shuffle ? startingWith(track, shuffleTracks(allPlayable)) : null)
+    }
     playTrack(track)
   }
 
-  // "Suivant" prend la musique suivante dans l'ordre, sauf en mode aléatoire où il en tire une au
-  // hasard : c'est le même bouton qui change de comportement, pas deux boutons séparés.
   function handleNext() {
-    const track = shuffle
-      ? randomTrack(playable, currentTrack?.id)
-      : nextTrack(playable, currentTrack?.id)
+    const track = nextTrack(queue, currentTrack?.id)
+    if (track) playTrack(track)
+  }
+
+  function handlePrevious() {
+    const track = previousTrack(queue, currentTrack?.id)
     if (track) playTrack(track)
   }
 
   function handleToggleShuffle() {
-    const enabling = !shuffle
-    setShuffle(enabling)
-    // Activer le mode aléatoire alors que rien ne joue encore sert aussi à démarrer l'écoute.
-    if (enabling && !currentTrack) {
-      const track = randomTrack(playable, undefined)
-      if (track) playTrack(track)
+    if (shuffle) {
+      setShuffled(null)
+      return
     }
+    const mixed = shuffleTracks(queueSource)
+    if (currentTrack) {
+      setShuffled(startingWith(currentTrack, mixed))
+    } else {
+      setShuffled(mixed)
+      // Activer le mode aléatoire alors que rien ne joue encore sert aussi à démarrer l'écoute.
+      if (mixed.length > 0) playTrack(mixed[0])
+    }
+  }
+
+  function handleListenToSelection() {
+    const mixed = shuffle ? shuffleTracks(playable) : null
+    setSelection(playable)
+    setShuffled(mixed)
+    const first = (mixed ?? playable)[0]
+    if (first) playTrack(first)
   }
 
   return (
@@ -113,16 +140,24 @@ export function TrackListPage() {
             </select>
             <button
               type="button"
-              disabled={playable.length === 0}
+              disabled={queueSource.length === 0}
               aria-pressed={shuffle}
               onClick={handleToggleShuffle}
             >
               🔀 Lecture aléatoire {shuffle && '(activée)'}
             </button>
+            <button type="button" disabled={playable.length === 0} onClick={handleListenToSelection}>
+              ▶ Écouter la sélection
+            </button>
           </div>
           <p className="summary">
             {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}, dont{' '}
             {withoutSource} sans source audio dans toute la base.
+          </p>
+          <p className="summary">
+            File de lecture : {queue.length} {queue.length > 1 ? 'musiques' : 'musique'}
+            {selection ? ' (sélection)' : ' (toute la base)'}
+            {shuffle && ', ordre aléatoire'}.
           </p>
           {shown.length > 0 ? (
             <TrackTable
@@ -135,7 +170,14 @@ export function TrackListPage() {
           )}
         </>
       )}
-      <AudioPlayer ref={audioRef} track={currentTrack} onPlayingChange={setIsPlaying} onNext={handleNext} />
+      <AudioPlayer
+        ref={audioRef}
+        track={currentTrack}
+        onPlayingChange={setIsPlaying}
+        onNext={handleNext}
+        onPrevious={handlePrevious}
+        canGoBack={previousTrack(queue, currentTrack?.id) !== undefined}
+      />
     </>
   )
 }
