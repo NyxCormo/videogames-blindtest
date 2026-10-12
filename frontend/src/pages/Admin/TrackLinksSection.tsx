@@ -12,12 +12,14 @@ const LABELS: Record<LinkKind, string> = {
 type Props = {
   token: string
   onSessionExpired: () => void
+  selected: Track | null
+  onSelect: (track: Track | null) => void
+  onLinkChanged: () => void
 }
 
-export function TrackLinksSection({ token, onSessionExpired }: Props) {
+export function TrackLinksSection({ token, onSessionExpired, selected, onSelect, onLinkChanged }: Props) {
   const { notify } = useNotification()
   const [tracks, setTracks] = useState<Track[]>([])
-  const [selected, setSelected] = useState<Track | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -31,7 +33,8 @@ export function TrackLinksSection({ token, onSessionExpired }: Props) {
   }, [])
 
   function applyUpdate(updated: Track, message: string) {
-    setSelected(updated)
+    onSelect(updated)
+    onLinkChanged()
     setTracks((current) => current.map((track) => (track.id === updated.id ? updated : track)))
     notify(message, 'success')
   }
@@ -70,8 +73,8 @@ export function TrackLinksSection({ token, onSessionExpired }: Props) {
       <NamePicker
         items={tracks}
         selected={selected}
-        onSelect={setSelected}
-        onClear={() => setSelected(null)}
+        onSelect={onSelect}
+        onClear={() => onSelect(null)}
         placeholder="Chercher une musique"
         renderLabel={(track) => `${track.name} (${track.gameName})`}
         getSearchText={(track) => `${track.name} ${track.gameName} ${track.franchiseName}`}

@@ -67,6 +67,16 @@ Table track_tag {
   }
 }
 
+Table track_report {
+  track_id integer
+  listener_id integer
+  created_at datetime [not null]
+
+  indexes {
+    (track_id, listener_id) [pk]
+  }
+}
+
 Table blindtest {
   id integer [primary key]
   name text [not null]
@@ -122,6 +132,9 @@ Ref: knowledge.track_id > track.id
 Ref: tag.type_id > tag_type.id
 Ref: track_tag.track_id > track.id
 Ref: track_tag.tag_id > tag.id
+
+Ref: track_report.track_id > track.id
+Ref: track_report.listener_id > listener.id
 
 Ref: blindtest_track.blindtest_id > blindtest.id
 Ref: blindtest_track.track_id > track.id

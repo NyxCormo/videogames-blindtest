@@ -30,6 +30,8 @@ import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.model.TagType;
 import fr.insalan.blindtest.model.Track;
+import fr.insalan.blindtest.model.TrackReport;
+import fr.insalan.blindtest.model.TrackReportId;
 import fr.insalan.blindtest.model.TrackTag;
 import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
@@ -41,6 +43,7 @@ import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TagTypeRepository;
+import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
 import fr.insalan.blindtest.security.TokenStore;
@@ -95,9 +98,13 @@ class AdminDeletionTests {
     @Autowired
     BlindtestDifficultyBandRepository blindtestBands;
 
+    @Autowired
+    TrackReportRepository reports;
+
     @AfterEach
     void cleanDatabase() {
         // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
+        reports.deleteAll();
         blindtestBands.deleteAll();
         blindtestScores.deleteAll();
         blindtestTracks.deleteAll();
@@ -131,6 +138,18 @@ class AdminDeletionTests {
 
         assertThat(tracks.existsById(dawn.getId())).isFalse();
         assertThat(trackTags.count()).isZero();
+    }
+
+    @Test
+    void deletesATrackWithItsReports() throws Exception {
+        Track dawn = tracks.save(new Track("Dawn", stellarBlade()));
+        reports.save(new TrackReport(dawn, listeners.save(new Listener("Nyx"))));
+
+        mockMvc.perform(delete("/api/admin/tracks/" + dawn.getId()).header("Authorization", adminToken()))
+            .andExpect(status().isNoContent());
+
+        assertThat(tracks.existsById(dawn.getId())).isFalse();
+        assertThat(reports.count()).isZero();
     }
 
     @Test
@@ -175,6 +194,19 @@ class AdminDeletionTests {
         assertThat(listeners.existsById(nyx.getId())).isFalse();
         assertThat(knowledge.count()).isZero();
         assertThat(blindtestScores.count()).isZero();
+    }
+
+    @Test
+    void deletingAListenerRemovesItsReports() throws Exception {
+        Track dawn = tracks.save(new Track("Dawn", stellarBlade()));
+        Listener nyx = listeners.save(new Listener("Nyx"));
+        reports.save(new TrackReport(dawn, nyx));
+
+        mockMvc.perform(delete("/api/admin/listeners/" + nyx.getId()).header("Authorization", adminToken()))
+            .andExpect(status().isNoContent());
+
+        assertThat(listeners.existsById(nyx.getId())).isFalse();
+        assertThat(reports.count()).isZero();
     }
 
     @Test
@@ -231,6 +263,28 @@ class AdminDeletionTests {
         assertThat(blindtestScores.findWithListenerByBlindtestId(onlyCopy.getId()))
             .singleElement()
             .satisfies(score -> assertThat(score.getListener().getId()).isEqualTo(nyx.getId()));
+    }
+
+    @Test
+    void mergingListenersMovesReportsWithoutDuplicates() throws Exception {
+        Game game = stellarBlade();
+        Track dawn = tracks.save(new Track("Dawn", game));
+        Track raven = tracks.save(new Track("Raven", game));
+        Listener nyx = listeners.save(new Listener("Nyx"));
+        Listener copy = listeners.save(new Listener("Nyx2"));
+        reports.save(new TrackReport(dawn, nyx));
+        reports.save(new TrackReport(dawn, copy));
+        reports.save(new TrackReport(raven, copy));
+
+        mockMvc.perform(post("/api/admin/listeners/" + copy.getId() + "/merge")
+                .header("Authorization", adminToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new MergeRequest(nyx.getId()))))
+            .andExpect(status().isOk());
+
+        assertThat(reports.count()).isEqualTo(2);
+        assertThat(reports.existsById(new TrackReportId(dawn.getId(), nyx.getId()))).isTrue();
+        assertThat(reports.existsById(new TrackReportId(raven.getId(), nyx.getId()))).isTrue();
     }
 
     private Game stellarBlade() {

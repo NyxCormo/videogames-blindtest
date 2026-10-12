@@ -11,6 +11,7 @@ import {
 } from '../../api/blindtests'
 import { loadStoredVolume, storeVolume } from '../../audioPreferences'
 import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
+import { ReportButton } from '../../components/ReportButton/ReportButton'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
 import './BlindtestPlayPage.css'
@@ -180,6 +181,7 @@ export function BlindtestPlayPage() {
           <button type="button" onClick={handleNext}>
             Suivant
           </button>
+          <ReportButton trackId={reveal.trackId} />
         </div>
       ) : (
         <>

@@ -20,3 +20,7 @@
 .discover-incorrect {
   font-weight: 600;
 }
+
+.discover-actions + .report-button {
+  margin-top: 0.75rem;
+}
