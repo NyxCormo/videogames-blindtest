@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
 
-import fr.insalan.blindtest.dto.LoginRequest;
+import fr.insalan.blindtest.dto.admin.LoginRequest;
 
 @SpringBootTest
 @AutoConfigureMockMvc

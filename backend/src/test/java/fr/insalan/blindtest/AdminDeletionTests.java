@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
 
-import fr.insalan.blindtest.dto.MergeRequest;
+import fr.insalan.blindtest.dto.admin.MergeRequest;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestDifficultyBand;
 import fr.insalan.blindtest.model.BlindtestScore;

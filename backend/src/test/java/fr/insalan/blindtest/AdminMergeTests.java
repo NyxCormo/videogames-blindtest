@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import tools.jackson.databind.ObjectMapper;
 
-import fr.insalan.blindtest.dto.MergeRequest;
+import fr.insalan.blindtest.dto.admin.MergeRequest;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestTrack;
 import fr.insalan.blindtest.model.Franchise;

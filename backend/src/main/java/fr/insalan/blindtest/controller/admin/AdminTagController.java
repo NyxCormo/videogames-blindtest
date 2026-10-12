@@ -1,4 +1,4 @@
-package fr.insalan.blindtest.controller;
+package fr.insalan.blindtest.controller.admin;
 
 import java.util.List;
 
@@ -17,10 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
-import fr.insalan.blindtest.dto.MergeRequest;
-import fr.insalan.blindtest.dto.RenameRequest;
-import fr.insalan.blindtest.dto.TagCountResponse;
 import fr.insalan.blindtest.dto.TagResponse;
+import fr.insalan.blindtest.dto.admin.MergeRequest;
+import fr.insalan.blindtest.dto.admin.RenameRequest;
+import fr.insalan.blindtest.dto.admin.TagCountResponse;
 import fr.insalan.blindtest.merge.MergePreview;
 import fr.insalan.blindtest.merge.MergeService;
 import fr.insalan.blindtest.model.Tag;

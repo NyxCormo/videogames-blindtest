@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import fr.insalan.blindtest.dto.LoginRequest;
-import fr.insalan.blindtest.dto.LoginResponse;
+import fr.insalan.blindtest.dto.admin.LoginRequest;
+import fr.insalan.blindtest.dto.admin.LoginResponse;
 import fr.insalan.blindtest.security.AdminAccount;
 import fr.insalan.blindtest.security.TokenStore;
 

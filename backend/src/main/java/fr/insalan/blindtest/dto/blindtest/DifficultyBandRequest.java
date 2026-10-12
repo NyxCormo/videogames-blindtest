@@ -1,4 +1,4 @@
-package fr.insalan.blindtest.dto;
+package fr.insalan.blindtest.dto.blindtest;
 
 public record DifficultyBandRequest(
     int minDifficulty,

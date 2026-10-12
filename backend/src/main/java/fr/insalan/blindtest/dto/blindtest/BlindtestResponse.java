@@ -1,4 +1,4 @@
-package fr.insalan.blindtest.dto;
+package fr.insalan.blindtest.dto.blindtest;
 
 import java.time.Instant;
 

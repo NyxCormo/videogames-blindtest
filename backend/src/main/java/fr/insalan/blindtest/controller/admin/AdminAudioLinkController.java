@@ -1,4 +1,4 @@
-package fr.insalan.blindtest.controller;
+package fr.insalan.blindtest.controller.admin;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

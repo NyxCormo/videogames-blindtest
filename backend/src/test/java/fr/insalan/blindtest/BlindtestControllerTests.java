@@ -17,8 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import fr.insalan.blindtest.dto.CreateBlindtestRequest;
-import fr.insalan.blindtest.dto.DifficultyBandRequest;
+import fr.insalan.blindtest.dto.blindtest.CreateBlindtestRequest;
+import fr.insalan.blindtest.dto.blindtest.DifficultyBandRequest;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Knowledge;

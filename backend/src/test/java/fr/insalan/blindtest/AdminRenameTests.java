@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import tools.jackson.databind.ObjectMapper;
 
-import fr.insalan.blindtest.dto.RenameRequest;
+import fr.insalan.blindtest.dto.admin.RenameRequest;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Track;

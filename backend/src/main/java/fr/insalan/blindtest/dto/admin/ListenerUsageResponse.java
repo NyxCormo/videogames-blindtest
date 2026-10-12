@@ -1,4 +1,4 @@
-package fr.insalan.blindtest.dto;
+package fr.insalan.blindtest.dto.admin;
 
 import fr.insalan.blindtest.repository.ListenerUsage;
 

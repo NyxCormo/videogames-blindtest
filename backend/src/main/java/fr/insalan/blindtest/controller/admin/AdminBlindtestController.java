@@ -1,4 +1,4 @@
-package fr.insalan.blindtest.controller;
+package fr.insalan.blindtest.controller.admin;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,8 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
-import fr.insalan.blindtest.dto.BlindtestResponse;
-import fr.insalan.blindtest.dto.RenameRequest;
+import fr.insalan.blindtest.dto.admin.RenameRequest;
+import fr.insalan.blindtest.dto.blindtest.BlindtestResponse;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 
