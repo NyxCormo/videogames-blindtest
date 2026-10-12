@@ -23,6 +23,9 @@ public interface TrackReportRepository extends JpaRepository<TrackReport, TrackR
             """)
     List<TrackReport> findAllWithTrackAndListener();
 
+    @Query(value = "SELECT count(*) FROM track_report WHERE track_id = :trackId", nativeQuery = true)
+    long countByTrackId(@Param("trackId") Integer trackId);
+
     // Fusion de musiques : un pseudo qui a signalé les deux ne garde qu'un signalement.
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = """

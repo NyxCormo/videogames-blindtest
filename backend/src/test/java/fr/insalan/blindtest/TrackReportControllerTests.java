@@ -2,7 +2,9 @@ package fr.insalan.blindtest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
@@ -105,6 +107,27 @@ class TrackReportControllerTests {
             .andExpect(status().reason("Pseudo introuvable"));
 
         assertThat(reports.count()).isZero();
+    }
+
+    @Test
+    void tellsHowManyReportsATrackHasAndWhetherTheListenerReportedIt() throws Exception {
+        Track dawn = dawn();
+        Listener nyx = listeners.save(new Listener("Nyx"));
+        Listener awing = listeners.save(new Listener("Awing"));
+
+        mockMvc.perform(get(url(dawn.getId(), nyx.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.reports").value(0))
+            .andExpect(jsonPath("$.reportedByListener").value(false));
+
+        mockMvc.perform(put(url(dawn.getId(), nyx.getId()))).andExpect(status().isNoContent());
+
+        mockMvc.perform(get(url(dawn.getId(), nyx.getId())))
+            .andExpect(jsonPath("$.reports").value(1))
+            .andExpect(jsonPath("$.reportedByListener").value(true));
+        mockMvc.perform(get(url(dawn.getId(), awing.getId())))
+            .andExpect(jsonPath("$.reports").value(1))
+            .andExpect(jsonPath("$.reportedByListener").value(false));
     }
 
     @Test

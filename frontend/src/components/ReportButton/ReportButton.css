@@ -1,0 +1,10 @@
+.report-button {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.report-button-flagged {
+  color: #ef5350;
+  border-color: #ef5350;
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchNextTrack, setKnowledge, type DiscoverTrack } from '../../api/discover'
 import { fetchGames, type Game } from '../../api/games'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
+import { ReportButton } from '../../components/ReportButton/ReportButton'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
 import './DiscoverPage.css'
@@ -123,6 +124,7 @@ export function DiscoverPage() {
                   Non
                 </button>
               </div>
+              {track.trackId !== null && <ReportButton trackId={track.trackId} />}
             </>
           ) : revealed ? (
             <>
@@ -137,6 +139,7 @@ export function DiscoverPage() {
               <button type="button" onClick={loadNext}>
                 Suivant
               </button>
+              {track.trackId !== null && <ReportButton trackId={track.trackId} />}
             </>
           ) : (
             <div className="discover-guess">

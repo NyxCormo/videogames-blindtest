@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 import type { Track } from '../../api/tracks'
+import { ReportButton } from '../ReportButton/ReportButton'
 import './AudioPlayer.css'
 
 
@@ -32,6 +33,7 @@ return (
       <button type="button" aria-label="Musique suivante" onClick={onNext}>
         ⏭
       </button>
+      {track && <ReportButton trackId={track.id} />}
     </div>
   )
 })
