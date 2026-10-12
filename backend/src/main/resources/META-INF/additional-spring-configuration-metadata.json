@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "khinsider.request-delay-ms",
+      "type": "java.lang.Long",
+      "description": "Délai minimum, en millisecondes, entre deux requêtes vers un hôte externe (KHInsider, le CDN audio)."
+    },
+    {
+      "name": "khinsider.refresh-interval",
+      "type": "java.time.Duration",
+      "description": "Temps entre deux balayages qui vérifient et rafraîchissent les liens audio."
+    },
+    {
+      "name": "khinsider.refresh-initial-delay",
+      "type": "java.time.Duration",
+      "description": "Attente avant le premier balayage après le démarrage du serveur."
+    },
+    {
+      "name": "admin.password",
+      "type": "java.lang.String",
+      "description": "Mot de passe du compte admin, lu dans la variable ADMIN_PASSWORD de backend/.env."
+    }
+  ]
+}
