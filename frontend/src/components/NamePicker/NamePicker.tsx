@@ -1,4 +1,5 @@
 import { type ReactNode, useState } from 'react'
+import { matchesWords, searchWords } from '../../textSearch'
 import './NamePicker.css'
 
 // T : franchise, jeu ou musique ont tous au moins un id et un nom.
@@ -44,11 +45,11 @@ export function NamePicker<T extends NamedItem>({
     )
   }
 
-  const trimmed = query.trim().toLowerCase()
+  const words = searchWords(query)
   const results =
-    trimmed.length === 0
+    words.length === 0
       ? []
-      : items.filter((item) => (getSearchText ? getSearchText(item) : item.name).toLowerCase().includes(trimmed))
+      : items.filter((item) => matchesWords(getSearchText ? getSearchText(item) : item.name, words))
 
   return (
     <div className="name-picker">
