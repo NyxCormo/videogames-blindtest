@@ -1,3 +1,5 @@
+import { request } from './http'
+
 // Forme du JSON renvoyé par GET/POST /api/tags (voir TagResponse côté backend)
 export type Tag = {
     id: number
@@ -12,31 +14,21 @@ export type TagType = {
 }
 
 export async function searchTags(search: string, signal?: AbortSignal): Promise<Tag[]> {
-    const response = await fetch(`/api/tags?search=${encodeURIComponent(search)}`, { signal })
-    if (!response.ok) {
-        throw new Error(`Erreur ${response.status}`)
-    }
+    const response = await request(`/api/tags?search=${encodeURIComponent(search)}`, { signal })
     return response.json()
 }
 
 export async function createTag(typeId: number, tagName: string): Promise<Tag> {
-    const response = await fetch('/api/tags', {
+    const response = await request('/api/tags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ typeId, tagName }),
     })
-    if (!response.ok) {
-        const body = await response.json()
-        throw new Error(body.message ?? `Erreur ${response.status}`)
-    }
     return response.json()
 }
 
 export async function fetchTagTypes(signal?: AbortSignal): Promise<TagType[]> {
-    const response = await fetch('/api/tag-types', { signal })
-    if (!response.ok) {
-        throw new Error(`Erreur ${response.status}`)
-    }
+    const response = await request('/api/tag-types', { signal })
     return response.json()
 }
 
@@ -44,17 +36,11 @@ export async function fetchTagTypes(signal?: AbortSignal): Promise<TagType[]> {
 export type TagUsage = Tag & { count: number }
 
 export async function fetchMostUsedTags(signal?: AbortSignal): Promise<TagUsage[]> {
-    const response = await fetch('/api/tags/most-used', { signal })
-    if (!response.ok) {
-        throw new Error(`Erreur ${response.status}`)
-    }
+    const response = await request('/api/tags/most-used', { signal })
     return response.json()
 }
 
 export async function fetchAllTags(signal?: AbortSignal): Promise<Tag[]> {
-    const response = await fetch('/api/tags/all', { signal })
-    if (!response.ok) {
-        throw new Error(`Erreur ${response.status}`)
-    }
+    const response = await request('/api/tags/all', { signal })
     return response.json()
 }

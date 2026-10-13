@@ -1,3 +1,4 @@
+import { errorMessage, request } from './http'
 import type { Track } from './tracks'
 
 const ADMIN_USERNAME = 'admin'
@@ -11,27 +12,20 @@ export class AdminSessionExpired extends Error {
 export type LinkKind = 'khinsider' | 'youtube'
 
 export async function loginAdmin(password: string): Promise<string> {
-  const response = await fetch('/api/auth/login', {
+  const response = await request('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username: ADMIN_USERNAME, password }),
   })
-  if (!response.ok) {
-    const body = await response.json()
-    throw new Error(body.message ?? `Erreur ${response.status}`)
-  }
   const body: { token: string } = await response.json()
   return body.token
 }
 
 export async function logoutAdmin(token: string): Promise<void> {
-  const response = await fetch('/api/auth/logout', {
+  await request('/api/auth/logout', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
   })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
 }
 
 export async function checkAdmin(token: string, signal?: AbortSignal): Promise<boolean> {
@@ -54,8 +48,7 @@ async function adminRequest(token: string, url: string, init: RequestInit = {}):
     throw new AdminSessionExpired()
   }
   if (!response.ok) {
-    const body = await response.json()
-    throw new Error(body.message ?? `Erreur ${response.status}`)
+    throw new Error(await errorMessage(response))
   }
   return response
 }
