@@ -4,12 +4,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import fr.insalan.blindtest.model.Franchise;
@@ -23,10 +19,7 @@ import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class StatsControllerTests {
+class StatsControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -45,15 +38,6 @@ class StatsControllerTests {
 
     @Autowired
     KnowledgeRepository knowledge;
-
-    @AfterEach
-    void cleanDatabase() {
-        knowledge.deleteAll();
-        listeners.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     private Track track(Game game, String name, boolean playable) {
         Track track = new Track(name, game);

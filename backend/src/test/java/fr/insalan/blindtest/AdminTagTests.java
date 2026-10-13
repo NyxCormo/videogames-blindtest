@@ -8,13 +8,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -23,39 +19,23 @@ import tools.jackson.databind.ObjectMapper;
 
 import fr.insalan.blindtest.dto.admin.MergeRequest;
 import fr.insalan.blindtest.dto.admin.RenameRequest;
-import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.model.TagType;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.model.TrackTag;
-import fr.insalan.blindtest.repository.FranchiseRepository;
-import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TagTypeRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
-import fr.insalan.blindtest.security.TokenStore;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AdminTagTests {
+class AdminTagTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    TokenStore tokenStore;
-
-    @Autowired
-    FranchiseRepository franchises;
-
-    @Autowired
-    GameRepository games;
 
     @Autowired
     TrackRepository tracks;
@@ -68,16 +48,6 @@ class AdminTagTests {
 
     @Autowired
     TrackTagRepository trackTags;
-
-    @AfterEach
-    void cleanDatabase() {
-        // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
-        trackTags.deleteAll();
-        tags.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     @Test
     void requiresAnAdminToken() throws Exception {
@@ -157,14 +127,6 @@ class AdminTagTests {
         assertThat(tags.existsById(action.getId())).isFalse();
         assertThat(trackTags.count()).isZero();
         assertThat(tracks.existsById(dawn.getId())).isTrue();
-    }
-
-    private Game stellarBlade() {
-        return games.save(new Game("Stellar Blade", franchises.save(new Franchise("Stellar Blade"))));
-    }
-
-    private String adminToken() {
-        return "Bearer " + tokenStore.create("admin");
     }
 
     private ResultActions send(MockHttpServletRequestBuilder request, Object body) throws Exception {

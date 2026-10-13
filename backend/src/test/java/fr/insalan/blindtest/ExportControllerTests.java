@@ -11,12 +11,8 @@ import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import fr.insalan.blindtest.importer.SheetReader;
@@ -32,10 +28,7 @@ import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class ExportControllerTests {
+class ExportControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -54,15 +47,6 @@ class ExportControllerTests {
 
     @Autowired
     KnowledgeRepository knowledge;
-
-    @AfterEach
-    void cleanDatabase() {
-        knowledge.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-        listeners.deleteAll();
-    }
 
     private String exportBody() throws Exception {
         return mockMvc.perform(get("/api/export/sheet"))

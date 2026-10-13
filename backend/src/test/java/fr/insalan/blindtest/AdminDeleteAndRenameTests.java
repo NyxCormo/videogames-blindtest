@@ -7,13 +7,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -37,21 +33,14 @@ import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TagTypeRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
-import fr.insalan.blindtest.security.TokenStore;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AdminDeleteAndRenameTests {
+class AdminDeleteAndRenameTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    TokenStore tokenStore;
 
     @Autowired
     FranchiseRepository franchises;
@@ -76,18 +65,6 @@ class AdminDeleteAndRenameTests {
 
     @Autowired
     BlindtestRepository blindtests;
-
-    @AfterEach
-    void cleanDatabase() {
-        // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
-        trackTags.deleteAll();
-        tags.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-        listeners.deleteAll();
-        blindtests.deleteAll();
-    }
 
     @Test
     void previewsRequireAnAdminToken() throws Exception {
@@ -183,7 +160,7 @@ class AdminDeleteAndRenameTests {
     }
 
     private ResultActions admin(MockHttpServletRequestBuilder request) throws Exception {
-        return mockMvc.perform(request.header("Authorization", "Bearer " + tokenStore.create("admin")));
+        return mockMvc.perform(request.header("Authorization", adminToken()));
     }
 
     private ResultActions rename(String url, String name) throws Exception {

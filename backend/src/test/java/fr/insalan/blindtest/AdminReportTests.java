@@ -6,42 +6,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.model.TrackReport;
-import fr.insalan.blindtest.repository.FranchiseRepository;
-import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
-import fr.insalan.blindtest.security.TokenStore;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AdminReportTests {
+class AdminReportTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
-
-    @Autowired
-    TokenStore tokenStore;
-
-    @Autowired
-    FranchiseRepository franchises;
-
-    @Autowired
-    GameRepository games;
 
     @Autowired
     TrackRepository tracks;
@@ -51,15 +31,6 @@ class AdminReportTests {
 
     @Autowired
     TrackReportRepository reports;
-
-    @AfterEach
-    void cleanDatabase() {
-        reports.deleteAll();
-        listeners.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     @Test
     void requiresAnAdminToken() throws Exception {
@@ -121,13 +92,5 @@ class AdminReportTests {
             .andExpect(status().isOk());
 
         assertThat(reports.count()).isZero();
-    }
-
-    private Game stellarBlade() {
-        return games.save(new Game("Stellar Blade", franchises.save(new Franchise("Stellar Blade"))));
-    }
-
-    private String adminToken() {
-        return "Bearer " + tokenStore.create("admin");
     }
 }

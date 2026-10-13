@@ -6,13 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
@@ -28,21 +24,14 @@ import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TagTypeRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
-import fr.insalan.blindtest.repository.TrackTagRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class TrackTagControllerTests {
+class TrackTagControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    TrackTagRepository trackTags;
 
     @Autowired
     TagRepository tags;
@@ -58,16 +47,6 @@ class TrackTagControllerTests {
 
     @Autowired
     FranchiseRepository franchises;
-
-    @AfterEach
-    void cleanDatabase() {
-        // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
-        trackTags.deleteAll();
-        tags.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     @Test
     void addsListsAndRemovesATag() throws Exception {

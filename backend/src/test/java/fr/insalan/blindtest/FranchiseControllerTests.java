@@ -6,13 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
@@ -23,10 +19,7 @@ import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class FranchiseControllerTests {
+class FranchiseControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -39,12 +32,6 @@ class FranchiseControllerTests {
 
     @Autowired
     GameRepository games;
-
-    @AfterEach
-    void cleanDatabase() {
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     @Test
     void listIncludesFranchisesWithoutAnyGame() throws Exception {

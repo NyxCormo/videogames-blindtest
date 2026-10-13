@@ -6,13 +6,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
@@ -26,9 +22,7 @@ import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.KnowledgeId;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
-import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
-import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
@@ -36,22 +30,13 @@ import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class BlindtestGameControllerTests {
+class BlindtestGameControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    BlindtestScoreRepository blindtestScores;
-
-    @Autowired
-    BlindtestDifficultyBandRepository blindtestDifficultyBands;
 
     @Autowired
     BlindtestTrackRepository blindtestTracks;
@@ -73,19 +58,6 @@ class BlindtestGameControllerTests {
 
     @Autowired
     FranchiseRepository franchises;
-
-    @AfterEach
-    void cleanDatabase() {
-        blindtestScores.deleteAll();
-        blindtestDifficultyBands.deleteAll();
-        blindtestTracks.deleteAll();
-        blindtests.deleteAll();
-        knowledge.deleteAll();
-        listeners.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     @Test
     void playsThroughASingleTrackBlindtest() throws Exception {

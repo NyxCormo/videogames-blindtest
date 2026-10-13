@@ -7,13 +7,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import tools.jackson.databind.ObjectMapper;
@@ -23,7 +19,6 @@ import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestDifficultyBand;
 import fr.insalan.blindtest.model.BlindtestScore;
 import fr.insalan.blindtest.model.BlindtestTrack;
-import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Knowledge;
 import fr.insalan.blindtest.model.Listener;
@@ -37,8 +32,6 @@ import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
-import fr.insalan.blindtest.repository.FranchiseRepository;
-import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TagRepository;
@@ -46,27 +39,14 @@ import fr.insalan.blindtest.repository.TagTypeRepository;
 import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
-import fr.insalan.blindtest.security.TokenStore;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AdminDeletionTests {
+class AdminDeletionTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    TokenStore tokenStore;
-
-    @Autowired
-    FranchiseRepository franchises;
-
-    @Autowired
-    GameRepository games;
 
     @Autowired
     TrackRepository tracks;
@@ -100,23 +80,6 @@ class AdminDeletionTests {
 
     @Autowired
     TrackReportRepository reports;
-
-    @AfterEach
-    void cleanDatabase() {
-        // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
-        reports.deleteAll();
-        blindtestBands.deleteAll();
-        blindtestScores.deleteAll();
-        blindtestTracks.deleteAll();
-        blindtests.deleteAll();
-        knowledge.deleteAll();
-        trackTags.deleteAll();
-        tags.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-        listeners.deleteAll();
-    }
 
     @Test
     void requiresAnAdminToken() throws Exception {
@@ -285,13 +248,5 @@ class AdminDeletionTests {
         assertThat(reports.count()).isEqualTo(2);
         assertThat(reports.existsById(new TrackReportId(dawn.getId(), nyx.getId()))).isTrue();
         assertThat(reports.existsById(new TrackReportId(raven.getId(), nyx.getId()))).isTrue();
-    }
-
-    private Game stellarBlade() {
-        return games.save(new Game("Stellar Blade", franchises.save(new Franchise("Stellar Blade"))));
-    }
-
-    private String adminToken() {
-        return "Bearer " + tokenStore.create("admin");
     }
 }

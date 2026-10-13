@@ -7,12 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import fr.insalan.blindtest.model.Franchise;
@@ -27,10 +23,7 @@ import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class DiscoverControllerTests {
+class DiscoverControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -49,15 +42,6 @@ class DiscoverControllerTests {
 
     @Autowired
     KnowledgeRepository knowledge;
-
-    @AfterEach
-    void cleanDatabase() {
-        knowledge.deleteAll();
-        listeners.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     private Track playableTrack(Game game, String name) {
         Track track = tracks.save(new Track(name, game));

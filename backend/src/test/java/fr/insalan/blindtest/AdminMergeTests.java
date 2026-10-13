@@ -5,13 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -41,21 +37,14 @@ import fr.insalan.blindtest.repository.TagTypeRepository;
 import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
-import fr.insalan.blindtest.security.TokenStore;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AdminMergeTests {
+class AdminMergeTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    TokenStore tokenStore;
 
     @Autowired
     FranchiseRepository franchises;
@@ -89,21 +78,6 @@ class AdminMergeTests {
 
     @Autowired
     TrackReportRepository reports;
-
-    @AfterEach
-    void cleanDatabase() {
-        // tag_type est une liste fixe (migration V3), on ne la nettoie pas entre les tests
-        reports.deleteAll();
-        blindtestTracks.deleteAll();
-        blindtests.deleteAll();
-        knowledge.deleteAll();
-        trackTags.deleteAll();
-        tags.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-        listeners.deleteAll();
-    }
 
     @Test
     void requiresAnAdminToken() throws Exception {
@@ -244,13 +218,9 @@ class AdminMergeTests {
         assertThat(franchises.existsById(copy.getId())).isTrue();
     }
 
-    private Game stellarBlade() {
-        return games.save(new Game("Stellar Blade", franchises.save(new Franchise("Stellar Blade"))));
-    }
-
     private ResultActions merge(String url, Integer targetId) throws Exception {
         return mockMvc.perform(post(url)
-            .header("Authorization", "Bearer " + tokenStore.create("admin"))
+            .header("Authorization", adminToken())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(new MergeRequest(targetId))));
     }

@@ -7,24 +7,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import fr.insalan.blindtest.importer.ImportService;
 import fr.insalan.blindtest.importer.SheetRow;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
-import fr.insalan.blindtest.repository.KnowledgeRepository;
-import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
 
-@SpringBootTest
-@ActiveProfiles("test")
-public class ImportTransactionTests {
+public class ImportTransactionTests extends IntegrationTest {
 
     @Autowired
     ImportService importService;
@@ -37,21 +30,6 @@ public class ImportTransactionTests {
 
     @Autowired
     TrackRepository trackRepository;
-
-    @Autowired
-    ListenerRepository listenerRepository;
-
-    @Autowired
-    KnowledgeRepository knowledgeRepository;
-
-    @AfterEach
-    void cleanDatabase() {
-        knowledgeRepository.deleteAll();
-        trackRepository.deleteAll();
-        gameRepository.deleteAll();
-        franchiseRepository.deleteAll();
-        listenerRepository.deleteAll();
-    }
 
     @Test
     void nothingIsSavedWhenTheImportFails() {
