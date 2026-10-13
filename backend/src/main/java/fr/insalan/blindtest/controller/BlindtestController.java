@@ -70,9 +70,7 @@ public class BlindtestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public BlindtestResponse create(@RequestBody CreateBlindtestRequest request) {
-        if (request.name() == null || request.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
-        }
+        String name = Names.require(request.name());
         if (request.trackCount() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nombre de musiques doit être positif");
         }
@@ -88,7 +86,7 @@ public class BlindtestController {
             List<Integer> tagIds = request.tagIds() == null ? List.of() : request.tagIds();
             boolean matchAllTags = request.matchAllTags() == null || request.matchAllTags();
             blindtest = blindtestGenerator.generate(
-                request.name(),
+                name,
                 request.trackCount(),
                 bands,
                 tagIds,

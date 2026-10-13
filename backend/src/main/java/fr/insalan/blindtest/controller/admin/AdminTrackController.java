@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.controller.Names;
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.SetLinkRequest;
@@ -50,7 +51,7 @@ public class AdminTrackController {
     @PatchMapping("/{id}")
     public TrackResponse rename(@PathVariable Integer id, @RequestBody RenameRequest request) {
         Track track = findTrack(id);
-        String name = AdminNames.require(request.name());
+        String name = Names.require(request.name());
         if (trackRepository.existsByGameAndNameIgnoreCaseAndIdNot(track.getGame(), name, id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique « " + name + " » existe déjà dans ce jeu");
         }

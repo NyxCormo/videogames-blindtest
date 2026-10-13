@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.controller.Names;
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.GameResponse;
@@ -41,7 +42,7 @@ public class AdminGameController {
     public GameResponse rename(@PathVariable Integer id, @RequestBody RenameRequest request) {
         Game game = gameRepository.findByIdWithFranchise(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Jeu introuvable"));
-        String name = AdminNames.require(request.name());
+        String name = Names.require(request.name());
         if (gameRepository.existsByFranchiseAndNameIgnoreCaseAndIdNot(game.getFranchise(), name, id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Le jeu « " + name + " » existe déjà dans cette franchise");
         }

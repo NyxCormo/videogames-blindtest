@@ -39,10 +39,7 @@ public class ListenerController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ListenerResponse create(@RequestBody CreateListenerRequest request) {
-        if (request.name() == null || request.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
-        }
-        String name = request.name().trim();
+        String name = Names.require(request.name());
         if (listenerRepository.existsByNameIgnoreCase(name)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Le pseudo « " + name + " » existe déjà");
         }

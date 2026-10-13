@@ -56,15 +56,12 @@ public class GameController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public GameResponse create(@RequestBody CreateGameRequest request) {
-        if (request.name() == null || request.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
-        }
+        String name = Names.require(request.name());
         if (request.franchiseId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La franchise est obligatoire");
         }
         Franchise franchise = franchiseRepository.findById(request.franchiseId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Franchise inconnue"));
-        String name = request.name().trim();
         if (gameRepository.existsByFranchiseAndNameIgnoreCase(franchise, name)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Le jeu « " + name + " » existe déjà dans cette franchise");
         }

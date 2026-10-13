@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.controller.Names;
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.admin.RenameRequest;
@@ -35,7 +36,7 @@ public class AdminBlindtestController {
     public BlindtestResponse rename(@PathVariable Integer id, @RequestBody RenameRequest request) {
         Blindtest blindtest = blindtestRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blindtest introuvable"));
-        blindtest.setName(AdminNames.require(request.name()));
+        blindtest.setName(Names.require(request.name()));
         blindtestRepository.save(blindtest);
         return BlindtestResponse.from(blindtest);
     }

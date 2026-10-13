@@ -1,14 +1,14 @@
-package fr.insalan.blindtest.controller.admin;
+package fr.insalan.blindtest.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-final class AdminNames {
+public final class Names {
 
-    private AdminNames() {
+    private Names() {
     }
 
-    static String require(String name) {
+    public static String require(String name) {
         if (name == null || name.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
         }
