@@ -17,7 +17,6 @@ export function filterEnrichment(
   query: string,
   onlyFranchisesWithoutGames: boolean,
   onlyGamesWithoutTracks: boolean,
-  maxTracksPerGame: number,
   onlyTracksWithoutLinks: boolean,
 ): EnrichmentFranchise[] {
   const words = searchWords(query)
@@ -57,7 +56,6 @@ export function filterEnrichment(
       if (onlyGamesWithoutTracks) {
         return gameTracks.length === 0 && matchesWords(`${franchise.name} ${game.name}`, words)
       }
-      if (gameTracks.length > maxTracksPerGame) return false
       if (onlyTracksWithoutLinks && !gameTracks.some((track) => !hasSource(track))) return false
       return matchesWords(`${franchise.name} ${game.name}`, words)
     })

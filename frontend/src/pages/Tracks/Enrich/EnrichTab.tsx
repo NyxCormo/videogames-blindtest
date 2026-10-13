@@ -9,8 +9,6 @@ import { filterEnrichment } from './filterEnrichment'
 import { TrackLinkControl } from './TrackLinkControl'
 import './EnrichTab.css'
 
-const MAX_TRACKS_PER_GAME = 25
-
 export function EnrichTab() {
   const { notify } = useNotification()
   const [franchises, setFranchises] = useState<Franchise[] | null>(null)
@@ -20,7 +18,6 @@ export function EnrichTab() {
   const [query, setQuery] = useState('')
   const [onlyFranchisesWithoutGames, setOnlyFranchisesWithoutGames] = useState(false)
   const [onlyGamesWithoutTracks, setOnlyGamesWithoutTracks] = useState(false)
-  const [maxTracksPerGame, setMaxTracksPerGame] = useState(MAX_TRACKS_PER_GAME)
   const [onlyTracksWithoutLinks, setOnlyTracksWithoutLinks] = useState(false)
 
   const [franchiseId, setFranchiseId] = useState<number | null>(null)
@@ -58,7 +55,6 @@ export function EnrichTab() {
             query,
             onlyFranchisesWithoutGames,
             onlyGamesWithoutTracks,
-            maxTracksPerGame,
             onlyTracksWithoutLinks,
           )
         : [],
@@ -69,7 +65,6 @@ export function EnrichTab() {
       query,
       onlyFranchisesWithoutGames,
       onlyGamesWithoutTracks,
-      maxTracksPerGame,
       onlyTracksWithoutLinks,
     ],
   )
@@ -199,16 +194,6 @@ export function EnrichTab() {
             onChange={(event) => setOnlyTracksWithoutLinks(event.target.checked)}
           />
           Musiques sans lien uniquement
-        </label>
-        <label className="enrichment-slider">
-          Jeux avec au plus {maxTracksPerGame} musique{maxTracksPerGame > 1 ? 's' : ''}
-          <input
-            type="range"
-            min={0}
-            max={MAX_TRACKS_PER_GAME}
-            value={maxTracksPerGame}
-            onChange={(event) => setMaxTracksPerGame(Number(event.target.value))}
-          />
         </label>
       </div>
 
