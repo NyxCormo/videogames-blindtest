@@ -100,8 +100,8 @@ export function VotesTab() {
       <p className="summary">
         {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}.
       </p>
-      <div className="knowledge-wrap">
-        <table className="knowledge-table">
+      <div className="table-wrap">
+        <table>
           <thead>
             <tr>
               <th>Franchise</th>

@@ -78,7 +78,7 @@ export function ListenerBanner() {
       />
       <button type="button" onClick={closeLogin}>Annuler</button>
       {results.length > 0 && (
-        <ul className="listener-results">
+        <ul className="results-list">
           {results.map((result) => (
             <li key={result.id}>
               <button type="button" onClick={() => select(result)}>{result.name}</button>

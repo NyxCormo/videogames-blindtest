@@ -153,3 +153,53 @@ a {
   padding: 1rem 2.5rem;
   font-size: 1.15rem;
 }
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+}
+
+.results-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0.25rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  min-width: 12rem;
+  z-index: 1;
+}
+
+.results-list button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.results-list button:hover {
+  background: var(--border);
+}

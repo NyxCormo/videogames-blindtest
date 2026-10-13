@@ -79,7 +79,7 @@ export function TagPicker({ onPick }: Props) {
                 onChange={(event) => setQuery(event.target.value)}
             />
             {results.length > 0 && (
-                <ul className="tag-picker-results">
+                <ul className="results-list">
                     {results.map((tag) => (
                         <li key={tag.id}>
                             <button type="button" onClick={() => select(tag)}>

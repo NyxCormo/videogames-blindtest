@@ -62,7 +62,7 @@ export function BlindtestLeaderboardPage() {
       {!error && entries === null && <p>Chargement...</p>}
       {entries !== null && entries.length === 0 && <p>Personne n'a encore joué.</p>}
       {entries !== null && entries.length > 0 && (
-        <div className="leaderboard-wrap">
+        <div className="table-wrap">
           <table className="leaderboard">
             <thead>
               <tr>
