@@ -203,3 +203,7 @@ th {
 .results-list button:hover {
   background: var(--border);
 }
+
+.muted {
+  opacity: 0.7;
+}

@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { deleteKnowledge, fetchKnowledge, setKnowledge } from '../../../api/discover'
 import { fetchTracks, type Track } from '../../../api/tracks'
+import { LoginPrompt } from '../../../components/LoginPrompt/LoginPrompt'
 import { Select, type SelectOption } from '../../../components/Select/Select'
 import { useCurrentListener } from '../../../context/CurrentListenerContext'
 import { useNotification } from '../../../context/NotificationContext'
+import { plural } from '../../../plural'
 import { filterKnowledge, type VoteFilter } from './filterKnowledge'
 import './VotesTab.css'
 
@@ -15,7 +17,7 @@ const VOTE_OPTIONS: SelectOption<VoteFilter>[] = [
 ]
 
 export function VotesTab() {
-  const { listener, openLogin } = useCurrentListener()
+  const { listener } = useCurrentListener()
   const { notify } = useNotification()
   const [tracks, setTracks] = useState<Track[] | null>(null)
   const [knowledge, setKnowledgeMap] = useState<Map<number, boolean>>(new Map())
@@ -69,14 +71,7 @@ export function VotesTab() {
   }
 
   if (!listener) {
-    return (
-      <div className="votes-login">
-        <p>Les votes sont enregistrés par pseudo.</p>
-        <button type="button" className="button button-primary button-large" onClick={openLogin}>
-          Se connecter
-        </button>
-      </div>
-    )
+    return <LoginPrompt message="Les votes sont enregistrés par pseudo." />
   }
   if (error) {
     return <p role="alert">Impossible de charger les musiques.</p>
@@ -98,7 +93,7 @@ export function VotesTab() {
         <Select ariaLabel="Filtrer par vote" options={VOTE_OPTIONS} value={vote} onChange={setVote} />
       </div>
       <p className="summary">
-        {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}.
+        {plural(shown.length, 'musique affichée', 'musiques affichées')} sur {tracks.length}.
       </p>
       <div className="table-wrap">
         <table>

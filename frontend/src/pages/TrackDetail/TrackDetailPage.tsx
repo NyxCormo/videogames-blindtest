@@ -5,6 +5,7 @@ import { fetchAllTags, fetchMostUsedTags, type Tag, type TagUsage } from '../../
 import { addTrackTag, fetchTrack, fetchTrackTags, removeTrackTag, type Track } from '../../api/tracks'
 import { TagPicker } from '../../components/TagPicker/TagPicker'
 import { useNotification } from '../../context/NotificationContext'
+import { plural } from '../../plural'
 import { filterTags } from './filterTags'
 import './TrackDetailPage.css'
 
@@ -125,7 +126,7 @@ export function TrackDetailPage() {
         if (selectedTrackIds.size === 0) return
         const count = selectedTrackIds.size
         Promise.all([...selectedTrackIds].map((selectedId) => addTrackTag(selectedId, tag.id)))
-            .then(() => notify(`« ${tag.name} » ajouté à ${count} musique${count > 1 ? 's' : ''}.`, 'success'))
+            .then(() => notify(`« ${tag.name} » ajouté à ${plural(count, 'musique', 'musiques')}.`, 'success'))
             .catch(() => notify(`« ${tag.name} » n'a pas pu être ajouté à toutes les musiques sélectionnées.`, 'error'))
     }
 
@@ -239,8 +240,7 @@ export function TrackDetailPage() {
                     {tags.length > 0 && (
                         <>
                             <p className="sidebar-hint">
-                                {selectedTrackIds.size} musique{selectedTrackIds.size > 1 ? 's' : ''} sélectionnée
-                                {selectedTrackIds.size > 1 ? 's' : ''}
+                                {plural(selectedTrackIds.size, 'musique sélectionnée', 'musiques sélectionnées')}
                             </p>
                             <ul className="tag-suggestions">
                                 {tags.map((tag) => (

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { fetchNextTrack, setKnowledge, type DiscoverTrack } from '../../api/discover'
 import { fetchGames, type Game } from '../../api/games'
+import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { ReportButton } from '../../components/ReportButton/ReportButton'
+import { TrackLabel } from '../../components/TrackLabel/TrackLabel'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
 import './DiscoverPage.css'
@@ -90,7 +92,7 @@ export function DiscoverPage() {
   }
 
   if (!listener) {
-    return <p>Connecte-toi pour découvrir tes musiques.</p>
+    return <LoginPrompt message="Il faut un pseudo pour découvrir des musiques." />
   }
   if (error) {
     return <p role="alert">Impossible de charger une musique.</p>
@@ -114,7 +116,7 @@ export function DiscoverPage() {
           {showNames ? (
             <>
               <p className="discover-name">
-                <strong>{track.franchiseName}</strong> — {track.gameName} — {track.trackName}
+                <TrackLabel franchise={track.franchiseName} game={track.gameName} track={track.trackName} />
               </p>
               <div className="discover-actions">
                 <button type="button" onClick={() => answer(true)}>
@@ -134,7 +136,7 @@ export function DiscoverPage() {
                 </p>
               )}
               <p className="discover-name">
-                <strong>{track.franchiseName}</strong> — {track.gameName} — {track.trackName}
+                <TrackLabel franchise={track.franchiseName} game={track.gameName} track={track.trackName} />
               </p>
               <button type="button" onClick={loadNext}>
                 Suivant

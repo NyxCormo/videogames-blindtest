@@ -32,18 +32,18 @@ export function ReportsSection({ token, onSessionExpired, onFixLink }: Props) {
   return (
     <section className="admin-section">
       <h2>Musiques signalées</h2>
-      {reported === null && <p className="admin-muted">Chargement…</p>}
-      {reported !== null && reported.length === 0 && <p className="admin-muted">Aucune musique signalée.</p>}
+      {reported === null && <p className="muted">Chargement…</p>}
+      {reported !== null && reported.length === 0 && <p className="muted">Aucune musique signalée.</p>}
       {reported !== null && reported.length > 0 && (
         <>
-          <p className="admin-muted">Changer ou retirer le lien KHInsider d'une musique retire ses signalements.</p>
+          <p className="muted">Changer ou retirer le lien KHInsider d'une musique retire ses signalements.</p>
           <ul className="admin-reports">
             {reported.map(({ track, reporters }) => (
               <li key={track.id}>
                 <span>
                   <strong>{track.name}</strong> ({track.gameName}, {track.franchiseName})
                 </span>
-                <span className="admin-muted">Signalée par {reporters.join(', ')}</span>
+                <span className="muted">Signalée par {reporters.join(', ')}</span>
                 <div className="admin-row">
                   {track.audioLink && <audio controls preload="none" src={track.audioLink} />}
                   <button type="button" onClick={() => onFixLink(track)}>

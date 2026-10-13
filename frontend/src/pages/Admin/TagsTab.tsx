@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchTagCounts, type TagCount } from '../../api/admin'
 import { EntityList } from '../../components/EntityList/EntityList'
-import { plural } from '../../components/EntityList/listText'
+import { plural } from '../../plural'
 import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'

@@ -3,7 +3,7 @@ import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGames, type Game } from '../../api/games'
 import { fetchTracks, type Track } from '../../api/tracks'
 import { EntityList } from '../../components/EntityList/EntityList'
-import { plural } from '../../components/EntityList/listText'
+import { plural } from '../../plural'
 import { useMergeSelection } from './mergeSelection'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 import { useEntityActions } from './useEntityActions'
@@ -114,7 +114,7 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
         emptyText="Aucune franchise."
       />
       {franchiseGames === null ? (
-        <p className="entity-muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
+        <p className="muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
       ) : (
         <EntityList
           key={`jeux-${franchiseId}`}
@@ -131,7 +131,7 @@ export function CatalogTab({ token, onSessionExpired }: Props) {
         />
       )}
       {gameTracks === null ? (
-        <p className="entity-muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
+        <p className="muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
       ) : (
         <EntityList
           key={`musiques-${gameId}`}

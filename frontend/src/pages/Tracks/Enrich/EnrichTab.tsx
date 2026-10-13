@@ -3,8 +3,8 @@ import { createFranchise, fetchFranchises, type Franchise } from '../../../api/f
 import { createGame, fetchGames, type Game } from '../../../api/games'
 import { addKhinsiderLink, addYoutubeLink, createTrack, fetchTracks, hasSource, type Track } from '../../../api/tracks'
 import { EntityList } from '../../../components/EntityList/EntityList'
-import { plural } from '../../../components/EntityList/listText'
 import { useNotification } from '../../../context/NotificationContext'
+import { plural } from '../../../plural'
 import { filterEnrichment } from './filterEnrichment'
 import { TrackLinkControl } from './TrackLinkControl'
 import './EnrichTab.css'
@@ -228,7 +228,7 @@ export function EnrichTab() {
             filterable={false}
           />
         ) : (
-          <p className="entity-muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
+          <p className="muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
         )}
         {game && gameTracks ? (
           <EntityList
@@ -272,7 +272,7 @@ export function EnrichTab() {
             filterable={false}
           />
         ) : (
-          <p className="entity-muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
+          <p className="muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
         )}
       </div>
     </>
