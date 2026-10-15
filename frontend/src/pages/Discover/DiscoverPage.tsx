@@ -56,9 +56,11 @@ export function DiscoverPage() {
     const controller = new AbortController()
     fetchGames(controller.signal)
       .then(setGames)
-      .catch(() => {})
+      .catch(() => {
+        if (!controller.signal.aborted) notify('Impossible de charger la liste des jeux.', 'error')
+      })
     return () => controller.abort()
-  }, [])
+  }, [notify])
 
   function toggleShowNames() {
     const next = !showNames

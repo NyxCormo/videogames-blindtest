@@ -50,7 +50,7 @@ export function BlindtestPlayPage() {
     if (!listener) return
     fetchSession(blindtestId, listener.id)
       .then(setSession)
-      .catch(() => {})
+      .catch(() => notify("Le nombre d'essais restants n'a pas pu être mis à jour.", 'error'))
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

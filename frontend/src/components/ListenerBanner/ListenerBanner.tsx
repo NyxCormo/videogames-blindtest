@@ -22,14 +22,16 @@ export function ListenerBanner() {
       searchListeners(trimmed, controller.signal)
         .then(setResults)
         .catch(() => {
-          if (!controller.signal.aborted) setResults([])
+          if (controller.signal.aborted) return
+          setResults([])
+          notify('La recherche de pseudo a échoué.', 'error')
         })
     }, 300)
     return () => {
       clearTimeout(timeout)
       controller.abort()
     }
-  }, [query])
+  }, [query, notify])
 
   function select(selected: Listener) {
     connect(selected)

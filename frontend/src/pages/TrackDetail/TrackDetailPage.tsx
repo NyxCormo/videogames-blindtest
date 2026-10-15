@@ -25,6 +25,7 @@ export function TrackDetailPage() {
     const [allTags, setAllTags] = useState<Tag[] | null>(null)
     const [allTagsFilter, setAllTagsFilter] = useState('')
     const [gameTracks, setGameTracks] = useState<Track[] | null>(null)
+    const [gameTracksError, setGameTracksError] = useState(false)
     const [selectedTrackIds, setSelectedTrackIds] = useState<Set<number>>(new Set())
 
     useEffect(() => {
@@ -47,16 +48,20 @@ export function TrackDetailPage() {
         const controller = new AbortController()
         fetchMostUsedTags(controller.signal)
             .then(setMostUsedTags)
-            .catch(() => {})
+            .catch(() => {
+                if (!controller.signal.aborted) notify('Impossible de charger les tags populaires.', 'error')
+            })
         return () => controller.abort()
-    }, [])
+    }, [notify])
 
     useEffect(() => {
         if (track === null) return
         const controller = new AbortController()
         fetchGameTracks(track.gameId, controller.signal)
             .then((tracks) => setGameTracks(tracks.filter((other) => other.id !== track.id)))
-            .catch(() => {})
+            .catch(() => {
+                if (!controller.signal.aborted) setGameTracksError(true)
+            })
         return () => controller.abort()
     }, [track])
 
@@ -215,7 +220,8 @@ export function TrackDetailPage() {
 
         <aside className="track-detail-sidebar">
             <h2>Autres musiques du jeu</h2>
-            {gameTracks === null && <p>Chargement...</p>}
+            {gameTracksError && <p role="alert">Impossible de charger les autres musiques du jeu.</p>}
+            {!gameTracksError && gameTracks === null && <p>Chargement...</p>}
             {gameTracks !== null && gameTracks.length === 0 && <p>Aucune autre musique de ce jeu.</p>}
             {gameTracks !== null && gameTracks.length > 0 && (
                 <>

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGameTracks, fetchGames, type Game } from '../../api/games'
 import type { Track } from '../../api/tracks'
+import { useNotification } from '../../context/NotificationContext'
 import { NamePicker } from '../NamePicker/NamePicker'
 import './GameGuessForm.css'
 
@@ -13,6 +14,7 @@ type Props = {
 }
 
 export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = false }: Props) {
+  const { notify } = useNotification()
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
@@ -29,17 +31,21 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
     const controller = new AbortController()
     fetchGames(controller.signal)
       .then(setGames)
-      .catch(() => {})
+      .catch(() => {
+        if (!controller.signal.aborted) notify('Impossible de charger la liste des jeux.', 'error')
+      })
     return () => controller.abort()
-  }, [])
+  }, [notify])
 
   useEffect(() => {
     const controller = new AbortController()
     fetchFranchises(controller.signal)
       .then(setFranchises)
-      .catch(() => {})
+      .catch(() => {
+        if (!controller.signal.aborted) notify('Impossible de charger la liste des franchises.', 'error')
+      })
     return () => controller.abort()
-  }, [])
+  }, [notify])
 
   useEffect(() => {
     if (!game) {
@@ -49,9 +55,11 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
     const controller = new AbortController()
     fetchGameTracks(game.id, controller.signal)
       .then(setTracks)
-      .catch(() => {})
+      .catch(() => {
+        if (!controller.signal.aborted) notify(`Impossible de charger les musiques de « ${game.name} ».`, 'error')
+      })
     return () => controller.abort()
-  }, [game])
+  }, [game, notify])
 
   // Une fois la franchise confirmée, la case "Jeu" ne propose plus que ses jeux (aide sans donner la réponse).
   const gamesToSearch = confirmedFranchise
