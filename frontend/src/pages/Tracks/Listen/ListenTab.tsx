@@ -75,6 +75,7 @@ export function ListenTab({ tracks, error, player }: Props) {
               tracks={shown}
               onPlay={player.play}
               playingTrackId={player.isPlaying ? player.currentTrack?.id : undefined}
+              resetKey={`${query}|${source}`}
             />
           ) : (
             <p>Aucune musique ne correspond.</p>

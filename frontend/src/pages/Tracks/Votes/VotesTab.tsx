@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { deleteKnowledge, fetchKnowledge, setKnowledge } from '../../../api/discover'
 import { fetchTracks, type Track } from '../../../api/tracks'
 import { LoginPrompt } from '../../../components/LoginPrompt/LoginPrompt'
@@ -6,6 +6,7 @@ import { Select, type SelectOption } from '../../../components/Select/Select'
 import { useCurrentListener } from '../../../context/CurrentListenerContext'
 import { useNotification } from '../../../context/NotificationContext'
 import { plural } from '../../../plural'
+import { useProgressiveList } from '../../../useProgressiveList'
 import { filterKnowledge, type VoteFilter } from './filterKnowledge'
 import './VotesTab.css'
 
@@ -70,6 +71,13 @@ export function VotesTab() {
     })
   }
 
+  const rows = useProgressiveList(shown, `${query}|${vote}`)
+  const answerRef = useRef(answer)
+  useEffect(() => {
+    answerRef.current = answer
+  })
+  const stableAnswer = useCallback((track: Track, knows: boolean) => answerRef.current(track, knows), [])
+
   if (!listener) {
     return <LoginPrompt message="Les votes sont enregistrés par pseudo." />
   }
@@ -106,29 +114,38 @@ export function VotesTab() {
             </tr>
           </thead>
           <tbody>
-            {shown.map((track) => {
-              const knows = knowledge.get(track.id)
-              return (
-                <tr key={track.id}>
-                  <td>{track.franchiseName}</td>
-                  <td>{track.gameName}</td>
-                  <td>{track.name}</td>
-                  <td>
-                    <div className="knowledge-actions">
-                      <button type="button" aria-pressed={knows === true} onClick={() => answer(track, true)}>
-                        Oui
-                      </button>
-                      <button type="button" aria-pressed={knows === false} onClick={() => answer(track, false)}>
-                        Non
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
+            {rows.map((track) => (
+              <VoteRow key={track.id} track={track} knows={knowledge.get(track.id)} onAnswer={stableAnswer} />
+            ))}
           </tbody>
         </table>
       </div>
     </>
   )
 }
+
+type VoteRowProps = {
+  track: Track
+  knows: boolean | undefined
+  onAnswer: (track: Track, knows: boolean) => void
+}
+
+const VoteRow = memo(function VoteRow({ track, knows, onAnswer }: VoteRowProps) {
+  return (
+    <tr>
+      <td>{track.franchiseName}</td>
+      <td>{track.gameName}</td>
+      <td>{track.name}</td>
+      <td>
+        <div className="knowledge-actions">
+          <button type="button" aria-pressed={knows === true} onClick={() => onAnswer(track, true)}>
+            Oui
+          </button>
+          <button type="button" aria-pressed={knows === false} onClick={() => onAnswer(track, false)}>
+            Non
+          </button>
+        </div>
+      </td>
+    </tr>
+  )
+})
