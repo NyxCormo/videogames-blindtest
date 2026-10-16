@@ -9,13 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.sun.net.httpserver.HttpServer;
@@ -28,21 +24,14 @@ import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
-import fr.insalan.blindtest.security.TokenStore;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AdminTrackControllerTests {
+class AdminTrackControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    TokenStore tokenStore;
 
     @Autowired
     FranchiseRepository franchises;
@@ -52,13 +41,6 @@ class AdminTrackControllerTests {
 
     @Autowired
     TrackRepository tracks;
-
-    @AfterEach
-    void cleanDatabase() {
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     @Test
     void requiresAnAdminToken() throws Exception {
@@ -150,9 +132,5 @@ class AdminTrackControllerTests {
         Franchise stellar = franchises.save(new Franchise("Stellar Blade"));
         Game game = games.save(new Game("Stellar Blade", stellar));
         return tracks.save(new Track("Dawn", game));
-    }
-
-    private String adminToken() {
-        return "Bearer " + tokenStore.create("admin");
     }
 }

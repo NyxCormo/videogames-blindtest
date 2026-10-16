@@ -1,5 +1,6 @@
 import { forwardRef, useState } from 'react'
 import type { Track } from '../../api/tracks'
+import { TrackLabel } from '../TrackLabel/TrackLabel'
 import { NextIcon, PreviousIcon, RepeatIcon } from '../icons'
 import { ReportButton } from '../ReportButton/ReportButton'
 import './AudioPlayer.css'
@@ -25,7 +26,7 @@ return (
     <div className="audio-player" hidden={!track}>
       {track && (
         <span className="audio-player-title">
-          {track.franchiseName} — {track.gameName} — {track.name}
+          <TrackLabel franchise={track.franchiseName} game={track.gameName} track={track.name} />
         </span>
       )}
       <audio

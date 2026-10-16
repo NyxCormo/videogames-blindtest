@@ -5,13 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 
@@ -24,9 +20,7 @@ import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Knowledge;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
-import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
-import fr.insalan.blindtest.repository.BlindtestTrackRepository;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
@@ -34,22 +28,13 @@ import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import tools.jackson.databind.ObjectMapper;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class BlindtestControllerTests {
+class BlindtestControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @Autowired
-    BlindtestTrackRepository blindtestTracks;
-
-    @Autowired
-    BlindtestDifficultyBandRepository blindtestDifficultyBands;
 
     @Autowired
     BlindtestRepository blindtests;
@@ -68,18 +53,6 @@ class BlindtestControllerTests {
 
     @Autowired
     FranchiseRepository franchises;
-
-    @AfterEach
-    void cleanDatabase() {
-        blindtestTracks.deleteAll();
-        blindtestDifficultyBands.deleteAll();
-        blindtests.deleteAll();
-        knowledge.deleteAll();
-        listeners.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     private void playableTrack(Game game, String name, boolean known) {
         Track track = tracks.save(new Track(name, game));

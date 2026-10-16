@@ -32,7 +32,6 @@ function filter(
   query = '',
   onlyFranchisesWithoutGames = false,
   onlyGamesWithoutTracks = false,
-  maxTracksPerGame = 25,
   onlyTracksWithoutLinks = false,
 ) {
   return filterEnrichment(
@@ -42,7 +41,6 @@ function filter(
     query,
     onlyFranchisesWithoutGames,
     onlyGamesWithoutTracks,
-    maxTracksPerGame,
     onlyTracksWithoutLinks,
   )
 }
@@ -71,22 +69,15 @@ describe('filterEnrichment', () => {
     expect(result[0].games).toEqual([gameNoTrack])
   })
 
-  it('limite aux jeux ayant au plus N musiques', () => {
-    const result = filter('', false, false, 1)
-    expect(result.map((entry) => entry.franchise.name)).toEqual(['Stellar Blade', 'Zelda', 'Sans jeu'])
-    expect(result[0].games).toEqual([gameNoTrack])
-    expect(result[1].games).toEqual([gameOneTrack])
-  })
-
   it('ne montre que les jeux ayant au moins une musique sans lien, sans cacher les franchises sans jeu', () => {
-    const result = filter('', false, false, 25, true)
+    const result = filter('', false, false, true)
     expect(result.map((entry) => entry.franchise.name)).toEqual(['Stellar Blade', 'Zelda', 'Sans jeu'])
     expect(result[0].games).toEqual([gameTwoTracks])
     expect(result[1].games).toEqual([gameOneTrack])
   })
 
   it('ne cache pas les jeux sans musique quand "jeux sans musique" et "musiques sans lien" sont cochées ensemble', () => {
-    const result = filter('', false, true, 25, true)
+    const result = filter('', false, true, true)
     expect(result.map((entry) => entry.franchise.name)).toEqual(['Stellar Blade', 'Sans jeu'])
     expect(result[0].games).toEqual([gameNoTrack])
   })

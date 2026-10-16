@@ -9,13 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.sun.net.httpserver.HttpServer;
@@ -31,10 +27,7 @@ import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class TrackControllerTests {
+class TrackControllerTests extends IntegrationTest {
 
 	@Autowired
 	MockMvc mockMvc;
@@ -50,13 +43,6 @@ class TrackControllerTests {
 
 	@Autowired
 	TrackRepository tracks;
-
-	@AfterEach
-	void cleanDatabase() {
-		tracks.deleteAll();
-		games.deleteAll();
-		franchises.deleteAll();
-	}
 
 	@Test
 	void listIsEmptyWithoutData() throws Exception {

@@ -22,14 +22,16 @@ export function ListenerBanner() {
       searchListeners(trimmed, controller.signal)
         .then(setResults)
         .catch(() => {
-          if (!controller.signal.aborted) setResults([])
+          if (controller.signal.aborted) return
+          setResults([])
+          notify('La recherche de pseudo a échoué.', 'error')
         })
     }, 300)
     return () => {
       clearTimeout(timeout)
       controller.abort()
     }
-  }, [query])
+  }, [query, notify])
 
   function select(selected: Listener) {
     connect(selected)
@@ -78,7 +80,7 @@ export function ListenerBanner() {
       />
       <button type="button" onClick={closeLogin}>Annuler</button>
       {results.length > 0 && (
-        <ul className="listener-results">
+        <ul className="results-list">
           {results.map((result) => (
             <li key={result.id}>
               <button type="button" onClick={() => select(result)}>{result.name}</button>

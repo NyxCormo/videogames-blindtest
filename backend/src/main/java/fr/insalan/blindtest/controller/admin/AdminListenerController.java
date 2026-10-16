@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.controller.Names;
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.ListenerResponse;
@@ -52,7 +53,7 @@ public class AdminListenerController {
     public ListenerResponse rename(@PathVariable Integer id, @RequestBody RenameRequest request) {
         Listener listener = listenerRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pseudo introuvable"));
-        String name = AdminNames.require(request.name());
+        String name = Names.require(request.name());
         if (listenerRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Le pseudo « " + name + " » existe déjà");
         }

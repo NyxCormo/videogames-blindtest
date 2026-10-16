@@ -178,10 +178,6 @@ button.entity-row-main:hover {
   background: color-mix(in srgb, var(--merge-b) 45%, var(--bg));
 }
 
-.entity-muted {
-  opacity: 0.7;
-}
-
 .entity-row-extra {
   display: flex;
   flex-wrap: wrap;

@@ -5,6 +5,7 @@ import { fetchAllTags, fetchMostUsedTags, type Tag, type TagUsage } from '../../
 import { addTrackTag, fetchTrack, fetchTrackTags, removeTrackTag, type Track } from '../../api/tracks'
 import { TagPicker } from '../../components/TagPicker/TagPicker'
 import { useNotification } from '../../context/NotificationContext'
+import { plural } from '../../plural'
 import { filterTags } from './filterTags'
 import './TrackDetailPage.css'
 
@@ -24,6 +25,7 @@ export function TrackDetailPage() {
     const [allTags, setAllTags] = useState<Tag[] | null>(null)
     const [allTagsFilter, setAllTagsFilter] = useState('')
     const [gameTracks, setGameTracks] = useState<Track[] | null>(null)
+    const [gameTracksError, setGameTracksError] = useState(false)
     const [selectedTrackIds, setSelectedTrackIds] = useState<Set<number>>(new Set())
 
     useEffect(() => {
@@ -46,16 +48,20 @@ export function TrackDetailPage() {
         const controller = new AbortController()
         fetchMostUsedTags(controller.signal)
             .then(setMostUsedTags)
-            .catch(() => {})
+            .catch(() => {
+                if (!controller.signal.aborted) notify('Impossible de charger les tags populaires.', 'error')
+            })
         return () => controller.abort()
-    }, [])
+    }, [notify])
 
     useEffect(() => {
         if (track === null) return
         const controller = new AbortController()
         fetchGameTracks(track.gameId, controller.signal)
             .then((tracks) => setGameTracks(tracks.filter((other) => other.id !== track.id)))
-            .catch(() => {})
+            .catch(() => {
+                if (!controller.signal.aborted) setGameTracksError(true)
+            })
         return () => controller.abort()
     }, [track])
 
@@ -125,7 +131,7 @@ export function TrackDetailPage() {
         if (selectedTrackIds.size === 0) return
         const count = selectedTrackIds.size
         Promise.all([...selectedTrackIds].map((selectedId) => addTrackTag(selectedId, tag.id)))
-            .then(() => notify(`« ${tag.name} » ajouté à ${count} musique${count > 1 ? 's' : ''}.`, 'success'))
+            .then(() => notify(`« ${tag.name} » ajouté à ${plural(count, 'musique', 'musiques')}.`, 'success'))
             .catch(() => notify(`« ${tag.name} » n'a pas pu être ajouté à toutes les musiques sélectionnées.`, 'error'))
     }
 
@@ -214,7 +220,8 @@ export function TrackDetailPage() {
 
         <aside className="track-detail-sidebar">
             <h2>Autres musiques du jeu</h2>
-            {gameTracks === null && <p>Chargement...</p>}
+            {gameTracksError && <p role="alert">Impossible de charger les autres musiques du jeu.</p>}
+            {!gameTracksError && gameTracks === null && <p>Chargement...</p>}
             {gameTracks !== null && gameTracks.length === 0 && <p>Aucune autre musique de ce jeu.</p>}
             {gameTracks !== null && gameTracks.length > 0 && (
                 <>
@@ -239,8 +246,7 @@ export function TrackDetailPage() {
                     {tags.length > 0 && (
                         <>
                             <p className="sidebar-hint">
-                                {selectedTrackIds.size} musique{selectedTrackIds.size > 1 ? 's' : ''} sélectionnée
-                                {selectedTrackIds.size > 1 ? 's' : ''}
+                                {plural(selectedTrackIds.size, 'musique sélectionnée', 'musiques sélectionnées')}
                             </p>
                             <ul className="tag-suggestions">
                                 {tags.map((tag) => (

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.controller.Names;
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.FranchiseResponse;
@@ -41,7 +42,7 @@ public class AdminFranchiseController {
     public FranchiseResponse rename(@PathVariable Integer id, @RequestBody RenameRequest request) {
         Franchise franchise = franchiseRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Franchise introuvable"));
-        String name = AdminNames.require(request.name());
+        String name = Names.require(request.name());
         if (franchiseRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La franchise « " + name + " » existe déjà");
         }

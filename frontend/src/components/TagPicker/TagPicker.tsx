@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createTag, fetchTagTypes, searchTags, type Tag, type TagType } from '../../api/tags'
+import { useNotification } from '../../context/NotificationContext'
 import { Select } from '../Select/Select'
 import './TagPicker.css'
 
@@ -8,6 +9,7 @@ type Props = {
 }
 
 export function TagPicker({ onPick }: Props) {
+    const { notify } = useNotification()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<Tag[]>([])
     const [tagTypes, setTagTypes] = useState<TagType[]>([])
@@ -19,9 +21,11 @@ export function TagPicker({ onPick }: Props) {
         const controller = new AbortController()
         fetchTagTypes(controller.signal)
             .then(setTagTypes)
-            .catch(() => {})
+            .catch(() => {
+                if (!controller.signal.aborted) notify('Impossible de charger les types de tags.', 'error')
+            })
         return () => controller.abort()
-    }, [])
+    }, [notify])
 
     useEffect(() => {
         const trimmed = query.trim()
@@ -34,14 +38,16 @@ export function TagPicker({ onPick }: Props) {
             searchTags(trimmed, controller.signal)
                 .then(setResults)
                 .catch(() => {
-                    if (!controller.signal.aborted) setResults([])
+                    if (controller.signal.aborted) return
+                    setResults([])
+                    notify('La recherche de tags a échoué.', 'error')
                 })
         }, 300)
         return () => {
             clearTimeout(timeout)
             controller.abort()
         }
-    }, [query])
+    }, [query, notify])
 
     function select(tag: Tag) {
         onPick(tag)
@@ -79,7 +85,7 @@ export function TagPicker({ onPick }: Props) {
                 onChange={(event) => setQuery(event.target.value)}
             />
             {results.length > 0 && (
-                <ul className="tag-picker-results">
+                <ul className="results-list">
                     {results.map((tag) => (
                         <li key={tag.id}>
                             <button type="button" onClick={() => select(tag)}>

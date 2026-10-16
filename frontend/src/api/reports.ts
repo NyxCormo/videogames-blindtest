@@ -1,3 +1,5 @@
+import { request } from './http'
+
 // Forme du JSON renvoyé par GET /api/tracks/{trackId}/reports/{listenerId} (voir TrackReportStatusResponse côté backend)
 export type ReportStatus = {
   reports: number
@@ -5,23 +7,14 @@ export type ReportStatus = {
 }
 
 export async function fetchReportStatus(trackId: number, listenerId: number, signal?: AbortSignal): Promise<ReportStatus> {
-  const response = await fetch(`/api/tracks/${trackId}/reports/${listenerId}`, { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request(`/api/tracks/${trackId}/reports/${listenerId}`, { signal })
   return response.json()
 }
 
 export async function reportTrack(trackId: number, listenerId: number): Promise<void> {
-  const response = await fetch(`/api/tracks/${trackId}/reports/${listenerId}`, { method: 'PUT' })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  await request(`/api/tracks/${trackId}/reports/${listenerId}`, { method: 'PUT' })
 }
 
 export async function cancelReport(trackId: number, listenerId: number): Promise<void> {
-  const response = await fetch(`/api/tracks/${trackId}/reports/${listenerId}`, { method: 'DELETE' })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  await request(`/api/tracks/${trackId}/reports/${listenerId}`, { method: 'DELETE' })
 }

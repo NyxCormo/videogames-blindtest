@@ -1,3 +1,5 @@
+import { request } from './http'
+
 // Forme du JSON renvoyé par GET /api/blindtests (voir BlindtestResponse côté backend)
 export type Blindtest = {
   id: number
@@ -7,10 +9,7 @@ export type Blindtest = {
 }
 
 export async function fetchBlindtests(signal?: AbortSignal): Promise<Blindtest[]> {
-  const response = await fetch('/api/blindtests', { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request('/api/blindtests', { signal })
   return response.json()
 }
 
@@ -32,7 +31,7 @@ export async function createBlindtest(
     strategy: string | null,
     maxAttempts: number | null
 ): Promise<Blindtest> {
-    const response = await fetch(`/api/blindtests`, {
+    const response = await request(`/api/blindtests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -47,10 +46,6 @@ export async function createBlindtest(
         maxAttempts,
     }),
     })
-    if (!response.ok) {
-        const body = await response.json()
-        throw new Error(body.message ?? `Erreur ${response.status}`)
-    }
     return response.json()
 }
 
@@ -80,10 +75,7 @@ export type GuessResult = {
 }
 
 export async function fetchSession(blindtestId: number, listenerId: number, signal?: AbortSignal): Promise<BlindtestSession> {
-  const response = await fetch(`/api/blindtests/${blindtestId}/session?listenerId=${listenerId}`, { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request(`/api/blindtests/${blindtestId}/session?listenerId=${listenerId}`, { signal })
   return response.json()
 }
 
@@ -93,14 +85,11 @@ export async function submitGuess(
   gameId: number,
   trackId: number | null,
 ): Promise<GuessResult> {
-  const response = await fetch(`/api/blindtests/${blindtestId}/guess?listenerId=${listenerId}`, {
+  const response = await request(`/api/blindtests/${blindtestId}/guess?listenerId=${listenerId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ gameId, trackId }),
   })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
   return response.json()
 }
 
@@ -114,33 +103,24 @@ export async function submitGuessFranchise(
   listenerId: number,
   franchiseId: number,
 ): Promise<FranchiseGuessResult> {
-  const response = await fetch(`/api/blindtests/${blindtestId}/guess-franchise?listenerId=${listenerId}`, {
+  const response = await request(`/api/blindtests/${blindtestId}/guess-franchise?listenerId=${listenerId}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ franchiseId }),
   })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
   return response.json()
 }
 
 export async function submitPass(blindtestId: number, listenerId: number): Promise<Reveal> {
-  const response = await fetch(`/api/blindtests/${blindtestId}/pass?listenerId=${listenerId}`, { method: 'POST' })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request(`/api/blindtests/${blindtestId}/pass?listenerId=${listenerId}`, { method: 'POST' })
   return response.json()
 }
 
 export async function submitKnowAnyway(blindtestId: number, listenerId: number, trackId: number): Promise<void> {
-  const response = await fetch(
+  await request(
     `/api/blindtests/${blindtestId}/know-anyway?listenerId=${listenerId}&trackId=${trackId}`,
     { method: 'POST' },
   )
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
 }
 
 // Forme du JSON renvoyé par GET /api/blindtests/{id}/leaderboard (voir LeaderboardEntryResponse côté backend)
@@ -153,9 +133,6 @@ export type LeaderboardEntry = {
 }
 
 export async function fetchLeaderboard(blindtestId: number, signal?: AbortSignal): Promise<LeaderboardEntry[]> {
-  const response = await fetch(`/api/blindtests/${blindtestId}/leaderboard`, { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request(`/api/blindtests/${blindtestId}/leaderboard`, { signal })
   return response.json()
 }

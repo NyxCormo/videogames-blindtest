@@ -4,6 +4,7 @@ import { createBlindtest, type DifficultyBand } from '../../api/blindtests'
 import { fetchAllTags, type Tag } from '../../api/tags'
 import { DifficultyRangeSlider } from '../../components/DifficultyRangeSlider/DifficultyRangeSlider'
 import { Select } from '../../components/Select/Select'
+import { useNotification } from '../../context/NotificationContext'
 import './BlindtestCreatePage.css'
 
 const STRATEGIES = [
@@ -14,6 +15,7 @@ const STRATEGIES = [
 ]
 
 export function BlindtestCreatePage() {
+  const { notify } = useNotification()
   const [name, setName] = useState('')
   const [trackCount, setTrackCount] = useState(10)
   const [bands, setBands] = useState<DifficultyBand[]>([{ minDifficulty: 0, maxDifficulty: 100, proportion: 100 }])
@@ -32,9 +34,11 @@ export function BlindtestCreatePage() {
     const controller = new AbortController()
     fetchAllTags(controller.signal)
       .then(setAllTags)
-      .catch(() => {})
+      .catch(() => {
+        if (!controller.signal.aborted) notify('Impossible de charger les tags : le blindtest sera créé sans filtre de tags.', 'warning')
+      })
     return () => controller.abort()
-  }, [])
+  }, [notify])
 
   function toggleTag(id: number) {
     setSelectedTagIds((current) => {

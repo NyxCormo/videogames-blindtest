@@ -61,7 +61,7 @@ export function NamePicker<T extends NamedItem>({
         disabled={disabled}
       />
       {results.length > 0 && (
-        <ul className="name-picker-results">
+        <ul className="results-list name-picker-results">
           {results.map((item) => (
             <li key={item.id}>
               <button

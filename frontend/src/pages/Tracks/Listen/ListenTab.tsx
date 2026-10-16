@@ -3,6 +3,7 @@ import { hasSource, type Track } from '../../../api/tracks'
 import { PlayIcon, ShuffleIcon } from '../../../components/icons'
 import { Select, type SelectOption } from '../../../components/Select/Select'
 import { TrackTable } from '../../../components/TrackTable/TrackTable'
+import { plural } from '../../../plural'
 import type { Player } from '../usePlayer'
 import { filterTracks, type SourceFilter } from './filterTracks'
 
@@ -61,11 +62,11 @@ export function ListenTab({ tracks, error, player }: Props) {
             </button>
           </div>
           <p className="summary">
-            {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}, dont{' '}
+            {plural(shown.length, 'musique affichée', 'musiques affichées')} sur {tracks.length}, dont{' '}
             {withoutSource} sans source audio dans toute la base.
           </p>
           <p className="summary">
-            File de lecture : {player.queueLength} {player.queueLength > 1 ? 'musiques' : 'musique'}
+            File de lecture : {plural(player.queueLength, 'musique', 'musiques')}
             {player.hasSelection ? ' (sélection)' : ' (toute la base)'}
             {player.shuffle && ', ordre aléatoire'}.
           </p>
@@ -74,6 +75,7 @@ export function ListenTab({ tracks, error, player }: Props) {
               tracks={shown}
               onPlay={player.play}
               playingTrackId={player.isPlaying ? player.currentTrack?.id : undefined}
+              resetKey={`${query}|${source}`}
             />
           ) : (
             <p>Aucune musique ne correspond.</p>

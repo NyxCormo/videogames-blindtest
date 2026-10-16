@@ -1,5 +1,7 @@
 package fr.insalan.blindtest.deletion;
 
+import static fr.insalan.blindtest.text.Plural.plural;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -186,9 +188,5 @@ public class DeletionService {
         if (!preview.allowed()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, preview.impact());
         }
-    }
-
-    private static String plural(long count, String singular, String pluralForm) {
-        return count + " " + (count > 1 ? pluralForm : singular);
     }
 }

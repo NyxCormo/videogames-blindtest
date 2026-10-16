@@ -9,12 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Instant;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import fr.insalan.blindtest.model.Franchise;
@@ -28,10 +24,7 @@ import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class TrackReportControllerTests {
+class TrackReportControllerTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -50,15 +43,6 @@ class TrackReportControllerTests {
 
     @Autowired
     TrackReportRepository reports;
-
-    @AfterEach
-    void cleanDatabase() {
-        reports.deleteAll();
-        listeners.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-    }
 
     private Track dawn() {
         Game game = games.save(new Game("Stellar Blade", franchises.save(new Franchise("Stellar Blade"))));

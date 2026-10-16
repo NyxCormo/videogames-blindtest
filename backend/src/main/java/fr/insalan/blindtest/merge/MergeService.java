@@ -1,5 +1,7 @@
 package fr.insalan.blindtest.merge;
 
+import static fr.insalan.blindtest.text.Plural.plural;
+
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -228,9 +230,5 @@ public class MergeService {
         if (!preview.allowed()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, preview.summary());
         }
-    }
-
-    private static String plural(long count, String singular, String pluralForm) {
-        return count + " " + (count > 1 ? pluralForm : singular);
     }
 }

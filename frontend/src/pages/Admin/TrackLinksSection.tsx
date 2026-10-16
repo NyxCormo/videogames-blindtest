@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { AdminSessionExpired, removeTrackLink, replaceTrackLink, type LinkKind } from '../../api/admin'
+import { removeTrackLink, replaceTrackLink, type LinkKind } from '../../api/admin'
 import { fetchTracks, type Track } from '../../api/tracks'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { useNotification } from '../../context/NotificationContext'
+import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 const LABELS: Record<LinkKind, string> = {
   khinsider: 'KHInsider',
@@ -19,6 +20,7 @@ type Props = {
 
 export function TrackLinksSection({ token, onSessionExpired, selected, onSelect, onLinkChanged }: Props) {
   const { notify } = useNotification()
+  const handleError = useAdminErrorHandler(onSessionExpired)
   const [tracks, setTracks] = useState<Track[]>([])
 
   useEffect(() => {
@@ -37,13 +39,6 @@ export function TrackLinksSection({ token, onSessionExpired, selected, onSelect,
     onLinkChanged()
     setTracks((current) => current.map((track) => (track.id === updated.id ? updated : track)))
     notify(message, 'success')
-  }
-
-  function handleError(err: Error) {
-    if (err instanceof AdminSessionExpired) {
-      onSessionExpired()
-    }
-    notify(err.message, 'error')
   }
 
   function save(track: Track, kind: LinkKind, link: string) {

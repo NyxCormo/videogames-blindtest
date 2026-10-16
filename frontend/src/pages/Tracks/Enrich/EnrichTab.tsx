@@ -3,13 +3,11 @@ import { createFranchise, fetchFranchises, type Franchise } from '../../../api/f
 import { createGame, fetchGames, type Game } from '../../../api/games'
 import { addKhinsiderLink, addYoutubeLink, createTrack, fetchTracks, hasSource, type Track } from '../../../api/tracks'
 import { EntityList } from '../../../components/EntityList/EntityList'
-import { plural } from '../../../components/EntityList/listText'
 import { useNotification } from '../../../context/NotificationContext'
+import { plural } from '../../../plural'
 import { filterEnrichment } from './filterEnrichment'
 import { TrackLinkControl } from './TrackLinkControl'
 import './EnrichTab.css'
-
-const MAX_TRACKS_PER_GAME = 25
 
 export function EnrichTab() {
   const { notify } = useNotification()
@@ -20,7 +18,6 @@ export function EnrichTab() {
   const [query, setQuery] = useState('')
   const [onlyFranchisesWithoutGames, setOnlyFranchisesWithoutGames] = useState(false)
   const [onlyGamesWithoutTracks, setOnlyGamesWithoutTracks] = useState(false)
-  const [maxTracksPerGame, setMaxTracksPerGame] = useState(MAX_TRACKS_PER_GAME)
   const [onlyTracksWithoutLinks, setOnlyTracksWithoutLinks] = useState(false)
 
   const [franchiseId, setFranchiseId] = useState<number | null>(null)
@@ -58,7 +55,6 @@ export function EnrichTab() {
             query,
             onlyFranchisesWithoutGames,
             onlyGamesWithoutTracks,
-            maxTracksPerGame,
             onlyTracksWithoutLinks,
           )
         : [],
@@ -69,7 +65,6 @@ export function EnrichTab() {
       query,
       onlyFranchisesWithoutGames,
       onlyGamesWithoutTracks,
-      maxTracksPerGame,
       onlyTracksWithoutLinks,
     ],
   )
@@ -200,16 +195,6 @@ export function EnrichTab() {
           />
           Musiques sans lien uniquement
         </label>
-        <label className="enrichment-slider">
-          Jeux avec au plus {maxTracksPerGame} musique{maxTracksPerGame > 1 ? 's' : ''}
-          <input
-            type="range"
-            min={0}
-            max={MAX_TRACKS_PER_GAME}
-            value={maxTracksPerGame}
-            onChange={(event) => setMaxTracksPerGame(Number(event.target.value))}
-          />
-        </label>
       </div>
 
       <div className="entity-columns enrichment-columns">
@@ -243,7 +228,7 @@ export function EnrichTab() {
             filterable={false}
           />
         ) : (
-          <p className="entity-muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
+          <p className="muted entity-column-hint">Choisir une franchise pour voir ses jeux.</p>
         )}
         {game && gameTracks ? (
           <EntityList
@@ -287,7 +272,7 @@ export function EnrichTab() {
             filterable={false}
           />
         ) : (
-          <p className="entity-muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
+          <p className="muted entity-column-hint">Choisir un jeu pour voir ses musiques.</p>
         )}
       </div>
     </>

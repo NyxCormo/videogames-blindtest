@@ -71,9 +71,9 @@ export function EntityList<T extends { id: number }>({
         />
       )}
       {items === null ? (
-        <p className="entity-muted">Chargement…</p>
+        <p className="muted">Chargement…</p>
       ) : shown.length === 0 ? (
-        <p className="entity-muted">{items.length === 0 ? emptyText : 'Aucun résultat pour ce filtre.'}</p>
+        <p className="muted">{items.length === 0 ? emptyText : 'Aucun résultat pour ce filtre.'}</p>
       ) : (
         <ul>
           {shown.map((item) => (

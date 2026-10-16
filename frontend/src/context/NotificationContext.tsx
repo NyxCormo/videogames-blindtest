@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 
 export type NotificationKind = 'success' | 'warning' | 'error'
 
@@ -27,14 +27,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timeout)
   }, [notification])
 
+  const notify = useCallback((message: string, kind: NotificationKind) => setNotification({ message, kind }), [])
+  const dismiss = useCallback(() => setNotification(null), [])
+
   return (
-    <NotificationContext.Provider
-      value={{
-        notification,
-        notify: (message, kind) => setNotification({ message, kind }),
-        dismiss: () => setNotification(null),
-      }}
-    >
+    <NotificationContext.Provider value={{ notification, notify, dismiss }}>
       {children}
     </NotificationContext.Provider>
   )

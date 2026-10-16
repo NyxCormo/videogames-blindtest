@@ -1,3 +1,4 @@
+import { request } from './http'
 import type { Track } from './tracks'
 
 // Forme du JSON renvoyé par GET /api/games (voir GameResponse côté backend)
@@ -9,41 +10,28 @@ export type Game = {
 }
 
 export async function fetchGames(signal?: AbortSignal): Promise<Game[]> {
-  const response = await fetch('/api/games', { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request('/api/games', { signal })
   return response.json()
 }
 
 export async function createGame(name: string, franchiseId: number): Promise<Game> {
-  const response = await fetch('/api/games', {
+  const response = await request('/api/games', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, franchiseId }),
   })
-  if (!response.ok) {
-    const body = await response.json()
-    throw new Error(body.message ?? `Erreur ${response.status}`)
-  }
   return response.json()
 }
 
 export async function fetchGameTracks(gameId: number, signal?: AbortSignal): Promise<Track[]> {
-  const response = await fetch(`/api/games/${gameId}/tracks`, { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request(`/api/games/${gameId}/tracks`, { signal })
   return response.json()
 }
 
 export async function applyTagToGame(gameId: number, tagId: number): Promise<void> {
-  const response = await fetch(`/api/games/${gameId}/tags`, {
+  await request(`/api/games/${gameId}/tags`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tagId }),
   })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
 }

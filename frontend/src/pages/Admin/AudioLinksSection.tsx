@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { AdminSessionExpired, fetchRefreshStatus, startRefresh, type RefreshStatus } from '../../api/admin'
+import { fetchRefreshStatus, startRefresh, type RefreshStatus } from '../../api/admin'
 import { useNotification } from '../../context/NotificationContext'
+import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 const POLL_DELAY_MS = 3000
 
@@ -15,14 +16,8 @@ function formatDate(value: string): string {
 
 export function AudioLinksSection({ token, onSessionExpired }: Props) {
   const { notify } = useNotification()
+  const handleError = useAdminErrorHandler(onSessionExpired)
   const [status, setStatus] = useState<RefreshStatus | null>(null)
-
-  function handleError(err: Error) {
-    if (err instanceof AdminSessionExpired) {
-      onSessionExpired()
-    }
-    notify(err.message, 'error')
-  }
 
   useEffect(() => {
     fetchRefreshStatus(token).then(setStatus).catch(handleError)
@@ -71,7 +66,7 @@ export function AudioLinksSection({ token, onSessionExpired }: Props) {
         </p>
       )}
       {status !== null && !status.running && !report && (
-        <p className="admin-muted">Aucun rafraîchissement depuis le démarrage du serveur.</p>
+        <p className="muted">Aucun rafraîchissement depuis le démarrage du serveur.</p>
       )}
     </section>
   )

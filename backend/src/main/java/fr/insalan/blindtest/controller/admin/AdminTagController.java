@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.controller.Names;
 import fr.insalan.blindtest.deletion.DeletePreview;
 import fr.insalan.blindtest.deletion.DeletionService;
 import fr.insalan.blindtest.dto.TagResponse;
@@ -52,7 +53,7 @@ public class AdminTagController {
     public TagResponse rename(@PathVariable Integer id, @RequestBody RenameRequest request) {
         Tag tag = tagRepository.findByIdWithType(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag introuvable"));
-        String name = AdminNames.require(request.name());
+        String name = Names.require(request.name());
         if (tagRepository.existsByTypeAndNameIgnoreCaseAndIdNot(tag.getType(), name, id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Le tag « " + name + " » existe déjà dans ce type");
         }

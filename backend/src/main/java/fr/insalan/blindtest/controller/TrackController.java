@@ -71,15 +71,12 @@ public class TrackController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public TrackResponse create(@RequestBody CreateTrackRequest request) {
-        if (request.name() == null || request.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom est obligatoire");
-        }
+        String name = Names.require(request.name());
         if (request.gameId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le jeu est obligatoire");
         }
         Game game = gameRepository.findByIdWithFranchise(request.gameId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jeu inconnu"));
-        String name = request.name().trim();
         if (trackRepository.existsByGameAndNameIgnoreCase(game, name)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique « " + name + " » existe déjà dans ce jeu");
         }

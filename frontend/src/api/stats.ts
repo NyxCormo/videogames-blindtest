@@ -1,3 +1,5 @@
+import { request } from './http'
+
 // Forme du JSON renvoyé par GET /api/stats (voir StatsResponse côté backend)
 export type Stats = {
   tracks: number
@@ -9,10 +11,7 @@ export type Stats = {
 }
 
 export async function fetchStats(signal?: AbortSignal): Promise<Stats> {
-  const response = await fetch('/api/stats', { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request('/api/stats', { signal })
   return response.json()
 }
 
@@ -24,9 +23,6 @@ export type ListenerStats = {
 }
 
 export async function fetchListenerStats(listenerId: number, signal?: AbortSignal): Promise<ListenerStats> {
-  const response = await fetch(`/api/stats/listeners/${listenerId}`, { signal })
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
-  }
+  const response = await request(`/api/stats/listeners/${listenerId}`, { signal })
   return response.json()
 }

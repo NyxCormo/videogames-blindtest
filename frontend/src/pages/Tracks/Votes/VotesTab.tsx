@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { deleteKnowledge, fetchKnowledge, setKnowledge } from '../../../api/discover'
 import { fetchTracks, type Track } from '../../../api/tracks'
+import { LoginPrompt } from '../../../components/LoginPrompt/LoginPrompt'
 import { Select, type SelectOption } from '../../../components/Select/Select'
 import { useCurrentListener } from '../../../context/CurrentListenerContext'
 import { useNotification } from '../../../context/NotificationContext'
+import { plural } from '../../../plural'
+import { useProgressiveList } from '../../../useProgressiveList'
 import { filterKnowledge, type VoteFilter } from './filterKnowledge'
 import './VotesTab.css'
 
@@ -15,7 +18,7 @@ const VOTE_OPTIONS: SelectOption<VoteFilter>[] = [
 ]
 
 export function VotesTab() {
-  const { listener, openLogin } = useCurrentListener()
+  const { listener } = useCurrentListener()
   const { notify } = useNotification()
   const [tracks, setTracks] = useState<Track[] | null>(null)
   const [knowledge, setKnowledgeMap] = useState<Map<number, boolean>>(new Map())
@@ -68,15 +71,15 @@ export function VotesTab() {
     })
   }
 
+  const rows = useProgressiveList(shown, `${query}|${vote}`)
+  const answerRef = useRef(answer)
+  useEffect(() => {
+    answerRef.current = answer
+  })
+  const stableAnswer = useCallback((track: Track, knows: boolean) => answerRef.current(track, knows), [])
+
   if (!listener) {
-    return (
-      <div className="votes-login">
-        <p>Les votes sont enregistrés par pseudo.</p>
-        <button type="button" className="button button-primary button-large" onClick={openLogin}>
-          Se connecter
-        </button>
-      </div>
-    )
+    return <LoginPrompt message="Les votes sont enregistrés par pseudo." />
   }
   if (error) {
     return <p role="alert">Impossible de charger les musiques.</p>
@@ -98,10 +101,10 @@ export function VotesTab() {
         <Select ariaLabel="Filtrer par vote" options={VOTE_OPTIONS} value={vote} onChange={setVote} />
       </div>
       <p className="summary">
-        {shown.length} {shown.length > 1 ? 'musiques affichées' : 'musique affichée'} sur {tracks.length}.
+        {plural(shown.length, 'musique affichée', 'musiques affichées')} sur {tracks.length}.
       </p>
-      <div className="knowledge-wrap">
-        <table className="knowledge-table">
+      <div className="table-wrap">
+        <table>
           <thead>
             <tr>
               <th>Franchise</th>
@@ -111,29 +114,38 @@ export function VotesTab() {
             </tr>
           </thead>
           <tbody>
-            {shown.map((track) => {
-              const knows = knowledge.get(track.id)
-              return (
-                <tr key={track.id}>
-                  <td>{track.franchiseName}</td>
-                  <td>{track.gameName}</td>
-                  <td>{track.name}</td>
-                  <td>
-                    <div className="knowledge-actions">
-                      <button type="button" aria-pressed={knows === true} onClick={() => answer(track, true)}>
-                        Oui
-                      </button>
-                      <button type="button" aria-pressed={knows === false} onClick={() => answer(track, false)}>
-                        Non
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
+            {rows.map((track) => (
+              <VoteRow key={track.id} track={track} knows={knowledge.get(track.id)} onAnswer={stableAnswer} />
+            ))}
           </tbody>
         </table>
       </div>
     </>
   )
 }
+
+type VoteRowProps = {
+  track: Track
+  knows: boolean | undefined
+  onAnswer: (track: Track, knows: boolean) => void
+}
+
+const VoteRow = memo(function VoteRow({ track, knows, onAnswer }: VoteRowProps) {
+  return (
+    <tr>
+      <td>{track.franchiseName}</td>
+      <td>{track.gameName}</td>
+      <td>{track.name}</td>
+      <td>
+        <div className="knowledge-actions">
+          <button type="button" aria-pressed={knows === true} onClick={() => onAnswer(track, true)}>
+            Oui
+          </button>
+          <button type="button" aria-pressed={knows === false} onClick={() => onAnswer(track, false)}>
+            Non
+          </button>
+        </div>
+      </td>
+    </tr>
+  )
+})

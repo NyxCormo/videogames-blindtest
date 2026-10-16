@@ -5,12 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -24,18 +20,11 @@ import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
-import fr.insalan.blindtest.security.TokenStore;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class AdminMergePreviewTests {
+class AdminMergePreviewTests extends IntegrationTest {
 
     @Autowired
     MockMvc mockMvc;
-
-    @Autowired
-    TokenStore tokenStore;
 
     @Autowired
     FranchiseRepository franchises;
@@ -51,15 +40,6 @@ class AdminMergePreviewTests {
 
     @Autowired
     KnowledgeRepository knowledge;
-
-    @AfterEach
-    void cleanDatabase() {
-        knowledge.deleteAll();
-        tracks.deleteAll();
-        games.deleteAll();
-        franchises.deleteAll();
-        listeners.deleteAll();
-    }
 
     @Test
     void requiresAnAdminToken() throws Exception {
@@ -144,13 +124,9 @@ class AdminMergePreviewTests {
             .andExpect(status().isNotFound());
     }
 
-    private Game stellarBlade() {
-        return games.save(new Game("Stellar Blade", franchises.save(new Franchise("Stellar Blade"))));
-    }
-
     private ResultActions preview(String kind, Integer sourceId, Integer targetId) throws Exception {
         return mockMvc.perform(get("/api/admin/" + kind + "/" + sourceId + "/merge-preview")
             .param("into", targetId.toString())
-            .header("Authorization", "Bearer " + tokenStore.create("admin")));
+            .header("Authorization", adminToken()));
     }
 }

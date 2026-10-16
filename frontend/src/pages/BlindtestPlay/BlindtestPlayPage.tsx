@@ -11,9 +11,12 @@ import {
 } from '../../api/blindtests'
 import { loadStoredVolume, storeVolume } from '../../audioPreferences'
 import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
+import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { ReportButton } from '../../components/ReportButton/ReportButton'
+import { TrackLabel } from '../../components/TrackLabel/TrackLabel'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
+import { plural } from '../../plural'
 import './BlindtestPlayPage.css'
 
 export function BlindtestPlayPage() {
@@ -47,7 +50,7 @@ export function BlindtestPlayPage() {
     if (!listener) return
     fetchSession(blindtestId, listener.id)
       .then(setSession)
-      .catch(() => {})
+      .catch(() => notify("Le nombre d'essais restants n'a pas pu être mis à jour.", 'error'))
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,7 +126,7 @@ export function BlindtestPlayPage() {
   }
 
   if (!listener) {
-    return <p>Connecte-toi pour jouer.</p>
+    return <LoginPrompt message="Il faut un pseudo pour jouer." />
   }
   if (error) {
     return <p role="alert">Impossible de charger la partie.</p>
@@ -150,8 +153,7 @@ export function BlindtestPlayPage() {
       <h1>Blindtest</h1>
       <p className="progress">
         {session.tracksHeard} / {session.totalTracks} musiques &middot; {session.goodAnswers} bonnes réponses
-        &middot; {session.attemptsRemaining} essai{session.attemptsRemaining > 1 ? 's' : ''} restant
-        {session.attemptsRemaining > 1 ? 's' : ''}
+        &middot; {plural(session.attemptsRemaining, 'essai restant', 'essais restants')}
       </p>
 
       <audio
@@ -171,7 +173,7 @@ export function BlindtestPlayPage() {
         <div className={`reveal ${revealedAsUnknown ? 'reveal-failure' : 'reveal-success'}`}>
           <p className="reveal-title">{revealedAsUnknown ? 'Musique révélée' : 'Bien joué !'}</p>
           <p>
-            <strong>{reveal.franchiseName}</strong> — {reveal.gameName} — {reveal.trackName}
+            <TrackLabel franchise={reveal.franchiseName} game={reveal.gameName} track={reveal.trackName} />
           </p>
           {bonusCorrect && <p className="bonus">+ bonus musique trouvée !</p>}
           {revealedAsUnknown && !correctedKnowledge && (
