@@ -1,4 +1,4 @@
-import { errorMessage, request } from './http'
+import { errorMessage, HttpError, request } from './http'
 import type { Track } from './tracks'
 
 const ADMIN_USERNAME = 'admin'
@@ -48,7 +48,7 @@ async function adminRequest(token: string, url: string, init: RequestInit = {}):
     throw new AdminSessionExpired()
   }
   if (!response.ok) {
-    throw new Error(await errorMessage(response))
+    throw new HttpError(response.status, await errorMessage(response))
   }
   return response
 }
@@ -93,6 +93,8 @@ export async function deleteItem(token: string, kind: AdminKind, id: number): Pr
 export type ListenerUsage = {
   id: number
   name: string
+  createdAt: string | null
+  lastSeenAt: string | null
   votes: number
   blindtests: number
 }

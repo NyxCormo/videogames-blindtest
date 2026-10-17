@@ -1,55 +1,8 @@
-import { useEffect, useState } from 'react'
-import { createListener, searchListeners, type Listener } from '../../api/listeners'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
-import { useNotification } from '../../context/NotificationContext'
 import './ListenerBanner.css'
 
 export function ListenerBanner() {
-  const { listener, connect, disconnect, loginOpen, openLogin, closeLogin } = useCurrentListener()
-  const { notify } = useNotification()
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Listener[]>([])
-  const [creating, setCreating] = useState(false)
-
-  useEffect(() => {
-    const trimmed = query.trim()
-    if (trimmed.length < 2) {
-      setResults([])
-      return
-    }
-    const controller = new AbortController()
-    const timeout = setTimeout(() => {
-      searchListeners(trimmed, controller.signal)
-        .then(setResults)
-        .catch(() => {
-          if (controller.signal.aborted) return
-          setResults([])
-          notify('La recherche de pseudo a échoué.', 'error')
-        })
-    }, 300)
-    return () => {
-      clearTimeout(timeout)
-      controller.abort()
-    }
-  }, [query, notify])
-
-  function select(selected: Listener) {
-    connect(selected)
-    closeLogin()
-    setQuery('')
-    setResults([])
-  }
-
-  function handleCreate() {
-    const name = query.trim()
-    setCreating(true)
-    createListener(name)
-      .then(select)
-      .catch((err: Error) => notify(err.message, 'error'))
-      .finally(() => setCreating(false))
-  }
-
-  const alreadyExists = results.some((result) => result.name.toLowerCase() === query.trim().toLowerCase())
+  const { listener, disconnect, openLogin } = useCurrentListener()
 
   if (listener) {
     return (
@@ -60,39 +13,9 @@ export function ListenerBanner() {
     )
   }
 
-  if (!loginOpen) {
-    return (
-      <div className="listener-banner">
-        <button type="button" onClick={openLogin}>Se connecter</button>
-      </div>
-    )
-  }
-
   return (
     <div className="listener-banner">
-      <input
-        type="search"
-        placeholder="Ton pseudo"
-        aria-label="Rechercher son pseudo"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        autoFocus
-      />
-      <button type="button" onClick={closeLogin}>Annuler</button>
-      {results.length > 0 && (
-        <ul className="results-list">
-          {results.map((result) => (
-            <li key={result.id}>
-              <button type="button" onClick={() => select(result)}>{result.name}</button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {query.trim().length >= 2 && !alreadyExists && (
-        <button type="button" onClick={handleCreate} disabled={creating}>
-          Créer « {query.trim()} »
-        </button>
-      )}
+      <button type="button" onClick={openLogin}>Se connecter</button>
     </div>
   )
 }

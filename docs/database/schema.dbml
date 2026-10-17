@@ -27,6 +27,8 @@ Table track {
 Table listener {
   id integer [primary key]
   name text [not null]
+  created_at datetime
+  last_seen_at datetime
 }
 
 Table knowledge {

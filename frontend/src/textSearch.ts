@@ -1,7 +1,7 @@
 const LIGATURES: Record<string, string> = { œ: 'oe', æ: 'ae', ß: 'ss' }
 
 // "Pokémon : Rouge" -> "pokemonrouge" : seules les lettres et les chiffres comptent.
-function normalize(text: string): string {
+export function normalize(text: string): string {
   return text
     .toLowerCase()
     .replace(/[œæß]/g, (letter) => LIGATURES[letter])

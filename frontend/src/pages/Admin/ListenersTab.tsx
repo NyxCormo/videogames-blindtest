@@ -12,6 +12,10 @@ type Props = {
   onSessionExpired: () => void
 }
 
+function shortDate(value: string): string {
+  return new Date(value).toLocaleDateString('fr-FR', { dateStyle: 'short' })
+}
+
 export function ListenersTab({ token, onSessionExpired }: Props) {
   const handleError = useAdminErrorHandler(onSessionExpired)
   const [listeners, setListeners] = useState<ListenerUsage[] | null>(null)
@@ -47,7 +51,16 @@ export function ListenersTab({ token, onSessionExpired }: Props) {
         title="Pseudos"
         items={listeners}
         label={(listener) => listener.name}
-        detail={(listener) => `${plural(listener.votes, 'vote', 'votes')} · ${plural(listener.blindtests, 'blindtest', 'blindtests')}`}
+        detail={(listener) =>
+          [
+            plural(listener.votes, 'vote', 'votes'),
+            plural(listener.blindtests, 'blindtest', 'blindtests'),
+            listener.createdAt && `créé le ${shortDate(listener.createdAt)}`,
+            listener.lastSeenAt && `vu le ${shortDate(listener.lastSeenAt)}`,
+          ]
+            .filter(Boolean)
+            .join(' · ')
+        }
         onRename={actions.rename}
         onDelete={actions.askDelete}
         mergeFor={(listener) => rowMerge('listeners', listener)}

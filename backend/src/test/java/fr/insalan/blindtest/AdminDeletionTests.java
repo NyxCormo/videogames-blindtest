@@ -185,7 +185,9 @@ class AdminDeletionTests extends IntegrationTest {
             .andExpect(jsonPath("$[0].votes").value(0))
             .andExpect(jsonPath("$[1].name").value("Nyx"))
             .andExpect(jsonPath("$[1].votes").value(1))
-            .andExpect(jsonPath("$[1].blindtests").value(0));
+            .andExpect(jsonPath("$[1].blindtests").value(0))
+            .andExpect(jsonPath("$[1].createdAt").isNotEmpty())
+            .andExpect(jsonPath("$[1].lastSeenAt").isNotEmpty());
     }
 
     @Test
