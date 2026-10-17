@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fetchNextTrack, setKnowledge, type DiscoverTrack } from '../../api/discover'
 import { fetchGames, type Game } from '../../api/games'
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
@@ -37,14 +37,17 @@ export function DiscoverPage() {
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)
   const [guessCorrect, setGuessCorrect] = useState<boolean | null>(null)
+  const pendingVote = useRef<Promise<void>>(Promise.resolve())
 
   function loadNext() {
     if (!listener) return
+    const listenerId = listener.id
     setTrack(null)
     setRevealed(false)
     setGame(null)
     setGuessCorrect(null)
-    fetchNextTrack(listener.id)
+    pendingVote.current
+      .then(() => fetchNextTrack(listenerId))
       .then(setTrack)
       .catch(() => setError(true))
   }
@@ -70,7 +73,7 @@ export function DiscoverPage() {
 
   function saveVote(trackId: number, knows: boolean) {
     if (!listener) return
-    setKnowledge(listener.id, trackId, knows).catch(() =>
+    pendingVote.current = setKnowledge(listener.id, trackId, knows).catch(() =>
       notify("Ton vote n'a pas été enregistré : cette musique te sera reproposée plus tard.", 'error'),
     )
   }
