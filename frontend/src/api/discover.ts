@@ -9,6 +9,8 @@ export type DiscoverTrack = {
   gameName: string | null
   trackName: string | null
   finished: boolean
+  voted: number
+  remaining: number
 }
 
 export async function fetchNextTrack(listenerId: number, signal?: AbortSignal): Promise<DiscoverTrack> {

@@ -9,13 +9,15 @@ public record DiscoverTrackResponse(
     Integer gameId,
     String gameName,
     String trackName,
-    boolean finished
+    boolean finished,
+    long voted,
+    int remaining
 ) {
-    public static DiscoverTrackResponse allDiscovered() {
-        return new DiscoverTrackResponse(null, null, null, null, null, null, true);
+    public static DiscoverTrackResponse allDiscovered(long voted) {
+        return new DiscoverTrackResponse(null, null, null, null, null, null, true, voted, 0);
     }
 
-    public static DiscoverTrackResponse from(Track track) {
+    public static DiscoverTrackResponse from(Track track, long voted, int remaining) {
         return new DiscoverTrackResponse(
             track.getId(),
             track.getAudioLink(),
@@ -23,7 +25,9 @@ public record DiscoverTrackResponse(
             track.getGame().getId(),
             track.getGame().getName(),
             track.getName(),
-            false
+            false,
+            voted,
+            remaining
         );
     }
 }

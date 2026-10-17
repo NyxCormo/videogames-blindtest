@@ -1,26 +1,209 @@
-.discover-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+.discover-stage {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr) 8rem;
+  grid-template-areas: 'known card unknown';
+  gap: 1.5rem;
+  align-items: center;
 }
 
-.discover-name {
-  margin-top: 1rem;
+.discover-choice-known {
+  grid-area: known;
 }
 
-.discover-guess {
+.discover-choice-unknown {
+  grid-area: unknown;
+}
+
+.discover-card {
+  grid-area: card;
+}
+
+.discover-choice {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  max-width: 24rem;
-}
-
-.discover-correct,
-.discover-incorrect {
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  aspect-ratio: 1;
+  border: 3px solid var(--border);
+  border-radius: 1rem;
   font-weight: 600;
 }
 
-.discover-actions + .report-button {
-  margin-top: 0.75rem;
+.discover-choice .icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.discover-choice:disabled {
+  opacity: 1;
+  color: var(--text);
+  cursor: default;
+}
+
+.discover-known .discover-choice-known {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 30%, var(--surface));
+}
+
+.discover-unknown .discover-choice-unknown {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 30%, var(--surface));
+}
+
+.discover-known .discover-choice-unknown,
+.discover-unknown .discover-choice-known {
+  opacity: 0.35;
+}
+
+.discover-card {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  min-height: 16rem;
+  padding: 1.5rem;
+  border: 3px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.discover-known .discover-card {
+  border-color: var(--success);
+}
+
+.discover-unknown .discover-card {
+  border-color: var(--danger);
+}
+
+.discover-media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.discover-cover {
+  display: grid;
+  place-items: center;
+  width: 10rem;
+  aspect-ratio: 1;
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 5rem;
+  font-weight: 800;
+}
+
+.discover-cover-draggable {
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: translate 0.2s;
+}
+
+.discover-cover-dragging {
+  z-index: 5;
+  cursor: grabbing;
+  border-color: var(--accent);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 45%);
+  opacity: 0.85;
+  scale: 0.6;
+  transition: none;
+}
+
+.discover-choice-over {
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+
+.discover-cover .icon {
+  width: 4rem;
+  height: 4rem;
+}
+
+.discover-wrong-image {
+  padding: 0.15rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.discover-media audio {
+  width: 100%;
+  min-width: 16rem;
+}
+
+.discover-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.discover-result {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.discover-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 0.75rem;
+}
+
+.discover-facts dt {
+  color: var(--muted);
+}
+
+.discover-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.discover-search {
+  max-width: 28rem;
+  margin: 1.5rem auto 0;
+}
+
+.discover-search input {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.discover-next {
+  display: block;
+  margin: 1.5rem auto 0;
+}
+
+@media (max-width: 640px) {
+  .discover-stage {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'card card'
+      'known unknown';
+    gap: 1rem;
+  }
+
+  .discover-choice {
+    flex-direction: row;
+    aspect-ratio: auto;
+    padding: 0.75rem;
+  }
+
+  .discover-choice .icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .discover-card {
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+  }
 }

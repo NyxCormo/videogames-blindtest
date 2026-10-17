@@ -14,3 +14,8 @@
   max-height: 12rem;
   overflow-y: auto;
 }
+
+.name-picker-results li[aria-selected='true'] button {
+  background: var(--border);
+  font-weight: 600;
+}

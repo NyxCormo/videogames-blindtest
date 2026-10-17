@@ -207,3 +207,7 @@ th {
 .muted {
   opacity: 0.7;
 }
+
+.progress {
+  color: var(--muted);
+}

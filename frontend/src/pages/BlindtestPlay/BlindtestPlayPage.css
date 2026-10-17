@@ -1,7 +1,3 @@
-.progress {
-  color: var(--muted);
-}
-
 .reveal {
   display: flex;
   flex-direction: column;

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGameTracks, fetchGames, type Game } from '../../api/games'
 import type { Track } from '../../api/tracks'
@@ -19,6 +19,7 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
   const [game, setGame] = useState<Game | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
   const [track, setTrack] = useState<Track | null>(null)
+  const submitRef = useRef<HTMLButtonElement>(null)
 
   const [franchises, setFranchises] = useState<Franchise[]>([])
   const [franchiseHelp, setFranchiseHelp] = useState(false)
@@ -71,6 +72,11 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
     setTrack(null)
   }
 
+  function selectTrack(selected: Track) {
+    setTrack(selected)
+    submitRef.current?.focus()
+  }
+
   function clearGame() {
     setGame(null)
     setTrack(null)
@@ -110,6 +116,7 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
           onClear={clearGame}
           placeholder="Chercher un jeu"
           disabled={disabled}
+          autoFocus
           renderLabel={(item) => `${item.name} (${item.franchiseName})`}
           getSearchText={(item) => `${item.name} ${item.franchiseName}`}
         />
@@ -120,15 +127,16 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
           <NamePicker
             items={tracks}
             selected={track}
-            onSelect={setTrack}
+            onSelect={selectTrack}
             onClear={() => setTrack(null)}
             placeholder="Chercher la musique"
             disabled={disabled}
+            autoFocus
           />
         </label>
       )}
       <div className="game-guess-form-actions">
-        <button type="submit" disabled={disabled || !game}>
+        <button ref={submitRef} type="submit" disabled={disabled || !game}>
           Valider
         </button>
         <button type="button" onClick={onPass} disabled={disabled}>
