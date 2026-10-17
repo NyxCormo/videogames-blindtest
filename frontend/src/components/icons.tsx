@@ -18,6 +18,32 @@ function Icon({ children }: { children: ReactNode }) {
   )
 }
 
+export function CheckIcon() {
+  return (
+    <Icon>
+      <path d="M20 6 9 17l-5-5" />
+    </Icon>
+  )
+}
+
+export function CrossIcon() {
+  return (
+    <Icon>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </Icon>
+  )
+}
+
+export function NoImageIcon() {
+  return (
+    <Icon>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m4.9 4.9 14.2 14.2" />
+    </Icon>
+  )
+}
+
 export function ShuffleIcon() {
   return (
     <Icon>

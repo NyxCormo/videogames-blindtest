@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import { type KeyboardEvent, type ReactNode, useRef, useState } from 'react'
 import { matchesWords, searchWords } from '../../textSearch'
 import './NamePicker.css'
 
@@ -15,6 +15,7 @@ type Props<T extends NamedItem> = {
   onClear: () => void
   placeholder: string
   disabled?: boolean
+  autoFocus?: boolean
   // Par défaut, on affiche et on filtre sur item.name. Utile pour un jeu : afficher "Nom (Franchise)"
   // et pouvoir aussi le retrouver en cherchant la franchise.
   renderLabel?: (item: T) => ReactNode
@@ -29,10 +30,13 @@ export function NamePicker<T extends NamedItem>({
   onClear,
   placeholder,
   disabled,
+  autoFocus,
   renderLabel,
   getSearchText,
 }: Props<T>) {
   const [query, setQuery] = useState('')
+  const [active, setActive] = useState(0)
+  const listRef = useRef<HTMLUListElement>(null)
 
   if (selected) {
     return (
@@ -50,6 +54,26 @@ export function NamePicker<T extends NamedItem>({
     words.length === 0
       ? []
       : items.filter((item) => matchesWords(getSearchText ? getSearchText(item) : item.name, words))
+  const current = Math.min(active, results.length - 1)
+
+  function choose(item: T) {
+    onSelect(item)
+    setQuery('')
+    setActive(0)
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (results.length === 0) return
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const next = event.key === 'ArrowDown' ? Math.min(current + 1, results.length - 1) : Math.max(current - 1, 0)
+      setActive(next)
+      listRef.current?.children[next]?.scrollIntoView({ block: 'nearest' })
+    } else if (event.key === 'Enter') {
+      event.preventDefault()
+      choose(results[current])
+    }
+  }
 
   return (
     <div className="name-picker">
@@ -57,20 +81,19 @@ export function NamePicker<T extends NamedItem>({
         type="search"
         placeholder={placeholder}
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value)
+          setActive(0)
+        }}
+        onKeyDown={handleKeyDown}
         disabled={disabled}
+        autoFocus={autoFocus}
       />
       {results.length > 0 && (
-        <ul className="results-list name-picker-results">
-          {results.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  onSelect(item)
-                  setQuery('')
-                }}
-              >
+        <ul ref={listRef} className="results-list name-picker-results" role="listbox">
+          {results.map((item, index) => (
+            <li key={item.id} role="option" aria-selected={index === current}>
+              <button type="button" onMouseEnter={() => setActive(index)} onClick={() => choose(item)}>
                 {renderLabel ? renderLabel(item) : item.name}
               </button>
             </li>

@@ -120,6 +120,38 @@ class DiscoverControllerTests extends IntegrationTest {
     }
 
     @Test
+    void givesTheProgressOfThisListener() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = playableTrack(game, "Dawn");
+        playableTrack(game, "Raven");
+        playableTrack(game, "Democrawler");
+        Track silent = tracks.save(new Track("Shaël", game));
+        Listener other = listeners.save(new Listener("Other"));
+        Listener listener = listeners.save(new Listener("Nyx"));
+        knowledge.save(new Knowledge(listener, dawn, true));
+        knowledge.save(new Knowledge(listener, silent, false));
+        knowledge.save(new Knowledge(other, dawn, true));
+
+        mockMvc.perform(get("/api/discover/next").param("listenerId", listener.getId().toString()))
+            .andExpect(jsonPath("$.voted").value(2))
+            .andExpect(jsonPath("$.remaining").value(2));
+    }
+
+    @Test
+    void givesTheProgressWhenEverythingIsVoted() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = playableTrack(game, "Dawn");
+        Listener listener = listeners.save(new Listener("Nyx"));
+        knowledge.save(new Knowledge(listener, dawn, true));
+
+        mockMvc.perform(get("/api/discover/next").param("listenerId", listener.getId().toString()))
+            .andExpect(jsonPath("$.voted").value(1))
+            .andExpect(jsonPath("$.remaining").value(0));
+    }
+
+    @Test
     void setKnowledgeRecordsKnowsTrue() throws Exception {
         Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
         Game game = games.save(new Game("Stellar Blade", franchise));

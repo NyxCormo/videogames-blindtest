@@ -45,11 +45,12 @@ public class DiscoverController {
     @GetMapping("/next")
     public DiscoverTrackResponse next(@RequestParam Integer listenerId) {
         List<Track> candidates = trackRepository.findPlayableUnknownByListener(listenerId);
+        long voted = knowledgeRepository.countByListenerId(listenerId);
         if (candidates.isEmpty()) {
-            return DiscoverTrackResponse.allDiscovered();
+            return DiscoverTrackResponse.allDiscovered(voted);
         }
         Track track = candidates.get(random.nextInt(candidates.size()));
-        return DiscoverTrackResponse.from(track);
+        return DiscoverTrackResponse.from(track, voted, candidates.size());
     }
 
     @GetMapping("/knowledge")
