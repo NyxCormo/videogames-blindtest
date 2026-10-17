@@ -11,6 +11,16 @@ export async function searchListeners(search: string, signal?: AbortSignal): Pro
   return response.json()
 }
 
+export async function openSession(id: number, signal?: AbortSignal): Promise<Listener> {
+  const response = await request(`/api/listeners/${id}/session`, { method: 'POST', signal })
+  return response.json()
+}
+
+export async function fetchSimilarListeners(name: string): Promise<Listener[]> {
+  const response = await request(`/api/listeners/similar?name=${encodeURIComponent(name)}`)
+  return response.json()
+}
+
 export async function createListener(name: string): Promise<Listener> {
   const response = await request('/api/listeners', {
     method: 'POST',

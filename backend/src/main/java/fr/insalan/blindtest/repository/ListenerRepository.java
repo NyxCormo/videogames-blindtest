@@ -12,12 +12,6 @@ public interface ListenerRepository extends JpaRepository<Listener, Integer> {
     
     Optional<Listener> findByName(String name);
 
-    boolean existsByNameIgnoreCase(String name);
-
-    boolean existsByNameIgnoreCaseAndIdNot(String name, Integer id);
-
-    List<Listener> findTop10ByNameContainingIgnoreCaseOrderByName(String search);
-
     List<Listener> findAllByOrderByNameAsc();
 
     @Query(value = """

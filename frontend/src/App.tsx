@@ -1,6 +1,7 @@
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router'
 import './index.css'
 import { ListenerBanner } from './components/ListenerBanner/ListenerBanner'
+import { LoginDialog } from './components/LoginDialog/LoginDialog'
 import { NotificationBanner } from './components/NotificationBanner/NotificationBanner'
 import { CurrentListenerProvider } from './context/CurrentListenerContext'
 import { NotificationProvider } from './context/NotificationContext'
@@ -16,8 +17,8 @@ import { TracksPage } from './pages/Tracks/TracksPage'
 
 function App() {
   return (
-    <CurrentListenerProvider>
-      <NotificationProvider>
+    <NotificationProvider>
+      <CurrentListenerProvider>
       <BrowserRouter>
         <header className="site-header">
           <nav>
@@ -33,6 +34,7 @@ function App() {
           </nav>
           <NotificationBanner />
         </header>
+        <LoginDialog />
         <main>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -52,8 +54,8 @@ function App() {
           </Routes>
         </main>
       </BrowserRouter>
-      </NotificationProvider>
-    </CurrentListenerProvider>
+      </CurrentListenerProvider>
+    </NotificationProvider>
   )
 }
 
