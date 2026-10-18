@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import {
   fetchSession,
@@ -16,6 +16,7 @@ import { ReportButton } from '../../components/ReportButton/ReportButton'
 import { TrackLabel } from '../../components/TrackLabel/TrackLabel'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
+import { playWhenAllowed } from '../../playWhenAllowed'
 import { plural } from '../../plural'
 import './BlindtestPlayPage.css'
 
@@ -34,6 +35,8 @@ export function BlindtestPlayPage() {
   const [revealedAsUnknown, setRevealedAsUnknown] = useState(false)
   const [correctedKnowledge, setCorrectedKnowledge] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const trackId = session?.trackId
 
   function loadSession() {
     if (!listener) return
@@ -55,6 +58,13 @@ export function BlindtestPlayPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(loadSession, [blindtestId, listener])
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.volume = loadStoredVolume()
+    return playWhenAllowed(audio)
+  }, [trackId])
 
   function handleGuess(gameId: number, trackId: number | null) {
     if (!listener) return
@@ -157,13 +167,8 @@ export function BlindtestPlayPage() {
       </p>
 
       <audio
-        ref={(element) => {
-          if (element) {
-            element.volume = loadStoredVolume()
-          }
-        }}
+        ref={audioRef}
         controls
-        autoPlay
         loop
         src={session.audioLink ?? undefined}
         onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}

@@ -9,6 +9,7 @@ import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { ReportButton } from '../../components/ReportButton/ReportButton'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
+import { playWhenAllowed } from '../../playWhenAllowed'
 import { plural } from '../../plural'
 import './DiscoverPage.css'
 
@@ -44,6 +45,8 @@ export function DiscoverPage() {
   const [drag, setDrag] = useState<Drag | null>(null)
   const knownRef = useRef<HTMLButtonElement>(null)
   const unknownRef = useRef<HTMLButtonElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const trackId = track?.trackId
 
   function loadNext() {
     if (!listener) return
@@ -58,6 +61,13 @@ export function DiscoverPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(loadNext, [listener])
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.volume = loadStoredVolume()
+    return playWhenAllowed(audio)
+  }, [trackId])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -185,13 +195,8 @@ export function DiscoverPage() {
                 )}
                 <audio
                   key={track.trackId}
-                  ref={(element) => {
-                    if (element) {
-                      element.volume = loadStoredVolume()
-                    }
-                  }}
+                  ref={audioRef}
                   controls
-                  autoPlay
                   loop
                   src={track.audioLink ?? undefined}
                   onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
