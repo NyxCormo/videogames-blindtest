@@ -31,6 +31,7 @@ import fr.insalan.blindtest.game.GenerationStrategy;
 import fr.insalan.blindtest.game.GuessResult;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestScore;
+import fr.insalan.blindtest.model.BlindtestScoreId;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
@@ -151,7 +152,11 @@ public class BlindtestController {
             score.getTracksHeard(),
             (int) totalTracks,
             score.getGoodAnswers(),
-            blindtest.getMaxAttempts() - score.getAttemptsUsedOnCurrentTrack()
+            blindtest.getMaxAttempts() - score.getAttemptsUsedOnCurrentTrack(),
+            blindtest.getMaxAttempts(),
+            blindtestPlayer.foundFranchiseId(id, listenerId),
+            score.getFranchiseAnswers(),
+            score.getBonusAnswers()
         );
     }
 
@@ -202,6 +207,13 @@ public class BlindtestController {
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
+    }
+
+    // Rejouer : un seul score par joueur et par blindtest, il repart donc de zéro. Les votes restent.
+    @PostMapping("/{id}/restart")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void restart(@PathVariable Integer id, @RequestParam Integer listenerId) {
+        blindtestScoreRepository.deleteById(new BlindtestScoreId(id, listenerId));
     }
 
     @PostMapping("/{id}/know-anyway")

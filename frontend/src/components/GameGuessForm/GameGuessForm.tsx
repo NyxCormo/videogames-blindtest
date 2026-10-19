@@ -3,30 +3,30 @@ import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGameTracks, fetchGames, type Game } from '../../api/games'
 import type { Track } from '../../api/tracks'
 import { useNotification } from '../../context/NotificationContext'
+import { CheckIcon } from '../icons'
 import { NamePicker } from '../NamePicker/NamePicker'
+import { Tabs } from '../Tabs/Tabs'
 import './GameGuessForm.css'
 
+type Mode = 'game' | 'franchise'
+
 type Props = {
-  onSubmit: (gameId: number, trackId: number | null) => void
-  onGuessFranchise: (franchiseId: number) => Promise<{ correct: boolean; revealed: boolean }>
-  onPass: () => void
+  foundFranchiseId: number | null
+  onSubmit: (game: Game, track: Track | null) => void
+  onGuessFranchise: (franchise: Franchise) => void
   disabled?: boolean
 }
 
-export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = false }: Props) {
+export function GameGuessForm({ foundFranchiseId, onSubmit, onGuessFranchise, disabled = false }: Props) {
   const { notify } = useNotification()
+  const [mode, setMode] = useState<Mode>('game')
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
   const [track, setTrack] = useState<Track | null>(null)
-  const submitRef = useRef<HTMLButtonElement>(null)
-
   const [franchises, setFranchises] = useState<Franchise[]>([])
-  const [franchiseHelp, setFranchiseHelp] = useState(false)
   const [franchise, setFranchise] = useState<Franchise | null>(null)
-  const [confirmedFranchise, setConfirmedFranchise] = useState<Franchise | null>(null)
-  const [franchiseSubmitting, setFranchiseSubmitting] = useState(false)
-  const [franchiseWrong, setFranchiseWrong] = useState(false)
+  const submitRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -62,10 +62,14 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
     return () => controller.abort()
   }, [game, notify])
 
-  // Une fois la franchise confirmée, la case "Jeu" ne propose plus que ses jeux (aide sans donner la réponse).
-  const gamesToSearch = confirmedFranchise
-    ? games.filter((item) => item.franchiseId === confirmedFranchise.id)
-    : games
+  useEffect(() => {
+    if (franchise) submitRef.current?.focus()
+  }, [franchise])
+
+  // Une fois la franchise trouvée, la case "Jeu" ne propose plus que ses jeux (aide sans donner la réponse).
+  const foundFranchise = franchises.find((item) => item.id === foundFranchiseId) ?? null
+  const gamesToSearch = foundFranchise ? games.filter((item) => item.franchiseId === foundFranchise.id) : games
+  const ready = mode === 'game' ? game !== null : franchise !== null
 
   function selectGame(selected: Game) {
     setGame(selected)
@@ -84,97 +88,71 @@ export function GameGuessForm({ onSubmit, onGuessFranchise, onPass, disabled = f
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!game) return
-    onSubmit(game.id, track ? track.id : null)
-  }
-
-  function handleGuessFranchise() {
-    if (!franchise) return
-    setFranchiseSubmitting(true)
-    setFranchiseWrong(false)
-    onGuessFranchise(franchise.id)
-      .then(({ correct, revealed }) => {
-        if (!revealed) {
-          setConfirmedFranchise(correct ? franchise : null)
-          setFranchiseWrong(!correct)
-          setFranchise(null)
-        }
-      })
-      // L'erreur est affichée par la page ; la franchise choisie reste pour réessayer.
-      .catch(() => {})
-      .finally(() => setFranchiseSubmitting(false))
+    if (mode === 'game' && game) onSubmit(game, track)
+    if (mode === 'franchise' && franchise) onGuessFranchise(franchise)
   }
 
   return (
     <form onSubmit={handleSubmit} className="game-guess-form">
-      <label>
-        Jeu {confirmedFranchise && `(dans ${confirmedFranchise.name})`}
-        <NamePicker
-          items={gamesToSearch}
-          selected={game}
-          onSelect={selectGame}
-          onClear={clearGame}
-          placeholder="Chercher un jeu"
-          disabled={disabled}
-          autoFocus
-          renderLabel={(item) => `${item.name} (${item.franchiseName})`}
-          getSearchText={(item) => `${item.name} ${item.franchiseName}`}
-        />
-      </label>
-      {game && (
-        <label>
-          Musique (optionnel, bonus)
+      <Tabs
+        tabs={[
+          { id: 'game', label: 'Jeu' },
+          { id: 'franchise', label: 'Franchise' },
+        ]}
+        active={mode}
+        onChange={(id) => setMode(id === 'franchise' ? 'franchise' : 'game')}
+      />
+      {foundFranchise && (
+        <p className="franchise-found">
+          <CheckIcon /> Franchise trouvée : {foundFranchise.name}
+        </p>
+      )}
+      {mode === 'game' ? (
+        <>
           <NamePicker
-            items={tracks}
-            selected={track}
-            onSelect={selectTrack}
-            onClear={() => setTrack(null)}
-            placeholder="Chercher la musique"
+            items={gamesToSearch}
+            selected={game}
+            onSelect={selectGame}
+            onClear={clearGame}
+            placeholder="Chercher un jeu"
+            disabled={disabled}
+            autoFocus
+            renderLabel={(item) => `${item.name} (${item.franchiseName})`}
+            getSearchText={(item) => `${item.name} ${item.franchiseName}`}
+          />
+          {game && (
+            <label>
+              Musique (optionnel, bonus)
+              <NamePicker
+                items={tracks}
+                selected={track}
+                onSelect={selectTrack}
+                onClear={() => setTrack(null)}
+                placeholder="Chercher la musique"
+                disabled={disabled}
+                autoFocus
+              />
+            </label>
+          )}
+        </>
+      ) : (
+        !foundFranchise && (
+          <NamePicker
+            items={franchises}
+            selected={franchise}
+            onSelect={setFranchise}
+            onClear={() => setFranchise(null)}
+            placeholder="Chercher une franchise"
             disabled={disabled}
             autoFocus
           />
-        </label>
+        )
       )}
       <div className="game-guess-form-actions">
-        <button ref={submitRef} type="submit" disabled={disabled || !game}>
+        <button ref={submitRef} type="submit" className="button-primary" disabled={disabled || !ready}>
           Valider
         </button>
-        <button type="button" onClick={onPass} disabled={disabled}>
-          Je passe
-        </button>
       </div>
-
-      {confirmedFranchise ? (
-        <p className="franchise-found">Franchise trouvée : {confirmedFranchise.name} !</p>
-      ) : (
-        <div className="franchise-help">
-          {!franchiseHelp ? (
-            <button type="button" onClick={() => setFranchiseHelp(true)} disabled={disabled}>
-              Je ne connais que la franchise
-            </button>
-          ) : (
-            <label>
-              Franchise
-              <div className="franchise-help-picker">
-                <NamePicker
-                  items={franchises}
-                  selected={franchise}
-                  onSelect={setFranchise}
-                  onClear={() => setFranchise(null)}
-                  placeholder="Chercher une franchise"
-                  disabled={disabled || franchiseSubmitting}
-                />
-                {franchise && (
-                  <button type="button" onClick={handleGuessFranchise} disabled={disabled || franchiseSubmitting}>
-                    Valider la franchise
-                  </button>
-                )}
-              </div>
-              {franchiseWrong && <p role="alert">Ce n'est pas la bonne franchise.</p>}
-            </label>
-          )}
-        </div>
-      )}
     </form>
   )
 }

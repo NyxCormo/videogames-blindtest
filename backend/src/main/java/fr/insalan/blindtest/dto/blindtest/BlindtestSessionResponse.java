@@ -7,6 +7,10 @@ public record BlindtestSessionResponse(
     int tracksHeard,
     int totalTracks,
     int goodAnswers,
-    int attemptsRemaining
+    int attemptsRemaining,
+    int maxAttempts,
+    Integer foundFranchiseId,
+    int franchiseAnswers,
+    int bonusAnswers
 ) {
 }

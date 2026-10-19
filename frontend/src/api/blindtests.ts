@@ -58,6 +58,10 @@ export type BlindtestSession = {
   totalTracks: number
   goodAnswers: number
   attemptsRemaining: number
+  maxAttempts: number
+  foundFranchiseId: number | null
+  franchiseAnswers: number
+  bonusAnswers: number
 }
 
 // Forme du JSON renvoyé quand une musique est révélée (bonne réponse ou passe)
@@ -114,6 +118,10 @@ export async function submitGuessFranchise(
 export async function submitPass(blindtestId: number, listenerId: number): Promise<Reveal> {
   const response = await request(`/api/blindtests/${blindtestId}/pass?listenerId=${listenerId}`, { method: 'POST' })
   return response.json()
+}
+
+export async function restartBlindtest(blindtestId: number, listenerId: number): Promise<void> {
+  await request(`/api/blindtests/${blindtestId}/restart?listenerId=${listenerId}`, { method: 'POST' })
 }
 
 export async function submitKnowAnyway(blindtestId: number, listenerId: number, trackId: number): Promise<void> {

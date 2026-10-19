@@ -14,7 +14,7 @@
   grid-area: unknown;
 }
 
-.discover-card {
+.discover-stage .track-card {
   grid-area: card;
 }
 
@@ -56,45 +56,6 @@
   opacity: 0.35;
 }
 
-.discover-card {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  min-height: 16rem;
-  padding: 1.5rem;
-  border: 3px solid var(--border);
-  border-radius: 1rem;
-  background: var(--surface);
-}
-
-.discover-known .discover-card {
-  border-color: var(--success);
-}
-
-.discover-unknown .discover-card {
-  border-color: var(--danger);
-}
-
-.discover-media {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.discover-cover {
-  display: grid;
-  place-items: center;
-  width: 10rem;
-  aspect-ratio: 1;
-  border: 2px solid var(--border);
-  border-radius: 0.75rem;
-  background: var(--bg);
-  color: var(--muted);
-  font-size: 5rem;
-  font-weight: 800;
-}
-
 .discover-cover-draggable {
   position: relative;
   cursor: grab;
@@ -118,69 +79,6 @@
   transform: scale(1.08);
 }
 
-.discover-cover .icon {
-  width: 4rem;
-  height: 4rem;
-}
-
-.discover-wrong-image {
-  padding: 0.15rem 0.6rem;
-  font-size: 0.8rem;
-}
-
-.discover-media audio {
-  width: 100%;
-  min-width: 16rem;
-}
-
-.discover-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.discover-result {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-
-.discover-facts {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 0.75rem;
-  margin: 0 0 0.75rem;
-}
-
-.discover-facts dt {
-  color: var(--muted);
-}
-
-.discover-facts dd {
-  margin: 0;
-  font-weight: 600;
-}
-
-.discover-search {
-  max-width: 28rem;
-  margin: 1.5rem auto 0;
-}
-
-.discover-search input {
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.discover-next {
-  display: block;
-  margin: 1.5rem auto 0;
-}
-
 @media (max-width: 640px) {
   .discover-stage {
     grid-template-columns: 1fr 1fr;
@@ -199,11 +97,5 @@
   .discover-choice .icon {
     width: 1.75rem;
     height: 1.75rem;
-  }
-
-  .discover-card {
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem;
   }
 }

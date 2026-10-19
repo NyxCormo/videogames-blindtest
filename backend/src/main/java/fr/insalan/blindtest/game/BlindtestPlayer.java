@@ -58,6 +58,18 @@ public class BlindtestPlayer {
             .map(BlindtestTrack::getTrack);
     }
 
+    // Franchise déjà trouvée sur la musique en cours : on peut la renvoyer, elle n'apprend rien au joueur.
+    @Transactional
+    public Integer foundFranchiseId(Integer blindtestId, Integer listenerId) {
+        BlindtestScore score = score(blindtestId, listenerId);
+        if (!score.isFranchiseFoundOnCurrentTrack()) {
+            return null;
+        }
+        return currentTrack(blindtestId, listenerId)
+            .map(track -> track.getGame().getFranchise().getId())
+            .orElse(null);
+    }
+
     // Le joueur ne connaît que la franchise : point de franchise acquis une seule fois par musique
     // (une deuxième soumission correcte ne compte pas deux fois), la musique n'est révélée que si
     // cette tentative épuise le quota d'essais (comme une réponse de jeu ratée, voir guess()).

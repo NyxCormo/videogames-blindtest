@@ -3,13 +3,16 @@ import { Link } from 'react-router'
 import { fetchNextTrack, setKnowledge, type DiscoverTrack } from '../../api/discover'
 import { fetchGames, type Game } from '../../api/games'
 import { loadStoredVolume, storeVolume } from '../../audioPreferences'
-import { CheckIcon, CrossIcon, NoImageIcon } from '../../components/icons'
+import { CheckIcon, CrossIcon } from '../../components/icons'
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { ReportButton } from '../../components/ReportButton/ReportButton'
+import { GameCover, MysteryCover, TrackCard, TrackFacts } from '../../components/TrackCard/TrackCard'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { useNotification } from '../../context/NotificationContext'
+import { playWhenAllowed } from '../../playWhenAllowed'
 import { plural } from '../../plural'
+import { useEnterToContinue } from '../../useEnterToContinue'
 import './DiscoverPage.css'
 
 type Answer = {
@@ -40,10 +43,11 @@ export function DiscoverPage() {
   const [games, setGames] = useState<Game[]>([])
   const [answer, setAnswer] = useState<Answer | null>(null)
   const pendingVote = useRef<Promise<void>>(Promise.resolve())
-  const nextRef = useRef<HTMLButtonElement>(null)
   const [drag, setDrag] = useState<Drag | null>(null)
   const knownRef = useRef<HTMLButtonElement>(null)
   const unknownRef = useRef<HTMLButtonElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const trackId = track?.trackId
 
   function loadNext() {
     if (!listener) return
@@ -58,6 +62,15 @@ export function DiscoverPage() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(loadNext, [listener])
+
+  useEnterToContinue(answer !== null, loadNext)
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.volume = loadStoredVolume()
+    return playWhenAllowed(audio)
+  }, [trackId])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -86,7 +99,6 @@ export function DiscoverPage() {
     if (track === null || track.trackId === null || !answer) return
     saveVote(track.trackId, true)
     setAnswer({ ...answer, knows: true, corrected: true })
-    nextRef.current?.focus()
   }
 
   function dropTarget(x: number, y: number): boolean | null {
@@ -158,72 +170,56 @@ export function DiscoverPage() {
               <span>Je connais</span>
             </button>
 
-            <div className="discover-card">
-              <div className="discover-media">
-                {answer ? (
-                  <div className="discover-cover" role="img" aria-label="Pas encore d'image pour ce jeu">
-                    <NoImageIcon />
-                  </div>
-                ) : (
-                  <div
-                    className={`discover-cover discover-cover-draggable${drag ? ' discover-cover-dragging' : ''}`}
-                    role="img"
-                    aria-label="Jeu à deviner"
-                    style={drag ? { translate: `${drag.x}px ${drag.y}px` } : undefined}
-                    onPointerDown={startDrag}
-                    onPointerMove={moveDrag}
-                    onPointerUp={endDrag}
-                    onPointerCancel={() => setDrag(null)}
-                  >
-                    ?
-                  </div>
-                )}
-                {answer && (
-                  <button type="button" className="discover-wrong-image" disabled>
-                    Ce n'est pas la bonne image
-                  </button>
-                )}
-                <audio
-                  key={track.trackId}
-                  ref={(element) => {
-                    if (element) {
-                      element.volume = loadStoredVolume()
-                    }
-                  }}
-                  controls
-                  autoPlay
-                  loop
-                  src={track.audioLink ?? undefined}
-                  onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
-                />
-              </div>
-
-              {answer && track.trackId !== null && (
-                <div className="discover-details">
-                  <p className="discover-result">
-                    {answer.knows ? <CheckIcon /> : <CrossIcon />}
-                    {answerTitle(answer)}
-                  </p>
-                  <dl className="discover-facts">
-                    <dt>Franchise</dt>
-                    <dd>{track.franchiseName}</dd>
-                    <dt>Jeu</dt>
-                    <dd>{track.gameName}</dd>
-                    <dt>Musique</dt>
-                    <dd>{track.trackName}</dd>
-                  </dl>
-                  {!answer.knows && (
-                    <button type="button" onClick={knowAnyway}>
-                      Je connais en fait
-                    </button>
+            <TrackCard
+              result={answer ? (answer.knows ? 'success' : 'failure') : null}
+              media={
+                <>
+                  {answer ? (
+                    <GameCover />
+                  ) : (
+                    <MysteryCover
+                      className={`discover-cover-draggable${drag ? ' discover-cover-dragging' : ''}`}
+                      style={drag ? { translate: `${drag.x}px ${drag.y}px` } : undefined}
+                      onPointerDown={startDrag}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
+                      onPointerCancel={() => setDrag(null)}
+                    />
                   )}
-                  <Link to={`/tracks/${track.trackId}`} target="_blank">
-                    Voir la fiche de la musique
-                  </Link>
-                  <ReportButton trackId={track.trackId} />
-                </div>
-              )}
-            </div>
+                  <audio
+                    key={track.trackId}
+                    ref={audioRef}
+                    controls
+                    loop
+                    src={track.audioLink ?? undefined}
+                    onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
+                  />
+                </>
+              }
+              details={
+                answer &&
+                track.trackId !== null && (
+                  <>
+                    <TrackFacts
+                      success={answer.knows}
+                      title={answerTitle(answer)}
+                      franchise={track.franchiseName}
+                      game={track.gameName}
+                      track={track.trackName}
+                    />
+                    {!answer.knows && (
+                      <button type="button" onClick={knowAnyway}>
+                        Je connais en fait
+                      </button>
+                    )}
+                    <Link to={`/tracks/${track.trackId}`} target="_blank">
+                      Voir la fiche de la musique
+                    </Link>
+                    <ReportButton trackId={track.trackId} />
+                  </>
+                )
+              }
+            />
 
             <button
               ref={unknownRef}
@@ -238,11 +234,11 @@ export function DiscoverPage() {
           </div>
 
           {answer ? (
-            <button ref={nextRef} type="button" className="button-primary discover-next" onClick={loadNext} autoFocus>
+            <button type="button" className="button-primary track-next" onClick={loadNext} autoFocus>
               Suivant
             </button>
           ) : (
-            <div className="discover-search">
+            <div className="track-search">
               <NamePicker
                 key={track.trackId}
                 items={games}

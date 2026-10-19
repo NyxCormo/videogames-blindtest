@@ -2,6 +2,7 @@ import { Accordion } from '@base-ui/react/accordion'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { fetchListenerStats, fetchStats, type ListenerStats, type Stats } from '../../api/stats'
+import { Stat } from '../../components/Stat/Stat'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { TUTORIAL_SECTIONS } from './tutorialSections'
 import './HomePage.css'
@@ -100,15 +101,6 @@ export function HomePage() {
           </Accordion.Item>
         ))}
       </Accordion.Root>
-    </div>
-  )
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="home-stat">
-      <span className="home-stat-value">{value}</span>
-      <span className="home-stat-label">{label}</span>
     </div>
   )
 }

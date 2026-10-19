@@ -28,9 +28,9 @@ Les musiques sont jouées dans l'ordre fixé à la création. Pour chacune :
 1. La lecture démarre.
 2. Le joueur cherche le jeu dans une liste (case « Jeu », qui affiche chaque résultat sous la forme « Nom (Franchise) » et cherche aussi bien sur le nom du jeu que sur celui de la franchise) et valide — jamais de texte libre : on choisit un jeu qui existe réellement, ce qui évite les faux échecs dus à la casse, aux espaces, ou aux noms de jeux incohérents d'une entrée à l'autre dans le Sheet (parfois juste le nom du jeu, parfois licence + jeu).
 3. En plus, optionnel, pour un point bonus : chercher la musique exacte parmi celles du jeu choisi.
-4. En cas de blocage, un bouton « Je sais juste la franchise » propose de chercher parmi **toutes** les franchises, y compris celles qui n'ont aucun jeu (ajoutées exprès comme leurres, pour qu'un joueur ne puisse pas deviner au hasard qu'une franchise ne peut jamais être la bonne réponse). Une franchise correcte donne un point de franchise, sans révéler la musique ; le joueur peut ensuite chercher le jeu, désormais restreint aux jeux de cette franchise.
-5. Chaque tentative (jeu ou franchise seule) consomme un essai, dans un quota commun fixé à la création. Le nombre d'essais restants est affiché en direct.
-6. Quota épuisé sans avoir trouvé le jeu, ou clic sur « Je passe » : la réponse est révélée (franchise, jeu, titre), avec un bouton « Ah, je connais en fait » pour le cas où le joueur savait mais n'a pas trouvé à temps.
+4. En cas de blocage, l'onglet « Franchise » au-dessus de la recherche propose de chercher parmi **toutes** les franchises, y compris celles qui n'ont aucun jeu (ajoutées exprès comme leurres, pour qu'un joueur ne puisse pas deviner au hasard qu'une franchise ne peut jamais être la bonne réponse). Une franchise correcte donne un point de franchise, sans révéler la musique ; le joueur peut ensuite chercher le jeu, désormais restreint aux jeux de cette franchise.
+5. Chaque tentative (jeu ou franchise seule) consomme un essai, dans un quota commun fixé à la création. Les essais restants sont affichés en direct (pastilles pleines pour les essais restants, vides pour les essais utilisés, et leur nombre écrit), avec la liste des mauvaises réponses de la musique en cours.
+6. Quota épuisé sans avoir trouvé le jeu, ou clic sur « Je passe » : la réponse est révélée (franchise, jeu, titre), avec un bouton « Je connais en fait » pour le cas où le joueur savait mais n'a pas trouvé à temps.
 7. Un bouton « Suivant » permet de passer à la musique suivante.
 
 La musique compte comme **écoutée** au moment où elle est résolue (bonne réponse, passe, ou essais épuisés) — pas au moment où la lecture démarre, pour qu'un rechargement de page en plein milieu d'une musique ne la fasse pas sauter au rechargement. Une musique non trouvée (passe ou essais épuisés) écrit `knowledge = false`, comme une vraie réponse négative, pas une abstention. Cliquer « Ah, je connais en fait » corrige `knowledge` à connu, mais ne change jamais le score du blindtest : celui-ci ne récompense que ce qui a été réellement trouvé pendant la partie.
@@ -49,7 +49,7 @@ Le classement d'un blindtest est un tableau. Une colonne « Rang » affiche un c
 
 ## Rejouer un blindtest
 
-Un joueur peut rejouer un blindtest déjà terminé, mais il n'y a qu'un seul score par (blindtest, joueur) : rejouer recommence à zéro et remplace le score précédent, il n'y a pas d'historique des tentatives.
+Un joueur peut rejouer un blindtest déjà terminé avec le bouton « Rejouer » de l'écran de fin, mais il n'y a qu'un seul score par (blindtest, joueur) : rejouer recommence à zéro et remplace le score précédent, il n'y a pas d'historique des tentatives. Ses votes (`knowledge`) restent.
 
 ## Identité
 
