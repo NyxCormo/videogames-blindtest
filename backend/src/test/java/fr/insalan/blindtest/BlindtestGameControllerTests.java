@@ -75,7 +75,9 @@ class BlindtestGameControllerTests extends IntegrationTest {
             .andExpect(jsonPath("$.audioLink").value(dawn.getAudioLink()))
             .andExpect(jsonPath("$.finished").value(false))
             .andExpect(jsonPath("$.totalTracks").value(1))
-            .andExpect(jsonPath("$.attemptsRemaining").value(5));
+            .andExpect(jsonPath("$.attemptsRemaining").value(5))
+            .andExpect(jsonPath("$.maxAttempts").value(5))
+            .andExpect(jsonPath("$.foundFranchiseId").doesNotExist());
 
         GuessRequest wrongGuess = new GuessRequest(game.getId() + 1000, null);
         mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
@@ -98,7 +100,36 @@ class BlindtestGameControllerTests extends IntegrationTest {
 
         mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
             .andExpect(jsonPath("$.finished").value(true))
-            .andExpect(jsonPath("$.goodAnswers").value(1));
+            .andExpect(jsonPath("$.goodAnswers").value(1))
+            .andExpect(jsonPath("$.franchiseAnswers").value(1))
+            .andExpect(jsonPath("$.bonusAnswers").value(1));
+    }
+
+    @Test
+    void restartingStartsTheBlindtestOverAndKeepsTheVotes() throws Exception {
+        Franchise franchise = franchises.save(new Franchise("Stellar Blade"));
+        Game game = games.save(new Game("Stellar Blade", franchise));
+        Track dawn = tracks.save(new Track("Dawn", game));
+        dawn.setAudioLink("https://example.org/dawn");
+        tracks.save(dawn);
+        Blindtest blindtest = blindtests.save(new Blindtest("Test", 50, 5));
+        blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
+        Listener listener = listeners.save(new Listener("Nyx"));
+
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/guess")
+                .param("listenerId", listener.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new GuessRequest(game.getId(), null))))
+            .andExpect(jsonPath("$.correct").value(true));
+
+        mockMvc.perform(post("/api/blindtests/" + blindtest.getId() + "/restart").param("listenerId", listener.getId().toString()))
+            .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
+            .andExpect(jsonPath("$.finished").value(false))
+            .andExpect(jsonPath("$.tracksHeard").value(0))
+            .andExpect(jsonPath("$.goodAnswers").value(0));
+        assertKnowsDawn(listener, dawn);
     }
 
     @Test
@@ -128,7 +159,9 @@ class BlindtestGameControllerTests extends IntegrationTest {
 
         mockMvc.perform(get("/api/blindtests/" + blindtest.getId() + "/session").param("listenerId", listener.getId().toString()))
             .andExpect(jsonPath("$.finished").value(false))
-            .andExpect(jsonPath("$.trackId").value(dawn.getId()));
+            .andExpect(jsonPath("$.trackId").value(dawn.getId()))
+            .andExpect(jsonPath("$.attemptsRemaining").value(3))
+            .andExpect(jsonPath("$.foundFranchiseId").value(franchise.getId()));
     }
 
     @Test

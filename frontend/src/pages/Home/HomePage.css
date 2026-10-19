@@ -44,22 +44,6 @@
   border-left: 1px solid var(--border);
 }
 
-.home-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.home-stat-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-}
-
-.home-stat-label {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 .home-mine {
   display: flex;
   justify-content: center;
