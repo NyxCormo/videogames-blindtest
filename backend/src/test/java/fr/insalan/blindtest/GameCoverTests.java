@@ -13,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
@@ -108,15 +110,15 @@ class GameCoverTests extends IntegrationTest {
         Game withoutAlbum = games.save(new Game("Stellar Blade Demo", withAlbum.getFranchise()));
         tracks.save(new Track("Shaël", withoutAlbum));
 
-        assertEquals(new CoverFillReport(1, 1, 0, 2), coverService.fill(CoverFillMode.NEW));
+        assertEquals(new CoverFillReport(1, 1, 1, 0, 2), coverService.fill(CoverFillMode.NEW, report -> {}));
         assertEquals(cdn("stellar-blade-soundtrack-2024") + "/00%20Front.jpg", games.findById(withAlbum.getId()).orElseThrow().getCoverUrl());
         assertEquals("https://example.org/chosen.jpg", games.findById(alreadyChosen.getId()).orElseThrow().getCoverUrl());
         assertNull(games.findById(withoutAlbum.getId()).orElseThrow().getCoverUrl());
 
         int requests = cdnRequests.get();
-        assertEquals(new CoverFillReport(0, 0, 0, 2), coverService.fill(CoverFillMode.NEW));
+        assertEquals(new CoverFillReport(0, 0, 0, 0, 2), coverService.fill(CoverFillMode.NEW, report -> {}));
         assertEquals(requests, cdnRequests.get());
-        assertEquals(new CoverFillReport(1, 0, 0, 2), coverService.fill(CoverFillMode.ALL));
+        assertEquals(new CoverFillReport(1, 1, 0, 0, 2), coverService.fill(CoverFillMode.ALL, report -> {}));
     }
 
     @Test
@@ -126,8 +128,10 @@ class GameCoverTests extends IntegrationTest {
         Game mini = games.save(new Game("Stellar Blade Mini", game.getFranchise()));
         track(mini, "Shaël", "stellar-blade-mini-original-soundtrack-2024", "01.%20Shael.mp3");
 
-        assertEquals(2, coverService.fill(CoverFillMode.NEW).scanned());
-        assertEquals(1, coverService.fill(CoverFillMode.WITHOUT_IMAGE).scanned());
+        List<CoverFillReport> steps = new ArrayList<>();
+        assertEquals(2, coverService.fill(CoverFillMode.NEW, steps::add).scanned());
+        assertEquals(new CoverFillReport(1, 2, 1, 0, 1), steps.get(0));
+        assertEquals(1, coverService.fill(CoverFillMode.WITHOUT_IMAGE, report -> {}).scanned());
 
         mockMvc.perform(get("/api/admin/covers/fill").header("Authorization", adminToken()))
             .andExpect(jsonPath("$.albums").value(2))

@@ -2,11 +2,15 @@ package fr.insalan.blindtest.cover;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -69,25 +73,30 @@ public class CoverService {
             .toList();
     }
 
-    public CoverFillReport fill(CoverFillMode mode) {
+    public CoverFillReport fill(CoverFillMode mode, Consumer<CoverFillReport> progress) {
         Map<Integer, Map<String, Album>> albumsByGame = albumsByGame(trackRepository.findWithGameByAudioLinkIsNotNull());
         Map<String, AlbumScan> scans = new HashMap<>();
         albumScanRepository.findAllWithImages().forEach(scan -> scans.put(scan.getAlbumUrl(), scan));
+        Set<String> toScan = albumsByGame.values().stream()
+            .flatMap(albums -> albums.keySet().stream())
+            .filter(album -> mode.needsScan(scans.get(album)))
+            .collect(Collectors.toCollection(HashSet::new));
+        int total = toScan.size();
 
         int scanned = 0;
-        for (String album : albumsByGame.values().stream().flatMap(albums -> albums.keySet().stream()).distinct().toList()) {
-            if (mode.needsScan(scans.get(album))) {
-                scans.put(album, scan(album));
-                scanned++;
-            }
-        }
-
         int covered = 0;
         int downloaded = 0;
         int notDownloaded = 0;
         for (Game game : gameRepository.findAll()) {
+            Map<String, Album> albums = albumsByGame.getOrDefault(game.getId(), Map.of());
+            for (String album : albums.keySet()) {
+                if (toScan.remove(album)) {
+                    scans.put(album, scan(album));
+                    scanned++;
+                }
+            }
             if (game.getCoverUrl() == null) {
-                Optional<String> image = albumsByGame.getOrDefault(game.getId(), Map.of()).keySet().stream()
+                Optional<String> image = albums.keySet().stream()
                     .map(scans::get)
                     .filter(Objects::nonNull)
                     .flatMap(scan -> scan.getImages().stream())
@@ -106,8 +115,9 @@ public class CoverService {
                     notDownloaded++;
                 }
             }
+            progress.accept(new CoverFillReport(scanned, total, covered, downloaded, notDownloaded));
         }
-        return new CoverFillReport(scanned, covered, downloaded, notDownloaded);
+        return new CoverFillReport(scanned, total, covered, downloaded, notDownloaded);
     }
 
     private AlbumScan scan(String albumUrl) {

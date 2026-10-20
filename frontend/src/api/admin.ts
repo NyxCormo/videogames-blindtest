@@ -245,7 +245,7 @@ export type CoverFillStatus = {
   running: boolean
   startedAt: string | null
   finishedAt: string | null
-  lastReport: { scanned: number; covered: number; downloaded: number; notDownloaded: number } | null
+  lastReport: { scanned: number; toScan: number; covered: number; downloaded: number; notDownloaded: number } | null
   albums: number
   albumsWithoutImage: number
 }

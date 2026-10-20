@@ -75,7 +75,14 @@ export function CoverFillSection({ token, onSessionExpired }: Props) {
           Tout rechercher à nouveau
         </button>
       </div>
-      {status?.running && status.startedAt && <p>Recherche en cours depuis {formatDate(status.startedAt)}…</p>}
+      {status?.running && status.startedAt && (
+        <p>
+          Recherche en cours depuis {formatDate(status.startedAt)}
+          {report &&
+            ` : ${report.scanned} / ${plural(report.toScan, 'album recherché', 'albums recherchés')}, ${plural(report.covered, 'jeu a reçu une image', 'jeux ont reçu une image')}`}
+          …
+        </p>
+      )}
       {!status?.running && report && status?.finishedAt && (
         <p>
           Dernière recherche terminée le {formatDate(status.finishedAt)} :{' '}

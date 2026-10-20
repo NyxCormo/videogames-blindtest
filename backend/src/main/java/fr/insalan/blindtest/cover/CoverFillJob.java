@@ -43,7 +43,8 @@ public class CoverFillJob {
 
     private void runAndFinish(CoverFillMode mode) {
         try {
-            lastReport = coverService.fill(mode);
+            lastReport = null;
+            lastReport = coverService.fill(mode, report -> lastReport = report);
             log.info("Images des jeux : {} albums recherchés, {} jeux ont reçu une image, {} images sur le serveur, {} non téléchargées",
                 lastReport.scanned(), lastReport.covered(), lastReport.downloaded(), lastReport.notDownloaded());
         } catch (RuntimeException e) {
