@@ -203,7 +203,7 @@ export function BlindtestPlayPage() {
           result={reveal ? (revealedAsUnknown ? 'failure' : 'success') : null}
           media={
             <>
-              {reveal ? <GameCover /> : <MysteryCover />}
+              {reveal ? <GameCover gameId={reveal.gameId} gameName={reveal.gameName} coverUrl={reveal.coverUrl} /> : <MysteryCover />}
               <audio
                 ref={audioRef}
                 controls

@@ -23,6 +23,8 @@ public class Game {
 	@JoinColumn(name = "franchise_id")
 	private Franchise franchise;
 
+	private String coverUrl;
+
 	protected Game() {
         // JPA
 	}
@@ -46,6 +48,14 @@ public class Game {
 
 	public Franchise getFranchise() {
 		return franchise;
+	}
+
+	public String getCoverUrl() {
+		return coverUrl;
+	}
+
+	public void setCoverUrl(String coverUrl) {
+		this.coverUrl = coverUrl;
 	}
 
 }

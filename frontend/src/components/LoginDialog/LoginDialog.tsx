@@ -18,11 +18,11 @@ export function LoginDialog() {
   return (
     <Dialog.Root open={loginOpen} onOpenChange={(open) => (open ? openLogin() : closeLogin())}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="login-backdrop" />
-        <Dialog.Popup className="login-dialog">
-          <div className="login-header">
-            <Dialog.Title className="login-title">Se connecter</Dialog.Title>
-            <Dialog.Close className="login-close" aria-label="Fermer">
+        <Dialog.Backdrop className="dialog-backdrop" />
+        <Dialog.Popup className="dialog login-dialog">
+          <div className="dialog-header">
+            <Dialog.Title className="dialog-title">Se connecter</Dialog.Title>
+            <Dialog.Close className="dialog-close" aria-label="Fermer">
               ×
             </Dialog.Close>
           </div>

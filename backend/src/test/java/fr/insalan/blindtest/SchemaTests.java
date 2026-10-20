@@ -33,6 +33,7 @@ public class SchemaTests {
                 "blindtest_difficulty_band",
                 "blindtest_score",
                 "blindtest_track",
+                "cover_proposal",
                 "franchise",
                 "game",
                 "knowledge",

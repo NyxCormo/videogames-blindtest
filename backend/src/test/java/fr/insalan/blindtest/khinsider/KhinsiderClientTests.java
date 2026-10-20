@@ -30,6 +30,13 @@ class KhinsiderClientTests {
         assertEquals(Optional.empty(), KhinsiderClient.extractAudioLink(page));
     }
 
+    @Test
+    void albumUrlIsTheSongUrlWithoutTheFileName() {
+        assertEquals(
+                "https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024",
+                KhinsiderClient.albumUrlOf("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024/02.%2520Shelter%2520%2528Title%2529.mp3"));
+    }
+
     private Document parseFixture(String fileName) throws IOException {
         try (InputStream html = getClass().getResourceAsStream("/khinsider/" + fileName)) {
             return Jsoup.parse(html, "UTF-8", "https://downloads.khinsider.com/");

@@ -58,6 +58,8 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
 
     List<Track> findByKhinsiderLinkIsNotNull();
 
+    List<Track> findByGameIdAndAudioLinkIsNotNullOrderById(Integer gameId);
+
     @Query("""
             SELECT t FROM Track t
             JOIN FETCH t.game g

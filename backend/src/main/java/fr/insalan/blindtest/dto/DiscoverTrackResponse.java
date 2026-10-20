@@ -1,5 +1,6 @@
 package fr.insalan.blindtest.dto;
 
+import fr.insalan.blindtest.cover.CoverUrls;
 import fr.insalan.blindtest.model.Track;
 
 public record DiscoverTrackResponse(
@@ -11,10 +12,11 @@ public record DiscoverTrackResponse(
     String trackName,
     boolean finished,
     long voted,
-    int remaining
+    int remaining,
+    String coverUrl
 ) {
     public static DiscoverTrackResponse allDiscovered(long voted) {
-        return new DiscoverTrackResponse(null, null, null, null, null, null, true, voted, 0);
+        return new DiscoverTrackResponse(null, null, null, null, null, null, true, voted, 0, null);
     }
 
     public static DiscoverTrackResponse from(Track track, long voted, int remaining) {
@@ -27,7 +29,8 @@ public record DiscoverTrackResponse(
             track.getName(),
             false,
             voted,
-            remaining
+            remaining,
+            CoverUrls.publicUrl(track.getGame())
         );
     }
 }

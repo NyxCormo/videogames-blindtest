@@ -37,6 +37,11 @@
   font-weight: 800;
 }
 
+.track-cover-image {
+  display: block;
+  object-fit: cover;
+}
+
 .track-cover .icon {
   width: 4rem;
   height: 4rem;

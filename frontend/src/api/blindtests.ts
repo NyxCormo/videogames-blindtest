@@ -68,8 +68,10 @@ export type BlindtestSession = {
 export type Reveal = {
   trackId: number
   franchiseName: string
+  gameId: number
   gameName: string
   trackName: string
+  coverUrl: string | null
 }
 
 export type GuessResult = {

@@ -1,4 +1,7 @@
-import type { HTMLAttributes, ReactNode } from 'react'
+import { useState, type HTMLAttributes, type ReactNode } from 'react'
+import { useCurrentListener } from '../../context/CurrentListenerContext'
+import { useNotification } from '../../context/NotificationContext'
+import { CoverProposalDialog } from '../CoverProposalDialog/CoverProposalDialog'
 import { CheckIcon, CrossIcon, NoImageIcon } from '../icons'
 import './TrackCard.css'
 
@@ -25,15 +28,54 @@ export function MysteryCover({ className, ...rest }: HTMLAttributes<HTMLDivEleme
   )
 }
 
-export function GameCover() {
+type CoverProps = {
+  gameId: number
+  gameName: string
+  coverUrl: string | null
+}
+
+export function GameCover({ gameId, gameName, coverUrl }: CoverProps) {
+  const { listener, openLogin } = useCurrentListener()
+  const { notify } = useNotification()
+  const [broken, setBroken] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [sent, setSent] = useState(false)
+  const shown = coverUrl !== null && !broken
+
+  function handleSent() {
+    setDialogOpen(false)
+    setSent(true)
+    notify("Merci ! Un admin va vérifier l'image.", 'success')
+  }
+
   return (
     <>
-      <div className="track-cover" role="img" aria-label="Pas encore d'image pour ce jeu">
-        <NoImageIcon />
-      </div>
-      <button type="button" className="track-wrong-image" disabled>
-        Ce n'est pas la bonne image
+      {shown ? (
+        <img className="track-cover track-cover-image" src={coverUrl} alt={`Image de ${gameName}`} onError={() => setBroken(true)} />
+      ) : (
+        <div className="track-cover" role="img" aria-label="Pas encore d'image pour ce jeu">
+          <NoImageIcon />
+        </div>
+      )}
+      <button
+        type="button"
+        className="track-wrong-image"
+        onClick={() => (listener ? setDialogOpen(true) : openLogin())}
+        disabled={sent}
+      >
+        {sent ? 'Proposition envoyée, merci' : shown ? 'Proposer une autre image' : 'Proposer une image'}
       </button>
+      {listener && (
+        <CoverProposalDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          gameId={gameId}
+          gameName={gameName}
+          hasCover={coverUrl !== null}
+          listener={listener}
+          onSent={handleSent}
+        />
+      )}
     </>
   )
 }

@@ -1,3 +1,4 @@
+import type { Game } from './games'
 import { errorMessage, HttpError, request } from './http'
 import type { Track } from './tracks'
 
@@ -164,5 +165,93 @@ export type MergePreview = {
 
 export async function fetchMergePreview(token: string, kind: AdminKind, id: number, targetId: number): Promise<MergePreview> {
   const response = await adminRequest(token, `/api/admin/${kind}/${id}/merge-preview?into=${targetId}`)
+  return response.json()
+}
+
+export type GameCover = {
+  coverUrl: string | null
+  displayUrl: string | null
+  downloaded: boolean
+}
+
+export type AlbumImages = {
+  albumUrl: string
+  tracks: string[]
+  images: string[]
+}
+
+export type GameCoverEntry = {
+  gameId: number
+  displayUrl: string
+}
+
+export async function fetchGameCovers(token: string): Promise<GameCoverEntry[]> {
+  const response = await adminRequest(token, '/api/admin/covers')
+  return response.json()
+}
+
+export async function fetchGameCover(token: string, gameId: number): Promise<GameCover> {
+  const response = await adminRequest(token, `/api/admin/games/${gameId}/cover`)
+  return response.json()
+}
+
+export async function fetchCoverCandidates(token: string, gameId: number): Promise<AlbumImages[]> {
+  const response = await adminRequest(token, `/api/admin/games/${gameId}/cover/candidates`)
+  return response.json()
+}
+
+export async function saveGameCover(token: string, gameId: number, coverUrl: string): Promise<GameCover> {
+  const response = await adminRequest(token, `/api/admin/games/${gameId}/cover`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ coverUrl }),
+  })
+  return response.json()
+}
+
+export async function removeGameCover(token: string, gameId: number): Promise<GameCover> {
+  const response = await adminRequest(token, `/api/admin/games/${gameId}/cover`, { method: 'DELETE' })
+  return response.json()
+}
+
+export type CoverProposal = {
+  game: Game
+  currentUrl: string | null
+  imageUrl: string | null
+  listenerId: number
+  listenerName: string
+  createdAt: string
+}
+
+export async function fetchCoverProposals(token: string): Promise<CoverProposal[]> {
+  const response = await adminRequest(token, '/api/admin/cover-proposals')
+  return response.json()
+}
+
+export async function acceptCoverProposal(token: string, proposal: CoverProposal): Promise<GameCover> {
+  const response = await adminRequest(token, `/api/admin/cover-proposals/${proposal.game.id}/${proposal.listenerId}/accept`, {
+    method: 'POST',
+  })
+  return response.json()
+}
+
+export async function rejectCoverProposal(token: string, proposal: CoverProposal): Promise<void> {
+  await adminRequest(token, `/api/admin/cover-proposals/${proposal.game.id}/${proposal.listenerId}`, { method: 'DELETE' })
+}
+
+export type CoverFillStatus = {
+  running: boolean
+  startedAt: string | null
+  finishedAt: string | null
+  lastReport: { checked: number; found: number; downloaded: number; failed: number } | null
+}
+
+export async function fetchCoverFillStatus(token: string): Promise<CoverFillStatus> {
+  const response = await adminRequest(token, '/api/admin/covers/fill')
+  return response.json()
+}
+
+export async function startCoverFill(token: string): Promise<CoverFillStatus> {
+  const response = await adminRequest(token, '/api/admin/covers/fill', { method: 'POST' })
   return response.json()
 }

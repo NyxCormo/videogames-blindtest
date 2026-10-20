@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KhinsiderClient {
 
-    private static final String USER_AGENT = "blindtest-insalan (French Student Association, https://github.com/NyxCormo/videogames-blindtest)";
+    public static final String USER_AGENT = "blindtest-insalan (French Student Association, https://github.com/NyxCormo/videogames-blindtest)";
     private static final int TIMEOUT_MS = 10_000;
 
     private final RequestPacer pacer;
@@ -37,5 +37,9 @@ public class KhinsiderClient {
         }
         String src = audio.attr("src");
         return src.isBlank() ? Optional.empty() : Optional.of(src);
+    }
+
+    public static String albumUrlOf(String songUrl) {
+        return songUrl.substring(0, songUrl.lastIndexOf('/'));
     }
 }

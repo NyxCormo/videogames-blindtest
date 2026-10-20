@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.cover.CoverStore;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.model.Listener;
@@ -15,6 +16,7 @@ import fr.insalan.blindtest.model.Tag;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
+import fr.insalan.blindtest.repository.CoverProposalRepository;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
@@ -40,6 +42,8 @@ public class MergeService {
     private final BlindtestScoreRepository blindtestScoreRepository;
     private final TagRepository tagRepository;
     private final TrackReportRepository trackReportRepository;
+    private final CoverProposalRepository coverProposalRepository;
+    private final CoverStore coverStore;
 
     public MergeService(
         FranchiseRepository franchiseRepository,
@@ -51,7 +55,9 @@ public class MergeService {
         ListenerRepository listenerRepository,
         BlindtestScoreRepository blindtestScoreRepository,
         TagRepository tagRepository,
-        TrackReportRepository trackReportRepository
+        TrackReportRepository trackReportRepository,
+        CoverProposalRepository coverProposalRepository,
+        CoverStore coverStore
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -63,6 +69,8 @@ public class MergeService {
         this.blindtestScoreRepository = blindtestScoreRepository;
         this.tagRepository = tagRepository;
         this.trackReportRepository = trackReportRepository;
+        this.coverProposalRepository = coverProposalRepository;
+        this.coverStore = coverStore;
     }
 
     public MergePreview previewTracks(Integer sourceId, Integer targetId) {
@@ -136,8 +144,18 @@ public class MergeService {
     @Transactional
     public void mergeGames(Integer sourceId, Integer targetId) {
         requireAllowed(previewGames(sourceId, targetId));
+        String sourceCover = gameRepository.findById(sourceId).map(Game::getCoverUrl).orElse(null);
         trackRepository.moveTracksToGame(sourceId, targetId);
+        coverProposalRepository.deleteProposalsAlsoOnTarget(sourceId, targetId);
+        coverProposalRepository.moveProposals(sourceId, targetId);
         gameRepository.deleteById(sourceId);
+        coverStore.delete(sourceId);
+        gameRepository.findById(targetId)
+            .filter(target -> target.getCoverUrl() == null && sourceCover != null)
+            .ifPresent(target -> {
+                target.setCoverUrl(sourceCover);
+                gameRepository.save(target);
+            });
     }
 
     public MergePreview previewFranchises(Integer sourceId, Integer targetId) {
@@ -191,6 +209,8 @@ public class MergeService {
         blindtestScoreRepository.moveScoresToListener(sourceId, targetId);
         trackReportRepository.deleteReportsAlsoByTarget(sourceId, targetId);
         trackReportRepository.moveReportsToListener(sourceId, targetId);
+        coverProposalRepository.deleteProposalsAlsoByTarget(sourceId, targetId);
+        coverProposalRepository.moveProposalsToListener(sourceId, targetId);
         listenerRepository.deleteById(sourceId);
     }
 

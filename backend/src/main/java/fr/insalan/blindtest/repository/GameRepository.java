@@ -15,6 +15,8 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
 
     Optional<Game> findByFranchiseAndName(Franchise franchise, String name);
 
+    List<Game> findByCoverUrlIsNotNull();
+
     // join fetch charge la franchise dans la même requête (sinon Lazy) : tous les jeux, pour la recherche à la réponse d'un blindtest
     @Query("""
             SELECT g FROM Game g

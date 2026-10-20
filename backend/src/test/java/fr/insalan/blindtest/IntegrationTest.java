@@ -12,6 +12,7 @@ import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
+import fr.insalan.blindtest.repository.CoverProposalRepository;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
@@ -29,6 +30,9 @@ abstract class IntegrationTest {
 
     @Autowired
     private TrackReportRepository trackReportRepository;
+
+    @Autowired
+    private CoverProposalRepository coverProposalRepository;
 
     @Autowired
     private BlindtestDifficultyBandRepository blindtestDifficultyBandRepository;
@@ -70,6 +74,7 @@ abstract class IntegrationTest {
     @AfterEach
     void cleanDatabase() {
         trackReportRepository.deleteAll();
+        coverProposalRepository.deleteAll();
         blindtestDifficultyBandRepository.deleteAll();
         blindtestScoreRepository.deleteAll();
         blindtestTrackRepository.deleteAll();
