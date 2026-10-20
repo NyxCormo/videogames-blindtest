@@ -5,5 +5,6 @@ import java.util.List;
 public record AlbumImages(
     String albumUrl,
     List<String> tracks,
-    List<String> images
+    List<String> images,
+    boolean fromPage
 ) {}

@@ -1,6 +1,7 @@
 package fr.insalan.blindtest.cover;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -12,8 +13,12 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import fr.insalan.blindtest.dto.GameResponse;
 import fr.insalan.blindtest.khinsider.KhinsiderClient;
 import fr.insalan.blindtest.model.AlbumScan;
 import fr.insalan.blindtest.model.Game;
@@ -34,6 +39,7 @@ public class CoverService {
     private final AlbumScanRepository albumScanRepository;
     private final CoverFinder coverFinder;
     private final CoverStore coverStore;
+    private final AlbumPageStore albumPageStore;
 
     public CoverService(
         GameRepository gameRepository,
@@ -41,7 +47,8 @@ public class CoverService {
         CoverProposalRepository coverProposalRepository,
         AlbumScanRepository albumScanRepository,
         CoverFinder coverFinder,
-        CoverStore coverStore
+        CoverStore coverStore,
+        AlbumPageStore albumPageStore
     ) {
         this.gameRepository = gameRepository;
         this.trackRepository = trackRepository;
@@ -49,6 +56,7 @@ public class CoverService {
         this.albumScanRepository = albumScanRepository;
         this.coverFinder = coverFinder;
         this.coverStore = coverStore;
+        this.albumPageStore = albumPageStore;
     }
 
     public void setCover(Game game, String coverUrl) {
@@ -66,9 +74,13 @@ public class CoverService {
             .getOrDefault(gameId, Map.of());
         return albums.entrySet().stream()
             .map(album -> {
+                Optional<List<String>> pageImages = pageImages(album.getKey());
+                if (pageImages.isPresent()) {
+                    return new AlbumImages(album.getValue().pageUrl(), album.getValue().tracks(), pageImages.get(), true);
+                }
                 AlbumScan scan = rescan ? null : albumScanRepository.findById(album.getKey()).orElse(null);
                 List<String> images = (scan != null ? scan : scan(album.getKey())).getImages();
-                return new AlbumImages(album.getValue().pageUrl(), album.getValue().tracks(), images);
+                return new AlbumImages(album.getValue().pageUrl(), album.getValue().tracks(), images, false);
             })
             .toList();
     }
@@ -77,10 +89,16 @@ public class CoverService {
         Map<Integer, Map<String, Album>> albumsByGame = albumsByGame(trackRepository.findWithGameByAudioLinkIsNotNull());
         Map<String, AlbumScan> scans = new HashMap<>();
         albumScanRepository.findAllWithImages().forEach(scan -> scans.put(scan.getAlbumUrl(), scan));
+        Map<String, List<String>> images = new HashMap<>();
+        albumsByGame.values().stream()
+            .flatMap(albums -> albums.keySet().stream())
+            .distinct()
+            .forEach(album -> pageImages(album).ifPresent(found -> images.put(album, found)));
         Set<String> toScan = albumsByGame.values().stream()
             .flatMap(albums -> albums.keySet().stream())
-            .filter(album -> mode.needsScan(scans.get(album)))
+            .filter(album -> !images.containsKey(album) && mode.needsScan(scans.get(album)))
             .collect(Collectors.toCollection(HashSet::new));
+        scans.forEach((album, scan) -> images.putIfAbsent(album, scan.getImages()));
         int total = toScan.size();
 
         int scanned = 0;
@@ -91,15 +109,15 @@ public class CoverService {
             Map<String, Album> albums = albumsByGame.getOrDefault(game.getId(), Map.of());
             for (String album : albums.keySet()) {
                 if (toScan.remove(album)) {
-                    scans.put(album, scan(album));
+                    images.put(album, scan(album).getImages());
                     scanned++;
                 }
             }
             if (game.getCoverUrl() == null) {
                 Optional<String> image = albums.keySet().stream()
-                    .map(scans::get)
+                    .map(images::get)
                     .filter(Objects::nonNull)
-                    .flatMap(scan -> scan.getImages().stream())
+                    .flatMap(List::stream)
                     .findFirst();
                 if (image.isPresent()) {
                     setCover(game, image.get());
@@ -118,6 +136,89 @@ public class CoverService {
             progress.accept(new CoverFillReport(scanned, total, covered, downloaded, notDownloaded));
         }
         return new CoverFillReport(scanned, total, covered, downloaded, notDownloaded);
+    }
+
+    public List<AlbumOverview> albums() {
+        Map<String, AlbumScan> scans = new HashMap<>();
+        albumScanRepository.findAllWithImages().forEach(scan -> scans.put(scan.getAlbumUrl(), scan));
+        Map<String, List<Track>> tracksByAlbum = new LinkedHashMap<>();
+        for (Track track : trackRepository.findWithGameByAudioLinkIsNotNull()) {
+            CoverFinder.albumOf(track.getAudioLink())
+                .ifPresent(album -> tracksByAlbum.computeIfAbsent(album, key -> new ArrayList<>()).add(track));
+        }
+        return tracksByAlbum.entrySet().stream()
+            .map(album -> {
+                List<Track> tracks = album.getValue();
+                AlbumScan scan = scans.get(album.getKey());
+                Optional<List<String>> pageImages = pageImages(album.getKey());
+                String pageUrl = tracks.stream()
+                    .filter(track -> track.getKhinsiderLink() != null)
+                    .map(track -> KhinsiderClient.albumUrlOf(track.getKhinsiderLink()))
+                    .findFirst()
+                    .orElse(null);
+                List<GameResponse> games = tracks.stream()
+                    .map(Track::getGame)
+                    .distinct()
+                    .map(GameResponse::from)
+                    .toList();
+                return new AlbumOverview(
+                    album.getKey(),
+                    pageUrl,
+                    slugOf(album.getKey()),
+                    games,
+                    tracks.stream().map(Track::getName).toList(),
+                    scan == null ? null : scan.getScannedAt(),
+                    albumPageStore.savedAt(slugOf(album.getKey())).orElse(null),
+                    pageImages.orElse(scan == null ? List.of() : scan.getImages()));
+            })
+            .sorted(Comparator.comparing(AlbumOverview::name))
+            .toList();
+    }
+
+    public Optional<AlbumImport> importAlbumPage(String pageUrl, String html) {
+        String slug = slugOf(pageUrl);
+        List<Track> tracks = trackRepository.findWithGameByAudioLinkIsNotNull().stream()
+            .filter(track -> CoverFinder.albumOf(track.getAudioLink()).map(album -> slugOf(album).equals(slug)).orElse(false))
+            .toList();
+        if (tracks.isEmpty()) {
+            return Optional.empty();
+        }
+        Document page = Jsoup.parse(html, pageUrl);
+        albumPageStore.save(slug, albumImageBlocks(page, slug));
+        List<String> images = KhinsiderClient.extractAlbumImages(page, slug);
+        List<String> covered = new ArrayList<>();
+        if (!images.isEmpty()) {
+            tracks.stream()
+                .map(Track::getGame)
+                .distinct()
+                .filter(game -> game.getCoverUrl() == null)
+                .forEach(game -> {
+                    setCover(game, images.get(0));
+                    covered.add(game.getName());
+                });
+        }
+        return Optional.of(new AlbumImport(slug, images, covered));
+    }
+
+    private static String albumImageBlocks(Document page, String slug) {
+        Elements blocks = page.select("div.albumImage");
+        if (!blocks.isEmpty()) {
+            return blocks.outerHtml();
+        }
+        return KhinsiderClient.extractAlbumImages(page, slug).stream()
+            .map(url -> "<a href=\"" + url + "\"></a>")
+            .collect(Collectors.joining("\n"));
+    }
+
+    private Optional<List<String>> pageImages(String album) {
+        String slug = slugOf(album);
+        return albumPageStore.find(slug)
+            .map(html -> KhinsiderClient.extractAlbumImages(Jsoup.parse(html, KhinsiderClient.ALBUM_PAGES + slug), slug));
+    }
+
+    private static String slugOf(String url) {
+        String path = url.replaceAll("[?#].*$", "").replaceAll("/+$", "");
+        return path.substring(path.lastIndexOf('/') + 1);
     }
 
     private AlbumScan scan(String albumUrl) {

@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 
+import fr.insalan.blindtest.cover.AlbumPageStore;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.repository.AlbumScanRepository;
@@ -37,6 +38,9 @@ abstract class IntegrationTest {
 
     @Autowired
     private AlbumScanRepository albumScanRepository;
+
+    @Autowired
+    private AlbumPageStore albumPageStore;
 
     @Autowired
     private BlindtestDifficultyBandRepository blindtestDifficultyBandRepository;
@@ -80,6 +84,7 @@ abstract class IntegrationTest {
         trackReportRepository.deleteAll();
         coverProposalRepository.deleteAll();
         albumScanRepository.deleteAll();
+        albumPageStore.deleteAll();
         blindtestDifficultyBandRepository.deleteAll();
         blindtestScoreRepository.deleteAll();
         blindtestTrackRepository.deleteAll();

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.cover.AlbumImages;
+import fr.insalan.blindtest.cover.AlbumOverview;
 import fr.insalan.blindtest.cover.CoverFillJob;
 import fr.insalan.blindtest.cover.CoverFillMode;
 import fr.insalan.blindtest.cover.CoverFillStatus;
@@ -54,6 +55,11 @@ public class AdminCoverController {
         this.coverService = coverService;
         this.coverStore = coverStore;
         this.coverFillJob = coverFillJob;
+    }
+
+    @GetMapping("/albums")
+    public List<AlbumOverview> albums() {
+        return coverService.albums();
     }
 
     @GetMapping("/covers")

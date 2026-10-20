@@ -178,6 +178,23 @@ export type AlbumImages = {
   albumUrl: string
   tracks: string[]
   images: string[]
+  fromPage: boolean
+}
+
+export type AlbumOverview = {
+  albumUrl: string
+  pageUrl: string | null
+  name: string
+  games: Game[]
+  tracks: string[]
+  scannedAt: string | null
+  pageSavedAt: string | null
+  images: string[]
+}
+
+export async function fetchAlbums(token: string): Promise<AlbumOverview[]> {
+  const response = await adminRequest(token, '/api/admin/albums')
+  return response.json()
 }
 
 export type GameCoverEntry = {

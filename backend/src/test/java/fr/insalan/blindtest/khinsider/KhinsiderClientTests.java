@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 
 import org.jsoup.Jsoup;
@@ -28,6 +29,24 @@ class KhinsiderClientTests {
         Document page = Jsoup.parse("<html><body>Musique indisponible</body></html>");
 
         assertEquals(Optional.empty(), KhinsiderClient.extractAudioLink(page));
+    }
+
+    @Test
+    void extractsTheFullSizeImagesOfTheAlbumFromARealPage() throws IOException {
+        Document page = parseFixture("stellar-blade-album.html");
+
+        assertEquals(
+                List.of(
+                        "https://jetta.vgmtreasurechest.com/soundtracks/stellar-blade-soundtrack-2024/00%20Front.jpg",
+                        "https://jetta.vgmtreasurechest.com/soundtracks/stellar-blade-soundtrack-2024/folder.jpg"),
+                KhinsiderClient.extractAlbumImages(page, "stellar-blade-soundtrack-2024"));
+    }
+
+    @Test
+    void findsNoAlbumImageOnASongPage() throws IOException {
+        Document page = parseFixture("dawn.html");
+
+        assertEquals(List.of(), KhinsiderClient.extractAlbumImages(page, "stellar-blade-soundtrack-2024"));
     }
 
     @Test

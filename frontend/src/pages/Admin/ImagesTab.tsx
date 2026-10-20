@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Game } from '../../api/games'
+import { AlbumsSection } from './AlbumsSection'
 import { CoverFillSection } from './CoverFillSection'
 import { CoverProposalsSection } from './CoverProposalsSection'
 import { GameCoverSection } from './GameCoverSection'
@@ -35,6 +36,7 @@ export function ImagesTab({ token, onSessionExpired }: Props) {
         onSessionExpired={onSessionExpired}
         onChangeCover={chooseCover}
       />
+      <AlbumsSection token={token} onSessionExpired={onSessionExpired} onChooseCover={chooseCover} />
       <GameCoverSection
         key={`cover-${coverVersion}`}
         token={token}

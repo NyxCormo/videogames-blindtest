@@ -281,3 +281,21 @@
   width: 3rem;
   height: 3rem;
 }
+
+.admin-album-panel {
+  grid-column: span 2;
+  align-items: flex-start;
+}
+
+.admin-album-panel .admin-cover-grid img {
+  width: 7rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+@media (max-width: 800px) {
+  .admin-album-panel {
+    grid-column: auto;
+  }
+}

@@ -2,7 +2,9 @@ package fr.insalan.blindtest;
 
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.sun.net.httpserver.HttpServer;
 
+import fr.insalan.blindtest.cover.AlbumPageStore;
 import fr.insalan.blindtest.cover.CoverFillMode;
 import fr.insalan.blindtest.cover.CoverFillReport;
 import fr.insalan.blindtest.cover.CoverFinder;
@@ -58,6 +62,9 @@ class GameCoverTests extends IntegrationTest {
 
     @Autowired
     ListenerRepository listeners;
+
+    @Autowired
+    AlbumPageStore albumPageStore;
 
     private HttpServer server;
     private final AtomicInteger cdnRequests = new AtomicInteger();
@@ -298,6 +305,86 @@ class GameCoverTests extends IntegrationTest {
     }
 
     @Test
+    void anAlbumPageOpenedInTheBrowserGivesItsImages() throws Exception {
+        Game game = stellarBlade();
+        track(game, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
+
+        importPage("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024", "jeton-de-test")
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.album").value("stellar-blade-soundtrack-2024"))
+            .andExpect(jsonPath("$.images.length()").value(2))
+            .andExpect(jsonPath("$.coveredGames[0]").value("Stellar Blade"));
+
+        assertEquals(FRONT, games.findById(game.getId()).orElseThrow().getCoverUrl());
+        String saved = albumPageStore.find("stellar-blade-soundtrack-2024").orElseThrow();
+        assertTrue(saved.contains("albumImage"));
+        assertFalse(saved.contains("albumIconLarge"));
+        mockMvc.perform(get("/api/admin/albums").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$[0].images[1]").value(FOLDER))
+            .andExpect(jsonPath("$[0].pageSavedAt").isNotEmpty())
+            .andExpect(jsonPath("$[0].scannedAt").doesNotExist());
+    }
+
+    @Test
+    void aSavedAlbumPageComesBeforeTheCdnSearch() throws Exception {
+        Game game = stellarBlade();
+        track(game, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
+        Game mini = games.save(new Game("Stellar Blade Mini", game.getFranchise()));
+        track(mini, "Shaël", "stellar-blade-mini-original-soundtrack-2024", "01.%20Shael.mp3");
+        importPage("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024", "jeton-de-test");
+
+        assertEquals(1, coverService.fill(CoverFillMode.ALL, report -> {}).scanned());
+
+        int requests = cdnRequests.get();
+        mockMvc.perform(get("/api/admin/games/" + game.getId() + "/cover/candidates").param("rescan", "true").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$[0].fromPage").value(true))
+            .andExpect(jsonPath("$[0].images[0]").value(FRONT))
+            .andExpect(jsonPath("$[0].images[1]").value(FOLDER));
+        assertEquals(requests, cdnRequests.get());
+
+        mockMvc.perform(get("/api/admin/games/" + mini.getId() + "/cover/candidates").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$[0].fromPage").value(false))
+            .andExpect(jsonPath("$[0].images.length()").value(0));
+    }
+
+    @Test
+    void anAlbumPageNeedsTheTokenAndAnAlbumOfTheBase() throws Exception {
+        Game game = stellarBlade();
+        track(game, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
+
+        importPage("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024", "mauvais-jeton")
+            .andExpect(status().isForbidden());
+        importPage("https://downloads.khinsider.com/game-soundtracks/album/minecraft", "jeton-de-test")
+            .andExpect(status().isNotFound());
+        importPage("https://example.org/stellar-blade-soundtrack-2024", "jeton-de-test")
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void listsEveryAlbumWithItsGamesAndSearch() throws Exception {
+        Game game = stellarBlade();
+        track(game, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
+        track(game, "Raven", "stellar-blade-soundtrack-2024", "10.%20Raven.mp3");
+        Game mini = games.save(new Game("Stellar Blade Mini", game.getFranchise()));
+        track(mini, "Shaël", "stellar-blade-mini-original-soundtrack-2024", "01.%20Shael.mp3");
+        coverService.fill(CoverFillMode.NEW, report -> {});
+        Game noAlbum = games.save(new Game("Stellar Blade Demo", game.getFranchise()));
+        tracks.save(new Track("Democrawler", noAlbum));
+        track(game, "Shelter", "stellar-blade-arrange-tracks-original-soundtrack-2025", "02.%20Shelter.mp3");
+
+        mockMvc.perform(get("/api/admin/albums").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$.length()").value(3))
+            .andExpect(jsonPath("$[0].name").value("stellar-blade-arrange-tracks-original-soundtrack-2025"))
+            .andExpect(jsonPath("$[0].scannedAt").doesNotExist())
+            .andExpect(jsonPath("$[1].name").value("stellar-blade-mini-original-soundtrack-2024"))
+            .andExpect(jsonPath("$[1].images.length()").value(0))
+            .andExpect(jsonPath("$[1].games[0].name").value("Stellar Blade Mini"))
+            .andExpect(jsonPath("$[2].pageUrl").value("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024"))
+            .andExpect(jsonPath("$[2].tracks.length()").value(2))
+            .andExpect(jsonPath("$[2].images.length()").value(2));
+    }
+
+    @Test
     void discoverGivesTheImageOfTheGame() throws Exception {
         Game game = stellarBlade();
         game.setCoverUrl(FRONT);
@@ -332,6 +419,18 @@ class GameCoverTests extends IntegrationTest {
             .param("listenerId", listener.getId().toString())
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
+    }
+
+    private ResultActions importPage(String albumUrl, String token) throws Exception {
+        byte[] html;
+        try (InputStream page = getClass().getResourceAsStream("/khinsider/stellar-blade-album.html")) {
+            html = page.readAllBytes();
+        }
+        return mockMvc.perform(post("/api/khinsider/album-page")
+            .header("X-Album-Url", albumUrl)
+            .header("X-Import-Token", token)
+            .contentType(MediaType.TEXT_HTML)
+            .content(html));
     }
 
     private void track(Game game, String name, String album, String file) {

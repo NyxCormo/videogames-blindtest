@@ -56,11 +56,12 @@ export function CoverFillSection({ token, onSessionExpired }: Props) {
       <p className="muted">
         Les pochettes sont cherchées sur le CDN des MP3, dans le dossier de chaque album, sous les noms habituels (00 Front.jpg,
         Cover.jpg, folder.jpg…). Le résultat de chaque album est gardé : un jeu sans image reçoit la première pochette trouvée
-        parmi ses albums, puis les images sont téléchargées sur le serveur.
+        parmi ses albums, puis les images sont téléchargées sur le serveur. Un album dont la page KHInsider est
+        enregistrée n'est plus cherché sur le CDN : ses pochettes viennent de la page.
       </p>
       {status && (
         <p>
-          {plural(status.albums, 'album déjà recherché', 'albums déjà recherchés')}, dont{' '}
+          {plural(status.albums, 'album déjà recherché sur le CDN', 'albums déjà recherchés sur le CDN')}, dont{' '}
           {status.albumsWithoutImage} sans pochette trouvée.
         </p>
       )}

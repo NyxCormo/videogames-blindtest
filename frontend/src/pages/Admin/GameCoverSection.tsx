@@ -133,9 +133,16 @@ export function GameCoverSection({ token, onSessionExpired, selected, onSelect, 
               <a href={album.albumUrl} target="_blank" rel="noreferrer">
                 {album.albumUrl.slice(album.albumUrl.lastIndexOf('/') + 1)}
               </a>
-              <span className="muted">Musiques : {album.tracks.join(', ')}</span>
+              <span className="muted">
+                {album.fromPage ? 'Pochettes de la page KHInsider enregistrée' : 'Pochettes trouvées sur le CDN'} · Musiques :{' '}
+                {album.tracks.join(', ')}
+              </span>
               {album.images.length === 0 && (
-                <p className="muted">Pas de pochette sous les noms habituels : ouvrir l'album pour copier l'adresse de la bonne image.</p>
+                <p className="muted">
+                  {album.fromPage
+                    ? "La page enregistrée ne contient aucune pochette de cet album."
+                    : "Pas de pochette sous les noms habituels : ouvrir l'album pour l'enregistrer avec le script, ou copier l'adresse de la bonne image."}
+                </p>
               )}
               <div className="admin-cover-grid">
                 {album.images.map((image) => (
