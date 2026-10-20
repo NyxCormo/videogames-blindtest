@@ -3,10 +3,10 @@ package fr.insalan.blindtest.cover;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AlbumPageStore {
-
-    private static final Pattern SLUG = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
 
     private final Path directory;
 
@@ -36,6 +34,8 @@ public class AlbumPageStore {
         try {
             Path file = file(slug);
             return Files.exists(file) ? Optional.of(Files.readString(file)) : Optional.empty();
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -45,6 +45,8 @@ public class AlbumPageStore {
         try {
             Path file = file(slug);
             return Files.exists(file) ? Optional.of(Files.getLastModifiedTime(file).toInstant()) : Optional.empty();
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -64,9 +66,17 @@ public class AlbumPageStore {
     }
 
     private Path file(String slug) {
-        if (!SLUG.matcher(slug).matches()) {
+        if (slug.isBlank() || slug.startsWith(".") || slug.contains("/") || slug.contains("\\")) {
             throw new IllegalArgumentException("Nom d'album invalide : " + slug);
         }
-        return directory.resolve(slug + ".html");
+        try {
+            Path file = directory.resolve(slug + ".html").normalize();
+            if (!directory.normalize().equals(file.getParent())) {
+                throw new IllegalArgumentException("Nom d'album invalide : " + slug);
+            }
+            return file;
+        } catch (InvalidPathException e) {
+            throw new IllegalArgumentException("Nom d'album invalide : " + slug, e);
+        }
     }
 }
