@@ -91,6 +91,21 @@ Table cover_proposal {
   }
 }
 
+Table album_scan {
+  album_url text [primary key]
+  scanned_at datetime [not null]
+}
+
+Table album_scan_image {
+  album_url text [not null]
+  position integer [not null]
+  image_url text [not null]
+
+  indexes {
+    (album_url, position) [pk]
+  }
+}
+
 Table blindtest {
   id integer [primary key]
   name text [not null]
@@ -152,6 +167,8 @@ Ref: track_report.listener_id > listener.id
 
 Ref: cover_proposal.game_id > game.id
 Ref: cover_proposal.listener_id > listener.id
+
+Ref: album_scan_image.album_url > album_scan.album_url
 
 Ref: blindtest_track.blindtest_id > blindtest.id
 Ref: blindtest_track.track_id > track.id

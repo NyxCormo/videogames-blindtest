@@ -1,8 +1,8 @@
 package fr.insalan.blindtest.cover;
 
 public record CoverFillReport(
-    int checked,
-    int found,
+    int scanned,
+    int covered,
     int downloaded,
-    int failed
+    int notDownloaded
 ) {}

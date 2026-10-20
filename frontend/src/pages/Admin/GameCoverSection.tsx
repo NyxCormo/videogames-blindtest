@@ -10,6 +10,7 @@ import {
 import { fetchGames, type Game } from '../../api/games'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { useNotification } from '../../context/NotificationContext'
+import { CoverThumbnail } from './CoverThumbnail'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 type Props = {
@@ -49,9 +50,9 @@ export function GameCoverSection({ token, onSessionExpired, selected, onSelect, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected])
 
-  function search(game: Game) {
+  function search(game: Game, rescan: boolean) {
     setSearching(true)
-    fetchCoverCandidates(token, game.id)
+    fetchCoverCandidates(token, game.id, rescan)
       .then((value) => setAlbums({ gameId: game.id, value }))
       .catch(handleError)
       .finally(() => setSearching(false))
@@ -117,9 +118,14 @@ export function GameCoverSection({ token, onSessionExpired, selected, onSelect, 
             onRemove={() => remove(selected)}
           />
           <div className="admin-row">
-            <button type="button" onClick={() => search(selected)} disabled={searching}>
-              {searching ? 'Recherche des pochettes…' : 'Chercher les pochettes de ses albums'}
+            <button type="button" onClick={() => search(selected, false)} disabled={searching}>
+              {searching ? 'Recherche des pochettes…' : 'Voir les pochettes de ses albums'}
             </button>
+            {found && found.length > 0 && (
+              <button type="button" onClick={() => search(selected, true)} disabled={searching}>
+                Rechercher à nouveau sur le CDN
+              </button>
+            )}
           </div>
           {found && found.length === 0 && <p className="muted">Aucune musique jouable de ce jeu ne vient de KHInsider.</p>}
           {found?.map((album) => (
@@ -139,7 +145,7 @@ export function GameCoverSection({ token, onSessionExpired, selected, onSelect, 
                     aria-pressed={image === current.coverUrl}
                     onClick={() => save(selected, image)}
                   >
-                    <img src={image} alt={image.slice(image.lastIndexOf('/') + 1)} />
+                    <CoverThumbnail url={image} alt={decodeURIComponent(image.slice(image.lastIndexOf('/') + 1))} />
                     <span>{image === current.coverUrl ? 'Image actuelle' : 'Choisir'}</span>
                   </button>
                 ))}

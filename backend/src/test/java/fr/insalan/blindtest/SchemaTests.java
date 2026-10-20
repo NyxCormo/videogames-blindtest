@@ -29,6 +29,8 @@ public class SchemaTests {
         );
 		assertEquals(
             List.of(
+                "album_scan",
+                "album_scan_image",
                 "blindtest",
                 "blindtest_difficulty_band",
                 "blindtest_score",

@@ -6,5 +6,7 @@ public record CoverFillStatus(
     boolean running,
     Instant startedAt,
     Instant finishedAt,
-    CoverFillReport lastReport
+    CoverFillReport lastReport,
+    long albums,
+    long albumsWithoutImage
 ) {}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { acceptCoverProposal, fetchCoverProposals, rejectCoverProposal, type CoverProposal } from '../../api/admin'
 import type { Game } from '../../api/games'
 import { useNotification } from '../../context/NotificationContext'
+import { CoverThumbnail } from './CoverThumbnail'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 type Props = {
@@ -78,7 +79,7 @@ export function CoverProposalsSection({ token, onSessionExpired, onChooseCover, 
                 </figure>
                 {proposal.imageUrl && (
                   <figure>
-                    <img src={proposal.imageUrl} alt={`Image proposée pour ${proposal.game.name}`} />
+                    <CoverThumbnail url={proposal.imageUrl} alt={`Image proposée pour ${proposal.game.name}`} />
                     <figcaption>Après</figcaption>
                   </figure>
                 )}

@@ -61,7 +61,6 @@ public class CoverFinderTests {
         String album = url("/soundtracks/stellar-blade-soundtrack-2024");
 
         assertEquals(List.of(album + "/00%20Front.jpg", album + "/folder.jpg"), finder.findAll(album));
-        assertEquals(Optional.of(album + "/00%20Front.jpg"), finder.findFirst(album));
     }
 
     @Test
@@ -69,7 +68,6 @@ public class CoverFinderTests {
         String album = url("/soundtracks/stellar-blade-mini-original-soundtrack-2024");
 
         assertEquals(List.of(), finder.findAll(album));
-        assertEquals(Optional.empty(), finder.findFirst(album));
     }
 
     private String url(String path) {

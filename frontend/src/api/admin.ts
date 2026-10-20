@@ -195,8 +195,8 @@ export async function fetchGameCover(token: string, gameId: number): Promise<Gam
   return response.json()
 }
 
-export async function fetchCoverCandidates(token: string, gameId: number): Promise<AlbumImages[]> {
-  const response = await adminRequest(token, `/api/admin/games/${gameId}/cover/candidates`)
+export async function fetchCoverCandidates(token: string, gameId: number, rescan: boolean): Promise<AlbumImages[]> {
+  const response = await adminRequest(token, `/api/admin/games/${gameId}/cover/candidates?rescan=${rescan}`)
   return response.json()
 }
 
@@ -239,11 +239,15 @@ export async function rejectCoverProposal(token: string, proposal: CoverProposal
   await adminRequest(token, `/api/admin/cover-proposals/${proposal.game.id}/${proposal.listenerId}`, { method: 'DELETE' })
 }
 
+export type CoverFillMode = 'NEW' | 'WITHOUT_IMAGE' | 'ALL'
+
 export type CoverFillStatus = {
   running: boolean
   startedAt: string | null
   finishedAt: string | null
-  lastReport: { checked: number; found: number; downloaded: number; failed: number } | null
+  lastReport: { scanned: number; covered: number; downloaded: number; notDownloaded: number } | null
+  albums: number
+  albumsWithoutImage: number
 }
 
 export async function fetchCoverFillStatus(token: string): Promise<CoverFillStatus> {
@@ -251,7 +255,7 @@ export async function fetchCoverFillStatus(token: string): Promise<CoverFillStat
   return response.json()
 }
 
-export async function startCoverFill(token: string): Promise<CoverFillStatus> {
-  const response = await adminRequest(token, '/api/admin/covers/fill', { method: 'POST' })
+export async function startCoverFill(token: string, mode: CoverFillMode): Promise<CoverFillStatus> {
+  const response = await adminRequest(token, `/api/admin/covers/fill?mode=${mode}`, { method: 'POST' })
   return response.json()
 }

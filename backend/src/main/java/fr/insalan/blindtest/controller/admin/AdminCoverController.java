@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import fr.insalan.blindtest.cover.AlbumImages;
 import fr.insalan.blindtest.cover.CoverFillJob;
+import fr.insalan.blindtest.cover.CoverFillMode;
 import fr.insalan.blindtest.cover.CoverFillStatus;
 import fr.insalan.blindtest.cover.CoverService;
 import fr.insalan.blindtest.cover.CoverStore;
@@ -67,8 +69,8 @@ public class AdminCoverController {
     }
 
     @GetMapping("/games/{id}/cover/candidates")
-    public List<AlbumImages> candidates(@PathVariable Integer id) {
-        return coverService.candidates(game(id).getId());
+    public List<AlbumImages> candidates(@PathVariable Integer id, @RequestParam(defaultValue = "false") boolean rescan) {
+        return coverService.candidates(game(id).getId(), rescan);
     }
 
     @PutMapping("/games/{id}/cover")
@@ -112,8 +114,8 @@ public class AdminCoverController {
 
     @PostMapping("/covers/fill")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public CoverFillStatus startFill() {
-        if (!coverFillJob.startInBackground()) {
+    public CoverFillStatus startFill(@RequestParam(defaultValue = "NEW") CoverFillMode mode) {
+        if (!coverFillJob.startInBackground(mode)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Une recherche d'images est déjà en cours");
         }
         return coverFillJob.status();

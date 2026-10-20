@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,9 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import com.sun.net.httpserver.HttpServer;
 
+import fr.insalan.blindtest.cover.CoverFillMode;
 import fr.insalan.blindtest.cover.CoverFillReport;
+import fr.insalan.blindtest.cover.CoverFinder;
 import fr.insalan.blindtest.cover.CoverFinderTests;
 import fr.insalan.blindtest.cover.CoverService;
 import fr.insalan.blindtest.model.Game;
@@ -55,11 +58,15 @@ class GameCoverTests extends IntegrationTest {
     ListenerRepository listeners;
 
     private HttpServer server;
+    private final AtomicInteger cdnRequests = new AtomicInteger();
 
     @BeforeEach
     void startCdn() throws IOException {
         server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
-        server.createContext("/soundtracks/", CoverFinderTests::fakeCdn);
+        server.createContext("/soundtracks/", exchange -> {
+            cdnRequests.incrementAndGet();
+            CoverFinderTests.fakeCdn(exchange);
+        });
         server.start();
     }
 
@@ -91,7 +98,7 @@ class GameCoverTests extends IntegrationTest {
     }
 
     @Test
-    void fillsGamesWithoutImageWithTheFirstImageOfTheirFirstAlbum() {
+    void searchesEachAlbumOnceAndGivesItsFirstImageToGamesWithoutOne() {
         Game withAlbum = stellarBlade();
         track(withAlbum, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
         Game alreadyChosen = games.save(new Game("Stellar Blade 2", withAlbum.getFranchise()));
@@ -101,12 +108,48 @@ class GameCoverTests extends IntegrationTest {
         Game withoutAlbum = games.save(new Game("Stellar Blade Demo", withAlbum.getFranchise()));
         tracks.save(new Track("Shaël", withoutAlbum));
 
-        CoverFillReport report = coverService.fillMissing();
-
+        assertEquals(new CoverFillReport(1, 1, 0, 2), coverService.fill(CoverFillMode.NEW));
         assertEquals(cdn("stellar-blade-soundtrack-2024") + "/00%20Front.jpg", games.findById(withAlbum.getId()).orElseThrow().getCoverUrl());
         assertEquals("https://example.org/chosen.jpg", games.findById(alreadyChosen.getId()).orElseThrow().getCoverUrl());
         assertNull(games.findById(withoutAlbum.getId()).orElseThrow().getCoverUrl());
-        assertEquals(new CoverFillReport(2, 1, 0, 1), report);
+
+        int requests = cdnRequests.get();
+        assertEquals(new CoverFillReport(0, 0, 0, 2), coverService.fill(CoverFillMode.NEW));
+        assertEquals(requests, cdnRequests.get());
+        assertEquals(new CoverFillReport(1, 0, 0, 2), coverService.fill(CoverFillMode.ALL));
+    }
+
+    @Test
+    void searchesAgainOnlyTheAlbumsWithoutImage() throws Exception {
+        Game game = stellarBlade();
+        track(game, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
+        Game mini = games.save(new Game("Stellar Blade Mini", game.getFranchise()));
+        track(mini, "Shaël", "stellar-blade-mini-original-soundtrack-2024", "01.%20Shael.mp3");
+
+        assertEquals(2, coverService.fill(CoverFillMode.NEW).scanned());
+        assertEquals(1, coverService.fill(CoverFillMode.WITHOUT_IMAGE).scanned());
+
+        mockMvc.perform(get("/api/admin/covers/fill").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$.albums").value(2))
+            .andExpect(jsonPath("$.albumsWithoutImage").value(1));
+    }
+
+    @Test
+    void theAdminSeesTheStoredImagesAndCanSearchAgain() throws Exception {
+        Game game = stellarBlade();
+        track(game, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
+
+        mockMvc.perform(get("/api/admin/games/" + game.getId() + "/cover/candidates").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$[0].images.length()").value(2));
+        int requests = cdnRequests.get();
+
+        mockMvc.perform(get("/api/admin/games/" + game.getId() + "/cover/candidates").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$[0].images.length()").value(2));
+        assertEquals(requests, cdnRequests.get());
+
+        mockMvc.perform(get("/api/admin/games/" + game.getId() + "/cover/candidates").param("rescan", "true").header("Authorization", adminToken()))
+            .andExpect(jsonPath("$[0].images.length()").value(2));
+        assertEquals(requests + CoverFinder.COMMON_NAMES.size(), cdnRequests.get());
     }
 
     @Test

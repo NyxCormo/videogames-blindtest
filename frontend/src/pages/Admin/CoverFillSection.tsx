@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchCoverFillStatus, startCoverFill, type CoverFillStatus } from '../../api/admin'
+import { fetchCoverFillStatus, startCoverFill, type CoverFillMode, type CoverFillStatus } from '../../api/admin'
 import { useNotification } from '../../context/NotificationContext'
 import { plural } from '../../plural'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
@@ -39,11 +39,11 @@ export function CoverFillSection({ token, onSessionExpired }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  function handleStart() {
-    startCoverFill(token)
+  function handleStart(mode: CoverFillMode) {
+    startCoverFill(token, mode)
       .then((next) => {
         setStatus(next)
-        notify('Recherche lancée : environ une seconde par jeu.', 'success')
+        notify('Recherche lancée : environ huit secondes par album à chercher.', 'success')
       })
       .catch(handleError)
   }
@@ -54,20 +54,35 @@ export function CoverFillSection({ token, onSessionExpired }: Props) {
     <section className="admin-section">
       <h2>Récupération automatique</h2>
       <p className="muted">
-        Un jeu sans image reçoit la pochette de l'album de sa première musique jouable, cherchée sous les noms habituels
-        (00 Front.jpg, Cover.jpg, folder.jpg…). Les images sont ensuite téléchargées sur le serveur.
+        Les pochettes sont cherchées sur le CDN des MP3, dans le dossier de chaque album, sous les noms habituels (00 Front.jpg,
+        Cover.jpg, folder.jpg…). Le résultat de chaque album est gardé : un jeu sans image reçoit la première pochette trouvée
+        parmi ses albums, puis les images sont téléchargées sur le serveur.
       </p>
+      {status && (
+        <p>
+          {plural(status.albums, 'album déjà recherché', 'albums déjà recherchés')}, dont{' '}
+          {status.albumsWithoutImage} sans pochette trouvée.
+        </p>
+      )}
       <div className="admin-row">
-        <button type="button" onClick={handleStart} disabled={status === null || status.running}>
-          Récupérer les images manquantes
+        <button type="button" onClick={() => handleStart('NEW')} disabled={status === null || status.running}>
+          Chercher les nouveaux albums
+        </button>
+        <button type="button" onClick={() => handleStart('WITHOUT_IMAGE')} disabled={status === null || status.running}>
+          Rechercher aussi les albums sans pochette
+        </button>
+        <button type="button" onClick={() => handleStart('ALL')} disabled={status === null || status.running}>
+          Tout rechercher à nouveau
         </button>
       </div>
       {status?.running && status.startedAt && <p>Recherche en cours depuis {formatDate(status.startedAt)}…</p>}
       {!status?.running && report && status?.finishedAt && (
         <p>
-          Dernière recherche terminée le {formatDate(status.finishedAt)} : {plural(report.checked, 'jeu traité', 'jeux traités')},{' '}
-          {plural(report.found, 'image trouvée', 'images trouvées')}, {plural(report.downloaded, 'téléchargée', 'téléchargées')},{' '}
-          {report.failed} en échec.
+          Dernière recherche terminée le {formatDate(status.finishedAt)} :{' '}
+          {plural(report.scanned, 'album recherché', 'albums recherchés')},{' '}
+          {plural(report.covered, 'jeu a reçu une image', 'jeux ont reçu une image')} ;{' '}
+          {plural(report.downloaded, 'image', 'images')} sur le serveur,{' '}
+          {plural(report.notDownloaded, 'non téléchargée', 'non téléchargées')}.
         </p>
       )}
     </section>

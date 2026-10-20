@@ -62,6 +62,14 @@ public interface TrackRepository extends JpaRepository<Track, Integer> {
 
     @Query("""
             SELECT t FROM Track t
+            JOIN FETCH t.game
+            WHERE t.audioLink IS NOT NULL
+            ORDER BY t.id
+            """)
+    List<Track> findWithGameByAudioLinkIsNotNull();
+
+    @Query("""
+            SELECT t FROM Track t
             JOIN FETCH t.game g
             JOIN FETCH g.franchise f
             WHERE t.audioLink IS NOT NULL

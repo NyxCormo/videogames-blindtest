@@ -20,7 +20,7 @@ import fr.insalan.blindtest.khinsider.RequestPacer;
 @Component
 public class CoverFinder {
 
-    static final List<String> COMMON_NAMES = List.of(
+    public static final List<String> COMMON_NAMES = List.of(
         "00 Front.jpg",
         "00. Front.jpg",
         "Front.jpg",
@@ -43,13 +43,6 @@ public class CoverFinder {
     public static Optional<String> albumOf(String audioLink) {
         Matcher matcher = AUDIO_IN_ALBUM.matcher(audioLink);
         return matcher.matches() ? Optional.of(matcher.group(1)) : Optional.empty();
-    }
-
-    public Optional<String> findFirst(String album) {
-        return COMMON_NAMES.stream()
-            .map(name -> album + "/" + name.replace(" ", "%20"))
-            .filter(this::isImage)
-            .findFirst();
     }
 
     public List<String> findAll(String album) {
