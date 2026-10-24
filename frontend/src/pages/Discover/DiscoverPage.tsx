@@ -174,8 +174,8 @@ export function DiscoverPage() {
               result={answer ? (answer.knows ? 'success' : 'failure') : null}
               media={
                 <>
-                  {answer ? (
-                    <GameCover />
+                  {answer && track.gameId !== null ? (
+                    <GameCover gameId={track.gameId} gameName={track.gameName ?? ''} coverUrl={track.coverUrl} />
                   ) : (
                     <MysteryCover
                       className={`discover-cover-draggable${drag ? ' discover-cover-dragging' : ''}`}

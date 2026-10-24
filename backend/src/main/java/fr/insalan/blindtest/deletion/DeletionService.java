@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.cover.CoverStore;
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
@@ -16,6 +17,7 @@ import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
+import fr.insalan.blindtest.repository.CoverProposalRepository;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
@@ -43,6 +45,8 @@ public class DeletionService {
     private final ListenerRepository listenerRepository;
     private final TagRepository tagRepository;
     private final TrackReportRepository trackReportRepository;
+    private final CoverProposalRepository coverProposalRepository;
+    private final CoverStore coverStore;
 
     public DeletionService(
         FranchiseRepository franchiseRepository,
@@ -56,7 +60,9 @@ public class DeletionService {
         BlindtestDifficultyBandRepository blindtestDifficultyBandRepository,
         ListenerRepository listenerRepository,
         TagRepository tagRepository,
-        TrackReportRepository trackReportRepository
+        TrackReportRepository trackReportRepository,
+        CoverProposalRepository coverProposalRepository,
+        CoverStore coverStore
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -70,6 +76,8 @@ public class DeletionService {
         this.listenerRepository = listenerRepository;
         this.tagRepository = tagRepository;
         this.trackReportRepository = trackReportRepository;
+        this.coverProposalRepository = coverProposalRepository;
+        this.coverStore = coverStore;
     }
 
     // Une franchise ou un jeu qui contient encore quelque chose se fusionne ou se vide d'abord : pas de suppression en chaîne.
@@ -105,7 +113,9 @@ public class DeletionService {
     @Transactional
     public void deleteGame(Integer id) {
         requireAllowed(previewGame(id));
+        coverProposalRepository.deleteByGameId(id);
         gameRepository.deleteById(id);
+        coverStore.delete(id);
     }
 
     // Une musique déjà votée ou jouée se fusionne : la supprimer ferait perdre ces données.
@@ -165,6 +175,7 @@ public class DeletionService {
         knowledgeRepository.deleteByListenerId(id);
         blindtestScoreRepository.deleteByListenerId(id);
         trackReportRepository.deleteByListenerId(id);
+        coverProposalRepository.deleteByListenerId(id);
         listenerRepository.deleteById(id);
     }
 

@@ -6,6 +6,7 @@ import { useNotification } from '../../context/NotificationContext'
 import { loadAdminToken, storeAdminToken } from './adminToken'
 import { BlindtestsTab } from './BlindtestsTab'
 import { CatalogTab } from './CatalogTab'
+import { ImagesTab } from './ImagesTab'
 import { ListenersTab } from './ListenersTab'
 import { MergeFooter } from './MergeFooter'
 import { MergeSelectionContext, useMergeSelectionState } from './mergeSelection'
@@ -18,6 +19,7 @@ const TABS = [
   { id: 'tags', label: 'Tags' },
   { id: 'blindtests', label: 'Blindtests' },
   { id: 'pseudos', label: 'Pseudos' },
+  { id: 'images', label: 'Images' },
   { id: 'maintenance', label: 'Maintenance' },
 ]
 
@@ -135,6 +137,7 @@ export function AdminPage() {
           {tab === 'tags' && <TagsTab token={token} onSessionExpired={handleSessionExpired} />}
           {tab === 'blindtests' && <BlindtestsTab token={token} onSessionExpired={handleSessionExpired} />}
           {tab === 'pseudos' && <ListenersTab token={token} onSessionExpired={handleSessionExpired} />}
+          {tab === 'images' && <ImagesTab token={token} onSessionExpired={handleSessionExpired} />}
           {tab === 'maintenance' && <MaintenanceTab token={token} onSessionExpired={handleSessionExpired} />}
         </div>
         <MergeFooter token={token} onSessionExpired={handleSessionExpired} />

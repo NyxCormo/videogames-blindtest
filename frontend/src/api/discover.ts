@@ -11,6 +11,7 @@ export type DiscoverTrack = {
   finished: boolean
   voted: number
   remaining: number
+  coverUrl: string | null
 }
 
 export async function fetchNextTrack(listenerId: number, signal?: AbortSignal): Promise<DiscoverTrack> {

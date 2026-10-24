@@ -35,3 +35,16 @@ export async function applyTagToGame(gameId: number, tagId: number): Promise<voi
     body: JSON.stringify({ tagId }),
   })
 }
+
+export async function fetchKnownCovers(gameId: number, signal?: AbortSignal): Promise<string[]> {
+  const response = await request(`/api/games/${gameId}/cover/images`, { signal })
+  return response.json()
+}
+
+export async function proposeCover(gameId: number, listenerId: number, imageUrl: string | null): Promise<void> {
+  await request(`/api/games/${gameId}/cover-proposal?listenerId=${listenerId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageUrl }),
+  })
+}

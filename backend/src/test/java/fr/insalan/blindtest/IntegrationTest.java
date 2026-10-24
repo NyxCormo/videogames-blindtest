@@ -6,12 +6,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
 
+import fr.insalan.blindtest.cover.AlbumPageStore;
 import fr.insalan.blindtest.model.Franchise;
 import fr.insalan.blindtest.model.Game;
+import fr.insalan.blindtest.repository.AlbumScanRepository;
 import fr.insalan.blindtest.repository.BlindtestDifficultyBandRepository;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestScoreRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
+import fr.insalan.blindtest.repository.CoverProposalRepository;
 import fr.insalan.blindtest.repository.FranchiseRepository;
 import fr.insalan.blindtest.repository.GameRepository;
 import fr.insalan.blindtest.repository.KnowledgeRepository;
@@ -29,6 +32,15 @@ abstract class IntegrationTest {
 
     @Autowired
     private TrackReportRepository trackReportRepository;
+
+    @Autowired
+    private CoverProposalRepository coverProposalRepository;
+
+    @Autowired
+    private AlbumScanRepository albumScanRepository;
+
+    @Autowired
+    private AlbumPageStore albumPageStore;
 
     @Autowired
     private BlindtestDifficultyBandRepository blindtestDifficultyBandRepository;
@@ -70,6 +82,9 @@ abstract class IntegrationTest {
     @AfterEach
     void cleanDatabase() {
         trackReportRepository.deleteAll();
+        coverProposalRepository.deleteAll();
+        albumScanRepository.deleteAll();
+        albumPageStore.deleteAll();
         blindtestDifficultyBandRepository.deleteAll();
         blindtestScoreRepository.deleteAll();
         blindtestTrackRepository.deleteAll();

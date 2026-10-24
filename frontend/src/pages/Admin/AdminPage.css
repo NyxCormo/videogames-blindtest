@@ -189,3 +189,121 @@
 .admin-reports audio {
   height: 2rem;
 }
+
+.admin-cover-preview {
+  width: 8rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.admin-cover-album {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.admin-cover-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-cover-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem;
+}
+
+.admin-cover-grid img {
+  width: 7rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.admin-cover-compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-cover-compare figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.admin-cover-compare img,
+.admin-cover-empty {
+  display: grid;
+  place-items: center;
+  width: 8rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.admin-cover-empty {
+  color: var(--muted);
+}
+
+.admin-cover-panel {
+  align-items: flex-start;
+}
+
+.admin-cover-panel img,
+.admin-cover-panel-empty {
+  width: 12rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.admin-cover-panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--muted);
+}
+
+.admin-cover-panel-empty .icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.admin-cover-panel-candidates {
+  margin-top: 1rem;
+}
+
+.admin-cover-panel-candidates h3 {
+  margin: 0;
+}
+
+.admin-album-panel {
+  grid-column: span 2;
+  align-items: flex-start;
+}
+
+.admin-album-panel .admin-cover-grid img {
+  width: 7rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+@media (max-width: 800px) {
+  .admin-album-panel {
+    grid-column: auto;
+  }
+}
