@@ -85,6 +85,18 @@ public class CoverService {
             .toList();
     }
 
+    public List<String> knownImages(Integer gameId) {
+        return albumsByGame(trackRepository.findByGameIdAndAudioLinkIsNotNullOrderById(gameId))
+            .getOrDefault(gameId, Map.of())
+            .keySet().stream()
+            .flatMap(album -> pageImages(album)
+                .or(() -> albumScanRepository.findById(album).map(AlbumScan::getImages))
+                .orElse(List.of())
+                .stream())
+            .distinct()
+            .toList();
+    }
+
     public CoverFillReport fill(CoverFillMode mode, Consumer<CoverFillReport> progress) {
         Map<Integer, Map<String, Album>> albumsByGame = albumsByGame(trackRepository.findWithGameByAudioLinkIsNotNull());
         Map<String, AlbumScan> scans = new HashMap<>();

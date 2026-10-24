@@ -164,6 +164,31 @@ class GameCoverTests extends IntegrationTest {
     }
 
     @Test
+    void playersSeeTheKnownImagesWithoutSearchingTheCdn() throws Exception {
+        Game game = stellarBlade();
+        track(game, "Dawn", "stellar-blade-soundtrack-2024", "62.%20Dawn.mp3");
+        track(game, "Shaël", "stellar-blade-mini-original-soundtrack-2024", "01.%20Shael.mp3");
+
+        mockMvc.perform(get("/api/games/" + game.getId() + "/cover/images"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
+        assertEquals(0, cdnRequests.get());
+
+        coverService.fill(CoverFillMode.NEW, report -> {});
+        importPage("https://downloads.khinsider.com/game-soundtracks/album/stellar-blade-soundtrack-2024", "jeton-de-test");
+        int requests = cdnRequests.get();
+
+        mockMvc.perform(get("/api/games/" + game.getId() + "/cover/images"))
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0]").value(FRONT))
+            .andExpect(jsonPath("$[1]").value(FOLDER));
+        assertEquals(requests, cdnRequests.get());
+
+        mockMvc.perform(get("/api/games/999999/cover/images"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
     void savingAnImageChecksTheAddressAndRemovesTheReportsWithoutImage() throws Exception {
         Game game = stellarBlade();
         game.setCoverUrl(FRONT);

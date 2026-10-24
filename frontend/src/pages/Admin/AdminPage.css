@@ -282,6 +282,14 @@
   height: 3rem;
 }
 
+.admin-cover-panel-candidates {
+  margin-top: 1rem;
+}
+
+.admin-cover-panel-candidates h3 {
+  margin: 0;
+}
+
 .admin-album-panel {
   grid-column: span 2;
   align-items: flex-start;

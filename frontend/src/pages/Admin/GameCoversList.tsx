@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fetchGameCovers } from '../../api/admin'
+import { fetchGameCover, fetchGameCovers, saveGameCover } from '../../api/admin'
 import { fetchFranchises, type Franchise } from '../../api/franchises'
 import { fetchGames, type Game } from '../../api/games'
 import { EntityList } from '../../components/EntityList/EntityList'
 import { NoImageIcon } from '../../components/icons'
 import { Select } from '../../components/Select/Select'
+import { useNotification } from '../../context/NotificationContext'
 import { plural } from '../../plural'
+import { CoverCandidates } from './CoverCandidates'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 type CoverFilter = 'all' | 'with' | 'without'
@@ -20,9 +22,11 @@ type Props = {
   token: string
   onSessionExpired: () => void
   onChangeCover: (game: Game) => void
+  onCoverChanged: () => void
 }
 
-export function GameCoversList({ token, onSessionExpired, onChangeCover }: Props) {
+export function GameCoversList({ token, onSessionExpired, onChangeCover, onCoverChanged }: Props) {
+  const { notify } = useNotification()
   const handleError = useAdminErrorHandler(onSessionExpired)
   const [franchises, setFranchises] = useState<Franchise[] | null>(null)
   const [games, setGames] = useState<Game[]>([])
@@ -30,6 +34,7 @@ export function GameCoversList({ token, onSessionExpired, onChangeCover }: Props
   const [filter, setFilter] = useState<CoverFilter>('all')
   const [franchiseId, setFranchiseId] = useState<number | null>(null)
   const [gameId, setGameId] = useState<number | null>(null)
+  const [coverUrl, setCoverUrl] = useState<{ gameId: number; value: string | null } | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -68,6 +73,34 @@ export function GameCoversList({ token, onSessionExpired, onChangeCover }: Props
   const franchiseGames = franchise ? (gamesByFranchise.get(franchise.id) ?? []) : null
   const game = franchiseGames?.find((item) => item.id === gameId)
   const cover = game ? covers.get(game.id) : undefined
+
+  useEffect(() => {
+    if (gameId === null) return
+    fetchGameCover(token, gameId)
+      .then((value) => setCoverUrl({ gameId, value: value.coverUrl }))
+      .catch(handleError)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameId])
+
+  function save(target: Game, image: string) {
+    saveGameCover(token, target.id, image)
+      .then((value) => {
+        setCoverUrl({ gameId: target.id, value: value.coverUrl })
+        setCovers((previous) => {
+          const next = new Map(previous)
+          if (value.displayUrl) next.set(target.id, value.displayUrl)
+          return next
+        })
+        onCoverChanged()
+        notify(
+          value.downloaded
+            ? `Image de « ${target.name} » enregistrée et téléchargée.`
+            : `Image de « ${target.name} » enregistrée, mais pas téléchargée : l'adresse d'origine sera utilisée.`,
+          'success',
+        )
+      })
+      .catch(handleError)
+  }
 
   return (
     <section className="admin-section">
@@ -119,11 +152,23 @@ export function GameCoversList({ token, onSessionExpired, onChangeCover }: Props
               </div>
             )}
             <button type="button" onClick={() => onChangeCover(game)}>
-              {cover ? "Changer l'image" : 'Ajouter une image'}
+              Saisir une autre adresse
             </button>
           </div>
         )}
       </div>
+      {game && (
+        <div className="admin-cover-panel-candidates">
+          <h3>Pochettes des albums de {game.name}</h3>
+          <CoverCandidates
+            token={token}
+            onSessionExpired={onSessionExpired}
+            game={game}
+            currentUrl={coverUrl?.gameId === game.id ? coverUrl.value : null}
+            onChoose={(image) => save(game, image)}
+          />
+        </div>
+      )}
     </section>
   )
 }

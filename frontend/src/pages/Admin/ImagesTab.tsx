@@ -15,6 +15,7 @@ export function ImagesTab({ token, onSessionExpired }: Props) {
   const [selected, setSelected] = useState<Game | null>(null)
   const [proposalsVersion, setProposalsVersion] = useState(0)
   const [coverVersion, setCoverVersion] = useState(0)
+  const [listVersion, setListVersion] = useState(0)
 
   function chooseCover(game: Game) {
     setSelected(game)
@@ -24,7 +25,7 @@ export function ImagesTab({ token, onSessionExpired }: Props) {
   return (
     <>
       <CoverProposalsSection
-        key={`proposals-${proposalsVersion}`}
+        key={`proposals-${proposalsVersion}-${listVersion}`}
         token={token}
         onSessionExpired={onSessionExpired}
         onChooseCover={chooseCover}
@@ -35,10 +36,11 @@ export function ImagesTab({ token, onSessionExpired }: Props) {
         token={token}
         onSessionExpired={onSessionExpired}
         onChangeCover={chooseCover}
+        onCoverChanged={() => setListVersion((version) => version + 1)}
       />
       <AlbumsSection token={token} onSessionExpired={onSessionExpired} onChooseCover={chooseCover} />
       <GameCoverSection
-        key={`cover-${coverVersion}`}
+        key={`cover-${coverVersion}-${listVersion}`}
         token={token}
         onSessionExpired={onSessionExpired}
         selected={selected}

@@ -3,6 +3,7 @@ package fr.insalan.blindtest.controller;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.core.io.FileSystemResource;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import fr.insalan.blindtest.cover.CoverService;
 import fr.insalan.blindtest.cover.CoverStore;
 import fr.insalan.blindtest.model.Game;
 import fr.insalan.blindtest.repository.GameRepository;
@@ -28,10 +30,20 @@ public class GameCoverController {
 
     private final GameRepository gameRepository;
     private final CoverStore coverStore;
+    private final CoverService coverService;
 
-    public GameCoverController(GameRepository gameRepository, CoverStore coverStore) {
+    public GameCoverController(GameRepository gameRepository, CoverStore coverStore, CoverService coverService) {
         this.gameRepository = gameRepository;
         this.coverStore = coverStore;
+        this.coverService = coverService;
+    }
+
+    @GetMapping("/cover/images")
+    public List<String> knownImages(@PathVariable Integer id) {
+        if (!gameRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Jeu introuvable");
+        }
+        return coverService.knownImages(id);
     }
 
     @GetMapping("/cover")

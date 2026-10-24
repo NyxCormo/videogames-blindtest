@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { acceptCoverProposal, fetchCoverProposals, rejectCoverProposal, type CoverProposal } from '../../api/admin'
 import type { Game } from '../../api/games'
 import { useNotification } from '../../context/NotificationContext'
-import { CoverThumbnail } from './CoverThumbnail'
+import { CoverThumbnail } from '../../components/CoverThumbnail/CoverThumbnail'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 type Props = {

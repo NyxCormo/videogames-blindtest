@@ -1,7 +1,8 @@
 import { Dialog } from '@base-ui/react/dialog'
-import { useState, type FormEvent } from 'react'
-import { proposeCover } from '../../api/games'
+import { useEffect, useState, type FormEvent } from 'react'
+import { fetchKnownCovers, proposeCover } from '../../api/games'
 import type { Listener } from '../../api/listeners'
+import { CoverThumbnail } from '../CoverThumbnail/CoverThumbnail'
 import './CoverProposalDialog.css'
 
 type Props = {
@@ -48,6 +49,17 @@ function ProposalForm({ gameId, hasCover, listener, onSent }: FormProps) {
   const trimmed = url.trim()
   const preview = loaded?.url === trimmed ? (loaded.ok ? 'ok' : 'broken') : 'loading'
   const canSend = trimmed === '' ? hasCover : preview === 'ok'
+  const [known, setKnown] = useState<string[] | null>(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchKnownCovers(gameId, controller.signal)
+      .then(setKnown)
+      .catch(() => {
+        // Sans la liste, il reste la saisie d'une adresse
+      })
+    return () => controller.abort()
+  }, [gameId])
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -62,8 +74,20 @@ function ProposalForm({ gameId, hasCover, listener, onSent }: FormProps) {
 
   return (
     <form className="cover-proposal" onSubmit={handleSubmit}>
+      {known && known.length > 0 && (
+        <fieldset className="cover-proposal-known">
+          <legend>Images trouvées dans les albums du jeu : choisir la plus adaptée</legend>
+          <div className="cover-proposal-grid">
+            {known.map((image) => (
+              <button key={image} type="button" aria-pressed={image === trimmed} onClick={() => setUrl(image)}>
+                <CoverThumbnail url={image} alt={decodeURIComponent(image.slice(image.lastIndexOf('/') + 1))} />
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <label>
-        Adresse de l'image
+        {known && known.length > 0 ? 'Ou une autre image, avec son adresse' : "Adresse de l'image"}
         <input
           type="url"
           placeholder="https://…"
@@ -74,7 +98,6 @@ function ProposalForm({ gameId, hasCover, listener, onSent }: FormProps) {
       </label>
       <p className="muted">
         Sur une page qui montre la bonne image : clic droit sur l'image, puis « Copier l'adresse de l'image ».
-        {hasCover && " Sans adresse, la proposition signale seulement que l'image actuelle ne va pas."}
       </p>
       {trimmed !== '' && (
         <div className="cover-proposal-preview">

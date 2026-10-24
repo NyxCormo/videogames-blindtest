@@ -4,7 +4,7 @@ import type { Game } from '../../api/games'
 import { EntityList } from '../../components/EntityList/EntityList'
 import { Select } from '../../components/Select/Select'
 import { plural } from '../../plural'
-import { CoverThumbnail } from './CoverThumbnail'
+import { CoverThumbnail } from '../../components/CoverThumbnail/CoverThumbnail'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 type AlbumFilter = 'all' | 'without' | 'never' | 'with' | 'page'

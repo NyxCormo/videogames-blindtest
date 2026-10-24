@@ -1,16 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import {
-  fetchCoverCandidates,
-  fetchGameCover,
-  removeGameCover,
-  saveGameCover,
-  type AlbumImages,
-  type GameCover,
-} from '../../api/admin'
+import { fetchGameCover, removeGameCover, saveGameCover, type GameCover } from '../../api/admin'
 import { fetchGames, type Game } from '../../api/games'
 import { NamePicker } from '../../components/NamePicker/NamePicker'
 import { useNotification } from '../../context/NotificationContext'
-import { CoverThumbnail } from './CoverThumbnail'
+import { CoverCandidates } from './CoverCandidates'
 import { useAdminErrorHandler } from './useAdminErrorHandler'
 
 type Props = {
@@ -26,10 +19,7 @@ export function GameCoverSection({ token, onSessionExpired, selected, onSelect, 
   const handleError = useAdminErrorHandler(onSessionExpired)
   const [games, setGames] = useState<Game[]>([])
   const [cover, setCover] = useState<{ gameId: number; value: GameCover } | null>(null)
-  const [albums, setAlbums] = useState<{ gameId: number; value: AlbumImages[] } | null>(null)
-  const [searching, setSearching] = useState(false)
   const current = selected && cover?.gameId === selected.id ? cover.value : null
-  const found = selected && albums?.gameId === selected.id ? albums.value : null
 
   useEffect(() => {
     const controller = new AbortController()
@@ -49,14 +39,6 @@ export function GameCoverSection({ token, onSessionExpired, selected, onSelect, 
       .catch(handleError)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected])
-
-  function search(game: Game, rescan: boolean) {
-    setSearching(true)
-    fetchCoverCandidates(token, game.id, rescan)
-      .then((value) => setAlbums({ gameId: game.id, value }))
-      .catch(handleError)
-      .finally(() => setSearching(false))
-  }
 
   function applyUpdate(game: Game, value: GameCover, message: string) {
     setCover({ gameId: game.id, value })
@@ -117,48 +99,13 @@ export function GameCoverSection({ token, onSessionExpired, selected, onSelect, 
             onSave={(url) => save(selected, url)}
             onRemove={() => remove(selected)}
           />
-          <div className="admin-row">
-            <button type="button" onClick={() => search(selected, false)} disabled={searching}>
-              {searching ? 'Recherche des pochettes…' : 'Voir les pochettes de ses albums'}
-            </button>
-            {found && found.length > 0 && (
-              <button type="button" onClick={() => search(selected, true)} disabled={searching}>
-                Rechercher à nouveau sur le CDN
-              </button>
-            )}
-          </div>
-          {found && found.length === 0 && <p className="muted">Aucune musique jouable de ce jeu ne vient de KHInsider.</p>}
-          {found?.map((album) => (
-            <div key={album.albumUrl} className="admin-cover-album">
-              <a href={album.albumUrl} target="_blank" rel="noreferrer">
-                {album.albumUrl.slice(album.albumUrl.lastIndexOf('/') + 1)}
-              </a>
-              <span className="muted">
-                {album.fromPage ? 'Pochettes de la page KHInsider enregistrée' : 'Pochettes trouvées sur le CDN'} · Musiques :{' '}
-                {album.tracks.join(', ')}
-              </span>
-              {album.images.length === 0 && (
-                <p className="muted">
-                  {album.fromPage
-                    ? "La page enregistrée ne contient aucune pochette de cet album."
-                    : "Pas de pochette sous les noms habituels : ouvrir l'album pour l'enregistrer avec le script, ou copier l'adresse de la bonne image."}
-                </p>
-              )}
-              <div className="admin-cover-grid">
-                {album.images.map((image) => (
-                  <button
-                    key={image}
-                    type="button"
-                    aria-pressed={image === current.coverUrl}
-                    onClick={() => save(selected, image)}
-                  >
-                    <CoverThumbnail url={image} alt={decodeURIComponent(image.slice(image.lastIndexOf('/') + 1))} />
-                    <span>{image === current.coverUrl ? 'Image actuelle' : 'Choisir'}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+          <CoverCandidates
+            token={token}
+            onSessionExpired={onSessionExpired}
+            game={selected}
+            currentUrl={current.coverUrl}
+            onChoose={(image) => save(selected, image)}
+          />
         </>
       )}
     </section>
