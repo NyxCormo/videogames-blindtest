@@ -85,4 +85,23 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
       </>
     ),
   },
+  {
+    title: "L'image du jeu n'est pas la bonne ?",
+    content: (
+      <>
+        <p>
+          Une fois la réponse affichée sur la page <Link to="/discover">Découvrir</Link> ou dans un
+          blindtest, appuyez sur le bouton <strong>Proposer une image</strong> sous l'image du jeu (il
+          faut être connecté).
+        </p>
+        <p>
+          Collez l'adresse d'une image (clic droit sur l'image, puis « Copier l'adresse de l'image »),
+          vérifiez l'aperçu et envoyez. Si le jeu a déjà une image, vous pouvez aussi juste signaler
+          qu'elle ne va pas, sans donner d'adresse.
+        </p>
+        <p>Un admin vérifie chaque proposition avant qu'elle n'apparaisse pour tout le monde.</p>
+      </>
+    ),
+  },
+
 ]
