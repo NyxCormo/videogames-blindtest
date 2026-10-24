@@ -276,3 +276,32 @@ export async function startCoverFill(token: string, mode: CoverFillMode): Promis
   const response = await adminRequest(token, `/api/admin/covers/fill?mode=${mode}`, { method: 'POST' })
   return response.json()
 }
+
+export type YoutubeAudioFailure = {
+  trackId: number
+  trackName: string
+  gameName: string
+  youtubeLink: string
+  error: string
+}
+
+export type YoutubeAudioStatus = {
+  available: boolean
+  running: boolean
+  startedAt: string | null
+  finishedAt: string | null
+  lastReport: { done: number; toDownload: number; downloaded: number; failed: number } | null
+  tracks: number
+  downloaded: number
+  failures: YoutubeAudioFailure[]
+}
+
+export async function fetchYoutubeAudioStatus(token: string): Promise<YoutubeAudioStatus> {
+  const response = await adminRequest(token, '/api/admin/youtube-audio')
+  return response.json()
+}
+
+export async function startYoutubeAudioDownload(token: string): Promise<YoutubeAudioStatus> {
+  const response = await adminRequest(token, '/api/admin/youtube-audio', { method: 'POST' })
+  return response.json()
+}

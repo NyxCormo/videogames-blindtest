@@ -25,6 +25,7 @@ import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
+import fr.insalan.blindtest.youtube.YoutubeAudioService;
 import jakarta.transaction.Transactional;
 
 // Chaque fusion déplace tout vers l'élément gardé puis supprime l'autre, dans une seule transaction :
@@ -44,6 +45,7 @@ public class MergeService {
     private final TrackReportRepository trackReportRepository;
     private final CoverProposalRepository coverProposalRepository;
     private final CoverStore coverStore;
+    private final YoutubeAudioService youtubeAudioService;
 
     public MergeService(
         FranchiseRepository franchiseRepository,
@@ -57,7 +59,8 @@ public class MergeService {
         TagRepository tagRepository,
         TrackReportRepository trackReportRepository,
         CoverProposalRepository coverProposalRepository,
-        CoverStore coverStore
+        CoverStore coverStore,
+        YoutubeAudioService youtubeAudioService
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -71,6 +74,7 @@ public class MergeService {
         this.trackReportRepository = trackReportRepository;
         this.coverProposalRepository = coverProposalRepository;
         this.coverStore = coverStore;
+        this.youtubeAudioService = youtubeAudioService;
     }
 
     public MergePreview previewTracks(Integer sourceId, Integer targetId) {
@@ -108,7 +112,7 @@ public class MergeService {
 
         if (target.getKhinsiderLink() == null && source.getKhinsiderLink() != null) {
             target.setKhinsiderLink(source.getKhinsiderLink());
-            target.setAudioLink(source.getAudioLink());
+            target.setAudioLink(YoutubeAudioService.isLocalLink(source.getAudioLink()) ? null : source.getAudioLink());
             target.setAudioLinkResolvedAt(source.getAudioLinkResolvedAt());
         }
         if (target.getYoutubeLink() == null) {
@@ -124,6 +128,7 @@ public class MergeService {
         trackReportRepository.deleteReportsAlsoOnTarget(sourceId, targetId);
         trackReportRepository.moveReports(sourceId, targetId);
         trackRepository.deleteById(sourceId);
+        youtubeAudioService.forget(source);
     }
 
     public MergePreview previewGames(Integer sourceId, Integer targetId) {

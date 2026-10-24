@@ -3,6 +3,7 @@ import type { Track } from '../../api/tracks'
 import { AudioLinksSection } from './AudioLinksSection'
 import { ReportsSection } from './ReportsSection'
 import { TrackLinksSection } from './TrackLinksSection'
+import { YoutubeAudioSection } from './YoutubeAudioSection'
 
 type Props = {
   token: string
@@ -16,6 +17,12 @@ export function MaintenanceTab({ token, onSessionExpired }: Props) {
   return (
     <>
       <ReportsSection key={reportsVersion} token={token} onSessionExpired={onSessionExpired} onFixLink={setSelected} />
+      <YoutubeAudioSection
+        key={`youtube-${reportsVersion}`}
+        token={token}
+        onSessionExpired={onSessionExpired}
+        onFixLink={setSelected}
+      />
       <TrackLinksSection
         token={token}
         onSessionExpired={onSessionExpired}

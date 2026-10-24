@@ -35,6 +35,13 @@ public class Track {
 	@Column(columnDefinition = "datetime")
 	private Instant audioLinkResolvedAt;
 
+	private String youtubeAudioFile;
+
+	@Column(columnDefinition = "datetime")
+	private Instant youtubeAudioDownloadedAt;
+
+	private String youtubeAudioError;
+
 	private Integer duration;
 
 	private Integer preferredStart;
@@ -94,6 +101,30 @@ public class Track {
 
 	public void setAudioLinkResolvedAt(Instant audioLinkResolvedAt) {
 		this.audioLinkResolvedAt = audioLinkResolvedAt;
+	}
+
+	public String getYoutubeAudioFile() {
+		return youtubeAudioFile;
+	}
+
+	public void setYoutubeAudioFile(String youtubeAudioFile) {
+		this.youtubeAudioFile = youtubeAudioFile;
+	}
+
+	public Instant getYoutubeAudioDownloadedAt() {
+		return youtubeAudioDownloadedAt;
+	}
+
+	public void setYoutubeAudioDownloadedAt(Instant youtubeAudioDownloadedAt) {
+		this.youtubeAudioDownloadedAt = youtubeAudioDownloadedAt;
+	}
+
+	public String getYoutubeAudioError() {
+		return youtubeAudioError;
+	}
+
+	public void setYoutubeAudioError(String youtubeAudioError) {
+		this.youtubeAudioError = youtubeAudioError;
 	}
 
 	public Integer getDuration() {

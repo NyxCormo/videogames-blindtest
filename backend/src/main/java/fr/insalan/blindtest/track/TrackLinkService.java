@@ -13,6 +13,8 @@ import fr.insalan.blindtest.audiolink.AudioLinkRefreshService;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
+import fr.insalan.blindtest.youtube.YoutubeAudioJob;
+import fr.insalan.blindtest.youtube.YoutubeAudioService;
 
 @Service
 public class TrackLinkService {
@@ -22,15 +24,21 @@ public class TrackLinkService {
     private final TrackRepository trackRepository;
     private final AudioLinkRefreshService audioLinkRefreshService;
     private final TrackReportRepository trackReportRepository;
+    private final YoutubeAudioService youtubeAudioService;
+    private final YoutubeAudioJob youtubeAudioJob;
 
     public TrackLinkService(
         TrackRepository trackRepository,
         AudioLinkRefreshService audioLinkRefreshService,
-        TrackReportRepository trackReportRepository
+        TrackReportRepository trackReportRepository,
+        YoutubeAudioService youtubeAudioService,
+        YoutubeAudioJob youtubeAudioJob
     ) {
         this.trackRepository = trackRepository;
         this.audioLinkRefreshService = audioLinkRefreshService;
         this.trackReportRepository = trackReportRepository;
+        this.youtubeAudioService = youtubeAudioService;
+        this.youtubeAudioJob = youtubeAudioJob;
     }
 
     public void setKhinsiderLink(Track track, String link) {
@@ -50,6 +58,8 @@ public class TrackLinkService {
         } catch (IOException e) {
             log.warn("Impossible de résoudre le lien audio pour la musique {} : {}", track.getId(), e.getMessage());
         }
+        youtubeAudioService.useFileIfNeeded(track);
+        downloadYoutubeIfNeeded(track);
     }
 
     public void removeKhinsiderLink(Track track) {
@@ -58,6 +68,8 @@ public class TrackLinkService {
         track.setAudioLinkResolvedAt(null);
         trackRepository.save(track);
         trackReportRepository.deleteByTrackId(track.getId());
+        youtubeAudioService.useFileIfNeeded(track);
+        downloadYoutubeIfNeeded(track);
     }
 
     public void setYoutubeLink(Track track, String link) {
@@ -66,13 +78,24 @@ public class TrackLinkService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le lien doit pointer vers youtube.com ou youtu.be");
         }
         requireUnused(trackRepository.findFirstByYoutubeLink(link), track);
+        if (!link.equals(track.getYoutubeLink())) {
+            youtubeAudioService.forget(track);
+        }
         track.setYoutubeLink(link);
         trackRepository.save(track);
+        downloadYoutubeIfNeeded(track);
     }
 
     public void removeYoutubeLink(Track track) {
+        youtubeAudioService.forget(track);
         track.setYoutubeLink(null);
         trackRepository.save(track);
+    }
+
+    private void downloadYoutubeIfNeeded(Track track) {
+        if (youtubeAudioService.needsYoutube(track) && !youtubeAudioService.hasFile(track)) {
+            youtubeAudioJob.requestRun();
+        }
     }
 
     // Un lien affiché tel quel dans un <a href> côté front : refuser tout ce qui n'est pas http(s)
