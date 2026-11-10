@@ -99,7 +99,7 @@ public class YoutubeAudioService {
         try {
             pacer.waitForTurn();
             temporary = store.newDownloadDirectory();
-            Path file = downloader.download(link, temporary);
+            Path file = downloader.download(YoutubeLinks.withoutPlaylist(link), temporary);
             Track current = withSameLink(track.getId(), link);
             if (current == null) {
                 return false;

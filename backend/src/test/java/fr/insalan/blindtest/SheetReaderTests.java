@@ -73,6 +73,17 @@ class SheetReaderTests {
     }
 
     @Test
+    void removesThePlaylistFromYoutubeLinks() throws IOException {
+        List<SheetRow> rows = read("""
+                Stellar Blade,Stellar Blade,Dawn,,,,https://www.youtube.com/watch?v=aCmtbciKbHI&list=PLOLBWlPQqPkvzIqllFjSeLunVAeJExoMB&index=8,,,,
+                Stellar Blade,Stellar Blade,Raven,,,,https://youtu.be/raven?list=PLexemple&t=42,,,,
+                """);
+
+        assertEquals("https://www.youtube.com/watch?v=aCmtbciKbHI", rows.get(0).youtubeLink());
+        assertEquals("https://youtu.be/raven?t=42", rows.get(1).youtubeLink());
+    }
+
+    @Test
     void keepsRowsWithoutTrack() throws IOException {
         List<SheetRow> rows = read("""
                 Stellar Blade,Stellar Blade,,,,,,,,,

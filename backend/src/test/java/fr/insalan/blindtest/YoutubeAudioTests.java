@@ -53,10 +53,12 @@ class YoutubeAudioTests extends IntegrationTest {
         final AtomicInteger calls = new AtomicInteger();
         volatile boolean broken;
         volatile Runnable during;
+        volatile String lastUrl;
 
         @Override
         public Path download(String youtubeUrl, Path directory) throws IOException {
             calls.incrementAndGet();
+            lastUrl = youtubeUrl;
             if (during != null) {
                 during.run();
             }
@@ -228,6 +230,28 @@ class YoutubeAudioTests extends IntegrationTest {
         assertNull(removed.getAudioLink());
         mockMvc.perform(get("/api/tracks/" + dawn.getId() + "/audio"))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void theAdminLinkIsSavedWithoutItsPlaylist() throws Exception {
+        Track dawn = tracks.save(new Track("Dawn", stellarBlade()));
+
+        mockMvc.perform(put("/api/admin/tracks/" + dawn.getId() + "/youtube-link").header("Authorization", adminToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"link\": \"https://www.youtube.com/watch?v=dawn&list=PLexemple&index=8\"}"))
+            .andExpect(status().isOk());
+        waitForTheJob();
+
+        assertEquals("https://www.youtube.com/watch?v=dawn", tracks.findById(dawn.getId()).orElseThrow().getYoutubeLink());
+        assertEquals("https://www.youtube.com/watch?v=dawn", downloader.lastUrl);
+    }
+
+    @Test
+    void anOldLinkIsDownloadedWithoutItsPlaylist() {
+        Track raven = youtubeTrack("Raven", "https://www.youtube.com/watch?v=raven&list=PLexemple&index=3");
+
+        assertTrue(youtubeAudioService.download(raven));
+        assertEquals("https://www.youtube.com/watch?v=raven", downloader.lastUrl);
     }
 
     @Test

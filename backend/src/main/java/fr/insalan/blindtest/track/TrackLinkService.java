@@ -15,6 +15,7 @@ import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.youtube.YoutubeAudioJob;
 import fr.insalan.blindtest.youtube.YoutubeAudioService;
+import fr.insalan.blindtest.youtube.YoutubeLinks;
 
 @Service
 public class TrackLinkService {
@@ -48,7 +49,6 @@ public class TrackLinkService {
         }
         requireUnused(trackRepository.findFirstByKhinsiderLink(link), track);
         track.setKhinsiderLink(link);
-        // Le lien audio venait de l'ancienne page : sans ça, refreshOne le garderait tant qu'il répond.
         track.setAudioLink(null);
         track.setAudioLinkResolvedAt(null);
         trackRepository.save(track);
@@ -74,6 +74,7 @@ public class TrackLinkService {
 
     public void setYoutubeLink(Track track, String link) {
         requireHttpLink(link);
+        link = YoutubeLinks.withoutPlaylist(link);
         if (!link.contains("youtube.com") && !link.contains("youtu.be")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le lien doit pointer vers youtube.com ou youtu.be");
         }
