@@ -18,6 +18,16 @@ function Icon({ children }: { children: ReactNode }) {
   )
 }
 
+export function MenuIcon() {
+  return (
+    <Icon>
+      <path d="M4 6h16" />
+      <path d="M4 12h16" />
+      <path d="M4 18h16" />
+    </Icon>
+  )
+}
+
 export function CheckIcon() {
   return (
     <Icon>

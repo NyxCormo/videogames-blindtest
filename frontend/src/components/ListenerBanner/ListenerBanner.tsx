@@ -7,7 +7,10 @@ export function ListenerBanner() {
   if (listener) {
     return (
       <div className="listener-banner">
-        <span>Connecté : {listener.name}</span>
+        <span>
+          <span className="listener-banner-label">Connecté : </span>
+          {listener.name}
+        </span>
         <button type="button" onClick={disconnect}>Se déconnecter</button>
       </div>
     )
