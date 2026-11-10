@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import fr.insalan.blindtest.khinsider.KhinsiderClient;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.TrackRepository;
+import fr.insalan.blindtest.youtube.YoutubeAudioService;
 
 
 /*
@@ -57,7 +58,8 @@ public class AudioLinkRefreshService {
     // Public : réutilisé pour résoudre le lien audio dès l'ajout manuel d'un lien KHInsider (TrackLinkService),
     // sans attendre la prochaine passe planifiée.
     public boolean refreshOne(Track track) throws IOException {
-        if (track.getAudioLink() != null && audioLinkChecker.isAlive(track.getAudioLink())) {
+        if (track.getAudioLink() != null && !YoutubeAudioService.isLocalLink(track.getAudioLink())
+            && audioLinkChecker.isAlive(track.getAudioLink())) {
             return false;
         }
 

@@ -26,6 +26,7 @@ import fr.insalan.blindtest.repository.TagRepository;
 import fr.insalan.blindtest.repository.TrackReportRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.repository.TrackTagRepository;
+import fr.insalan.blindtest.youtube.YoutubeAudioService;
 import jakarta.transaction.Transactional;
 
 // La base n'a pas de suppression en cascade : on supprime d'abord ce qui pointe vers l'élément, puis l'élément.
@@ -47,6 +48,7 @@ public class DeletionService {
     private final TrackReportRepository trackReportRepository;
     private final CoverProposalRepository coverProposalRepository;
     private final CoverStore coverStore;
+    private final YoutubeAudioService youtubeAudioService;
 
     public DeletionService(
         FranchiseRepository franchiseRepository,
@@ -62,7 +64,8 @@ public class DeletionService {
         TagRepository tagRepository,
         TrackReportRepository trackReportRepository,
         CoverProposalRepository coverProposalRepository,
-        CoverStore coverStore
+        CoverStore coverStore,
+        YoutubeAudioService youtubeAudioService
     ) {
         this.franchiseRepository = franchiseRepository;
         this.gameRepository = gameRepository;
@@ -78,6 +81,7 @@ public class DeletionService {
         this.trackReportRepository = trackReportRepository;
         this.coverProposalRepository = coverProposalRepository;
         this.coverStore = coverStore;
+        this.youtubeAudioService = youtubeAudioService;
     }
 
     // Une franchise ou un jeu qui contient encore quelque chose se fusionne ou se vide d'abord : pas de suppression en chaîne.
@@ -136,9 +140,11 @@ public class DeletionService {
     @Transactional
     public void deleteTrack(Integer id) {
         requireAllowed(previewTrack(id));
+        Track track = trackRepository.findById(id).orElseThrow();
         trackTagRepository.deleteByTrackId(id);
         trackReportRepository.deleteByTrackId(id);
         trackRepository.deleteById(id);
+        youtubeAudioService.forget(track);
     }
 
     public DeletePreview previewBlindtest(Integer id) {

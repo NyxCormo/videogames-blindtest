@@ -21,6 +21,10 @@ Table track {
   audio_link text
   audio_link_resolved_at datetime
 
+  youtube_audio_file text
+  youtube_audio_downloaded_at datetime
+  youtube_audio_error text
+
   duration integer
   preferred_start integer
 }

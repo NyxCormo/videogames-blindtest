@@ -12,6 +12,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import fr.insalan.blindtest.youtube.YoutubeLinks;
+
 
 /**
  * Lit l'export CSV du Google Sheet. Le format est décrit dans docs/import-gsheet.md.
@@ -68,7 +70,7 @@ public class SheetReader {
         if (link == null || !YOUTUBE.matcher(link).find()) {
             return null;
         }
-        return link;
+        return YoutubeLinks.withoutPlaylist(link);
     }
 
     private Map<String, Boolean> votes(CSVRecord header, CSVRecord record) {

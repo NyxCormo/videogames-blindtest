@@ -3,6 +3,8 @@ package fr.insalan.blindtest.audiolink;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import fr.insalan.blindtest.youtube.YoutubeAudioJob;
+
 
 /*
  * Déclencheur planifié 
@@ -11,9 +13,11 @@ import org.springframework.stereotype.Component;
 public class AudioLinkRefreshScheduler {
     
     private final AudioLinkRefreshJob audioLinkRefreshJob;
+    private final YoutubeAudioJob youtubeAudioJob;
 
-    public AudioLinkRefreshScheduler(AudioLinkRefreshJob audioLinkRefreshJob) {
+    public AudioLinkRefreshScheduler(AudioLinkRefreshJob audioLinkRefreshJob, YoutubeAudioJob youtubeAudioJob) {
         this.audioLinkRefreshJob = audioLinkRefreshJob;
+        this.youtubeAudioJob = youtubeAudioJob;
     }
 
     @Scheduled(
@@ -22,5 +26,6 @@ public class AudioLinkRefreshScheduler {
     )
     public void refresh() {
         audioLinkRefreshJob.runIfIdle();
+        youtubeAudioJob.runIfIdle();
     }
 }

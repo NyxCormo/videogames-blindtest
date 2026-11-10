@@ -31,11 +31,27 @@ Les musiques viennent de [KHInsider](https://downloads.khinsider.com/) quand ell
 
 Le projet stocke donc le lien de la page KHInsider de chaque musique et vérifie périodiquement, en tâche de fond, que le lien audio en cache répond encore (`audio_link`, avec sa date `audio_link_resolved_at`). Si besoin seulement, il va rechercher un nouveau lien sur la page KHInsider.
 
-> Si une musique n'est pas sur KHInsider, on utilise un lien YouTube à la place.
+> Si une musique n'est pas sur KHInsider, ou si son lien KHInsider ne marche plus, on utilise son lien YouTube à la place.
 
-Les liens audio du Google Sheet ne sont pas repris à l'import, car aucun n'est fiable : seuls les liens YouTube le sont. `audio_link` n'est rempli qu'à partir des pages KHInsider.
+Les liens audio du Google Sheet ne sont pas repris à l'import, car aucun n'est fiable : seuls les liens YouTube le sont. `audio_link` est rempli à partir des pages KHInsider, ou pointe vers le serveur pour un audio YouTube téléchargé.
 
-Pour l'instant, les fichiers audio ne sont pas téléchargés ni stockés. Ça pourrait venir plus tard, mais ce n'est pas la priorité.
+L'audio d'une musique YouTube est téléchargé une fois sur le serveur, dans `backend/data/youtube-audio/` (pas commit, comme la base), puis servi par l'API. Le téléchargeur est un module privé, absent du dépôt : sans lui, le site marche normalement, mais aucun nouvel audio YouTube n'est téléchargé.
+
+## D'où viennent les images ?
+
+Chaque jeu a une image, affichée une fois la réponse donnée dans Discover et dans les blindtests.
+
+Les pochettes sont rangées sur le même serveur que les musiques KHInsider, dans le dossier de chaque album. Le projet les cherche donc là-bas sous les noms habituels (`00 Front.jpg`, `Cover.jpg`, `folder.jpg`...) et garde le résultat de chaque album pour ne pas refaire les mêmes requêtes. Ça marche pour la majorité des albums, mais pas tous.
+
+Pour les autres, il y a deux solutions :
+
+- les joueurs peuvent proposer une image avec le bouton **Proposer une image**, un admin l'accepte ou la refuse dans l'onglet Images de la page admin ;
+- un admin peut ouvrir la page de l'album sur KHInsider avec le script [`tools/khinsider-album.user.js`](tools/khinsider-album.user.js) installé dans son navigateur, qui envoie les vraies pochettes de l'album au serveur.
+
+> KHInsider bloque les programmes sur ses pages d'album, c'est pour ça que le serveur ne les lit pas lui-même.
+
+Les images choisies sont téléchargées dans `backend/data/covers/`, et les pages d'album envoyées sont gardées dans `backend/data/khinsider-pages/`. Les deux ne sont pas commit, comme la base.
+
 
 ## Base de données
 
@@ -72,7 +88,6 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 - Création d'un système d'utilisateurs
 - Création d'un système d'uniformisation et de complétion des données par les utilisateurs
 - Création de playlists personnalisées et personnalisables (ajout des tables `playlist` et `user_preferred_tags` dans la DB)
-- Ajout des noms valides (réponses acceptées) de chaque musique, colonne « Noms Valides » du Google Sheet non importée pour l'instant
 
 ## Stack technique
 
@@ -85,11 +100,14 @@ Par rapport au Google Sheet d'origine, les changements principaux sont :
 Prérequis : Java 21 et Node 22
 
 - **Mot de passe admin**: copier `backend/.env.example` en `backend/.env` et y choisir un mot de passe. Sans lui, le backend refuse de démarrer.
+- **Jeton d'import**: dans le même `backend/.env`, choisir aussi un `IMPORT_TOKEN`. Sans lui, le script qui envoie les pages d'album est refusé.
 - **Backend**: `cd backend && ./mvnw spring-boot:run` (http://localhost:4673).
 - **Frontend**: `cd frontend && npm install && npm run dev` (http://localhost:4672).
 - **Importer le Google Sheet**: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--import=../docs/ost-insalan-base.csv`.
   Le format du fichier est décrit dans [`docs/import-gsheet.md`](docs/import-gsheet.md).
-- **Rafraîchir les liens audio à la main**: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--refresh-links`. Sinon, ça tourne tout seul une fois par semaine.
+- **Rafraîchir les liens audio à la main**: `cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--refresh-links`. Sinon, ça tourne tout seul une fois par jour.
+- **Téléchargeur YouTube (privé)**: si le dossier `../private/` existe à côté du dépôt, l'installer avec `cd backend && ./mvnw -f ../../private/pom.xml install` ; il est alors compilé avec le backend. À refaire à chaque changement de son `pom.xml`.
+- **Script des pochettes**: installer [Violentmonkey](https://violentmonkey.github.io/) ou Tampermonkey dans le navigateur, y créer un script avec le contenu de `tools/khinsider-album.user.js`, puis y mettre l'adresse du serveur et le jeton d'import. Si le serveur n'est pas sur le même PC, ajouter aussi une ligne `// @connect` avec son adresse.
 - **Tests**: `cd backend && ./mvnw test` et `cd frontend && npm test`.
 
 
