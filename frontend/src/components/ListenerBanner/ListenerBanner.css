@@ -3,4 +3,23 @@
   align-items: center;
   gap: 0.5rem;
   position: relative;
+  min-width: 0;
+}
+
+.listener-banner span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listener-banner button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .listener-banner-label {
+    display: none;
+  }
 }

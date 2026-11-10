@@ -1,8 +1,7 @@
-import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import './index.css'
-import { ListenerBanner } from './components/ListenerBanner/ListenerBanner'
 import { LoginDialog } from './components/LoginDialog/LoginDialog'
-import { NotificationBanner } from './components/NotificationBanner/NotificationBanner'
+import { SiteHeader } from './components/SiteHeader/SiteHeader'
 import { CurrentListenerProvider } from './context/CurrentListenerContext'
 import { NotificationProvider } from './context/NotificationContext'
 import { AdminPage } from './pages/Admin/AdminPage'
@@ -20,20 +19,7 @@ function App() {
     <NotificationProvider>
       <CurrentListenerProvider>
       <BrowserRouter>
-        <header className="site-header">
-          <nav>
-            <div className="nav-links">
-              <Link to="/">Accueil</Link>
-              <Link to="/tracks">Musiques</Link>
-              <Link to="/blindtests">Blindtests</Link>
-              <Link to="/discover">Découvrir</Link>
-              <Link to="/admin">Admin</Link>
-              <a href="/api/export/sheet">Exporter en CSV</a>
-            </div>
-            <ListenerBanner />
-          </nav>
-          <NotificationBanner />
-        </header>
+        <SiteHeader />
         <LoginDialog />
         <main>
           <Routes>
