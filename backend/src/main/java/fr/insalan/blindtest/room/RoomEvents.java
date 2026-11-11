@@ -37,17 +37,22 @@ public class RoomEvents {
         }
     }
 
-    @EventListener(ContextClosedEvent.class)
-    public void closeAll() {
-        for (List<SseEmitter> roomEmitters : emitters.values()) {
+    public void close(String code) {
+        List<SseEmitter> roomEmitters = emitters.remove(code);
+        if (roomEmitters != null) {
             roomEmitters.forEach(SseEmitter::complete);
         }
+    }
+
+    @EventListener(ContextClosedEvent.class)
+    public void closeAll() {
+        emitters.keySet().forEach(this::close);
     }
 
     private void send(List<SseEmitter> roomEmitters, SseEmitter emitter, Room room) {
         try {
             emitter.send(SseEmitter.event().name("room").data(RoomResponse.from(room)));
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
             roomEmitters.remove(emitter);
         }
     }

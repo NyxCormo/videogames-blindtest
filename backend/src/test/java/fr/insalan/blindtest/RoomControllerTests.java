@@ -1,8 +1,10 @@
 package fr.insalan.blindtest;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +14,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,12 +30,17 @@ import tools.jackson.databind.ObjectMapper;
 
 import fr.insalan.blindtest.model.Blindtest;
 import fr.insalan.blindtest.model.BlindtestTrack;
+import fr.insalan.blindtest.model.KnowledgeId;
 import fr.insalan.blindtest.model.Listener;
 import fr.insalan.blindtest.model.Track;
 import fr.insalan.blindtest.repository.BlindtestRepository;
 import fr.insalan.blindtest.repository.BlindtestTrackRepository;
+import fr.insalan.blindtest.repository.KnowledgeRepository;
 import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
+import fr.insalan.blindtest.room.Room;
+import fr.insalan.blindtest.room.RoomService;
+import fr.insalan.blindtest.room.RoomTrack;
 
 class RoomControllerTests extends IntegrationTest {
 
@@ -52,12 +62,19 @@ class RoomControllerTests extends IntegrationTest {
     @Autowired
     ListenerRepository listeners;
 
+    @Autowired
+    KnowledgeRepository knowledges;
+
+    @Autowired
+    RoomService roomService;
+
     private Blindtest blindtest;
     private Listener host;
+    private Track dawn;
 
     @BeforeEach
     void createBlindtest() {
-        Track dawn = tracks.save(new Track("Dawn", stellarBlade()));
+        dawn = tracks.save(new Track("Dawn", stellarBlade()));
         blindtest = blindtests.save(new Blindtest("Stellar Blade", 50, 5));
         blindtestTracks.save(new BlindtestTrack(blindtest, dawn, 0));
         host = listeners.save(new Listener("Nyx"));
@@ -149,6 +166,118 @@ class RoomControllerTests extends IntegrationTest {
     }
 
     @Test
+    void onlyTheHostStartsTheGameWithoutGivingTheAnswer() throws Exception {
+        String code = createRoom("PRIVATE");
+        Listener raven = listeners.save(new Listener("Raven"));
+        mockMvc.perform(post("/api/rooms/" + code + "/players").param("listenerId", raven.getId().toString()));
+
+        mockMvc.perform(post("/api/rooms/" + code + "/start").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/rooms/" + code + "/start").param("listenerId", host.getId().toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.phase").value("PLAYING"))
+            .andExpect(jsonPath("$.currentTrack.position").value(0))
+            .andExpect(jsonPath("$.currentTrack.trackId").value(dawn.getId()))
+            .andExpect(jsonPath("$.currentTrack.startsAt").exists())
+            .andExpect(jsonPath("$.currentTrack.reveal").value(nullValue()))
+            .andExpect(content().string(not(containsString("gameName"))));
+        mockMvc.perform(post("/api/rooms/" + code + "/start").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(post("/api/rooms/ZZZZ/start").param("listenerId", host.getId().toString()))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void theEventStreamAnnouncesTheStart() throws Exception {
+        String code = createRoom("PRIVATE");
+        MvcResult events = mockMvc.perform(get("/api/rooms/" + code + "/events").accept(MediaType.TEXT_EVENT_STREAM))
+            .andReturn();
+
+        mockMvc.perform(post("/api/rooms/" + code + "/start").param("listenerId", host.getId().toString()));
+
+        String allEvents = events.getResponse().getContentAsString();
+        assertTrue(allEvents.contains("\"phase\":\"WAITING\""));
+        assertTrue(allEvents.contains("\"phase\":\"PLAYING\""));
+    }
+
+    @Test
+    void playersAnswerOnceAndTheTrackIsRevealedWhenEveryoneIsDone() throws Exception {
+        String code = createRoom("PRIVATE");
+        Listener raven = join(code, "Raven");
+        Room room = musicAlreadyPlaying(code);
+
+        mockMvc.perform(post("/api/rooms/" + code + "/guess-franchise").param("listenerId", raven.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"franchiseId\": " + dawn.getGame().getFranchise().getId() + "}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.franchiseFound").value(true))
+            .andExpect(jsonPath("$.roundPoints").value(250))
+            .andExpect(jsonPath("$.done").value(false));
+        mockMvc.perform(post("/api/rooms/" + code + "/guess").param("listenerId", host.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"gameId\": " + dawn.getGame().getId() + ", \"trackId\": " + dawn.getId() + "}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.gameFound").value(true))
+            .andExpect(jsonPath("$.bonusFound").value(true))
+            .andExpect(jsonPath("$.done").value(true));
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.phase").value("PLAYING"))
+            .andExpect(jsonPath("$.players[0].done").value(true))
+            .andExpect(jsonPath("$.players[0].roundPoints").value(nullValue()));
+
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.phase").value("REVEAL"))
+            .andExpect(jsonPath("$.currentTrack.reveal.gameName").value("Stellar Blade"))
+            .andExpect(jsonPath("$.players[0].score").value(room.round(host.getId()).score()))
+            .andExpect(jsonPath("$.players[1].score").value(250))
+            .andExpect(jsonPath("$.players[1].roundPoints").value(250));
+        assertTrue(knowledges.findById(new KnowledgeId(host.getId(), dawn.getId())).orElseThrow().isKnows());
+        assertFalse(knowledges.findById(new KnowledgeId(raven.getId(), dawn.getId())).orElseThrow().isKnows());
+    }
+
+    @Test
+    void refusesAnswersOutsideTheRules() throws Exception {
+        String code = createRoom("PRIVATE");
+        Listener stranger = listeners.save(new Listener("Raven"));
+
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(post("/api/rooms/" + code + "/start").param("listenerId", host.getId().toString()));
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", stranger.getId().toString()))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/rooms/" + code + "/guess").param("listenerId", host.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+            .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/rooms/" + code + "/round").param("listenerId", host.getId().toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.attemptsRemaining").value(5));
+        assertTrue(knowledges.findById(new KnowledgeId(host.getId(), dawn.getId())).isEmpty());
+    }
+
+    @Test
+    void finishedRoomsAreNotListedAndCannotBeJoined() throws Exception {
+        String code = createRoom("PUBLIC");
+        Room room = musicAlreadyPlaying(code);
+        room.reveal(0);
+        room.next(0, Instant.now());
+        Listener raven = listeners.save(new Listener("Raven"));
+
+        mockMvc.perform(get("/api/rooms"))
+            .andExpect(jsonPath("$[*].code").value(not(hasItem(code))));
+        mockMvc.perform(post("/api/rooms/" + code + "/players").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isConflict());
+    }
+
+    @Test
     void onlyPublicRoomsAreListed() throws Exception {
         String publicCode = createRoom("PUBLIC");
         String privateCode = createRoom("PRIVATE");
@@ -181,6 +310,19 @@ class RoomControllerTests extends IntegrationTest {
             .andExpect(status().isNotFound());
         mockMvc.perform(get("/api/rooms/ZZZZZ"))
             .andExpect(status().isNotFound());
+    }
+
+    private Listener join(String code, String name) throws Exception {
+        Listener listener = listeners.save(new Listener(name));
+        mockMvc.perform(post("/api/rooms/" + code + "/players").param("listenerId", listener.getId().toString()))
+            .andExpect(status().isOk());
+        return listener;
+    }
+
+    private Room musicAlreadyPlaying(String code) {
+        Room room = roomService.find(code).orElseThrow();
+        room.start(List.of(RoomTrack.from(dawn)), Instant.now().minus(Room.LEAD_TIME));
+        return room;
     }
 
     private String createRoom(String visibility) throws Exception {

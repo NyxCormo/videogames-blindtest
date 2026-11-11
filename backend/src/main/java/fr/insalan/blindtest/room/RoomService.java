@@ -26,11 +26,12 @@ public class RoomService {
         RoomVisibility visibility,
         SoundMode soundMode,
         ScoringMode scoringMode,
-        int answerSeconds
+        int answerSeconds,
+        int maxAttempts
     ) {
         while (true) {
             String code = newCode();
-            Room room = new Room(code, blindtestId, blindtestName, trackCount, host, visibility, soundMode, scoringMode, answerSeconds);
+            Room room = new Room(code, blindtestId, blindtestName, trackCount, host, visibility, soundMode, scoringMode, answerSeconds, maxAttempts);
             if (rooms.putIfAbsent(code, room) == null) {
                 return room;
             }
@@ -44,8 +45,13 @@ public class RoomService {
     public List<Room> publicRooms() {
         return rooms.values().stream()
             .filter(room -> room.getVisibility() == RoomVisibility.PUBLIC)
+            .filter(room -> room.getPhase() != RoomPhase.FINISHED)
             .sorted(Comparator.comparing(Room::getCreatedAt).reversed())
             .toList();
+    }
+
+    public void remove(String code) {
+        rooms.remove(code);
     }
 
     private String newCode() {
