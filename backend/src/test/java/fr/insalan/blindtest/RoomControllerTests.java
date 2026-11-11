@@ -3,9 +3,14 @@ package fr.insalan.blindtest;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -102,6 +108,44 @@ class RoomControllerTests extends IntegrationTest {
             .andExpect(jsonPath("$.players.length()").value(2))
             .andExpect(jsonPath("$.players[0].name").value("Nyx"))
             .andExpect(jsonPath("$.players[1].name").value("Raven"));
+    }
+
+    @Test
+    void theEventStreamSendsTheRoomAndEachNewPlayer() throws Exception {
+        String code = createRoom("PRIVATE");
+        Listener raven = listeners.save(new Listener("Raven"));
+
+        MvcResult events = mockMvc.perform(get("/api/rooms/" + code + "/events").accept(MediaType.TEXT_EVENT_STREAM))
+            .andExpect(request().asyncStarted())
+            .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM))
+            .andReturn();
+        String firstEvent = events.getResponse().getContentAsString();
+        assertTrue(firstEvent.startsWith("event:room\ndata:{"));
+        assertTrue(firstEvent.contains("\"Nyx\""));
+        assertFalse(firstEvent.contains("\"Raven\""));
+
+        mockMvc.perform(post("/api/rooms/" + code + "/players").param("listenerId", raven.getId().toString()));
+        mockMvc.perform(post("/api/rooms/" + code + "/players").param("listenerId", raven.getId().toString()));
+
+        String allEvents = events.getResponse().getContentAsString();
+        assertEquals(2, allEvents.split("event:room").length - 1);
+        assertTrue(allEvents.substring(firstEvent.length()).contains("\"Raven\""));
+    }
+
+    @Test
+    void theEventStreamOfAnUnknownRoomIsNotFound() throws Exception {
+        mockMvc.perform(get("/api/rooms/ZZZZ/events").accept(MediaType.TEXT_EVENT_STREAM))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givesTheServerTime() throws Exception {
+        long before = System.currentTimeMillis();
+        String body = mockMvc.perform(get("/api/time"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        long now = objectMapper.readTree(body).get("now").asLong();
+        assertTrue(now >= before && now <= System.currentTimeMillis());
     }
 
     @Test

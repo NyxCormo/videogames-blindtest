@@ -43,8 +43,8 @@ public class Room {
         players.put(host.listenerId(), host);
     }
 
-    public synchronized void join(RoomPlayer player) {
-        players.putIfAbsent(player.listenerId(), player);
+    public synchronized boolean join(RoomPlayer player) {
+        return players.putIfAbsent(player.listenerId(), player) == null;
     }
 
     public synchronized List<RoomPlayer> players() {
