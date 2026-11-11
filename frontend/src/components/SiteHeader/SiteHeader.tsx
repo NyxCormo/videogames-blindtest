@@ -9,6 +9,7 @@ const LINKS = [
   { to: '/', label: 'Accueil' },
   { to: '/tracks', label: 'Musiques' },
   { to: '/blindtests', label: 'Blindtests' },
+  { to: '/rooms', label: 'Salles' },
   { to: '/discover', label: 'Découvrir' },
   { to: '/admin', label: 'Admin' },
 ]

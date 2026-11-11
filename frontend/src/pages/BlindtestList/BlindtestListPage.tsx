@@ -36,6 +36,7 @@ export function BlindtestListPage() {
               <span className="date">{new Date(blindtest.createdAt).toLocaleString('fr-FR')}</span>
               <Link to={`/blindtests/${blindtest.id}/play`}>Jouer</Link>
               <Link to={`/blindtests/${blindtest.id}/leaderboard`}>Classement</Link>
+              <Link to={`/rooms/new?blindtest=${blindtest.id}`}>Jouer en salle</Link>
             </li>
           ))}
         </ul>

@@ -29,7 +29,7 @@ nav a {
   display: none;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   nav {
     flex-wrap: wrap;
     justify-content: space-between;

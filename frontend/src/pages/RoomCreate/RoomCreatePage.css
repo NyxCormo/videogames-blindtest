@@ -1,0 +1,16 @@
+.room-create {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 28rem;
+}
+
+.room-create-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.room-create button[type='submit'] {
+  align-self: flex-start;
+}

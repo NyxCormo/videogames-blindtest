@@ -1,0 +1,52 @@
+.room-join {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.room-join label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.room-join input {
+  width: 8rem;
+  font-size: 1.25rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.room-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.room-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.room-list-code {
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.room-list-name {
+  font-weight: 600;
+}
+
+.room-list-info {
+  color: var(--muted);
+}
