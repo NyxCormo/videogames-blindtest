@@ -19,9 +19,10 @@ public class Room {
     private final Integer blindtestId;
     private final String blindtestName;
     private final long trackCount;
-    private final Integer hostId;
+    private final RoomPlayer host;
     private final RoomVisibility visibility;
-    private final SoundMode soundMode;
+    private final RoomMode mode;
+    private final boolean playersCanSeek;
     private final ScoringMode scoringMode;
     private final int answerSeconds;
     private final int maxAttempts;
@@ -43,7 +44,8 @@ public class Room {
         long trackCount,
         RoomPlayer host,
         RoomVisibility visibility,
-        SoundMode soundMode,
+        RoomMode mode,
+        boolean playersCanSeek,
         ScoringMode scoringMode,
         int answerSeconds,
         int maxAttempts
@@ -52,17 +54,23 @@ public class Room {
         this.blindtestId = blindtestId;
         this.blindtestName = blindtestName;
         this.trackCount = trackCount;
-        this.hostId = host.listenerId();
+        this.host = host;
         this.visibility = visibility;
-        this.soundMode = soundMode;
+        this.mode = mode;
+        this.playersCanSeek = playersCanSeek;
         this.scoringMode = scoringMode;
         this.answerSeconds = answerSeconds;
         this.maxAttempts = maxAttempts;
-        players.put(host.listenerId(), host);
-        scores.put(host.listenerId(), new RoomScore());
+        if (mode == RoomMode.MULTI) {
+            players.put(host.listenerId(), host);
+            scores.put(host.listenerId(), new RoomScore());
+        }
     }
 
     public synchronized boolean join(RoomPlayer player) {
+        if (mode == RoomMode.PRESENTATION && player.listenerId().equals(host.listenerId())) {
+            return false;
+        }
         if (players.putIfAbsent(player.listenerId(), player) != null) {
             return false;
         }
@@ -167,6 +175,9 @@ public class Room {
         if (now.isBefore(startsAt)) {
             throw new IllegalStateException("La musique n'a pas encore commencé");
         }
+        if (!now.isBefore(endsAt)) {
+            throw new IllegalStateException("Le temps de réponse est écoulé");
+        }
         RoomScore score = scores.get(listenerId);
         if (score.done(maxAttempts)) {
             throw new IllegalStateException("Plus de réponse possible sur cette musique");
@@ -212,15 +223,23 @@ public class Room {
     }
 
     public Integer getHostId() {
-        return hostId;
+        return host.listenerId();
+    }
+
+    public String getHostName() {
+        return host.name();
     }
 
     public RoomVisibility getVisibility() {
         return visibility;
     }
 
-    public SoundMode getSoundMode() {
-        return soundMode;
+    public RoomMode getMode() {
+        return mode;
+    }
+
+    public boolean isPlayersCanSeek() {
+        return playersCanSeek;
     }
 
     public ScoringMode getScoringMode() {

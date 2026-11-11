@@ -30,6 +30,7 @@ import fr.insalan.blindtest.repository.ListenerRepository;
 import fr.insalan.blindtest.repository.TrackRepository;
 import fr.insalan.blindtest.room.Room;
 import fr.insalan.blindtest.room.RoomEvents;
+import fr.insalan.blindtest.room.RoomMode;
 import fr.insalan.blindtest.room.RoomPlayer;
 import fr.insalan.blindtest.room.RoomPhase;
 import fr.insalan.blindtest.room.RoomRound;
@@ -38,7 +39,6 @@ import fr.insalan.blindtest.room.RoomTimer;
 import fr.insalan.blindtest.room.RoomTrack;
 import fr.insalan.blindtest.room.RoomVisibility;
 import fr.insalan.blindtest.room.ScoringMode;
-import fr.insalan.blindtest.room.SoundMode;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -108,7 +108,8 @@ public class RoomController {
             trackCount,
             host,
             request.visibility() == null ? RoomVisibility.PUBLIC : request.visibility(),
-            request.soundMode() == null ? SoundMode.EVERY_DEVICE : request.soundMode(),
+            request.mode() == null ? RoomMode.MULTI : request.mode(),
+            request.playersCanSeek() == null || request.playersCanSeek(),
             request.scoringMode() == null ? ScoringMode.SPEED : request.scoringMode(),
             answerSeconds,
             blindtest.getMaxAttempts()
@@ -162,6 +163,24 @@ public class RoomController {
         }
         if (!roomTimer.stop(room)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La partie est déjà terminée");
+        }
+        return RoomResponse.from(room);
+    }
+
+    @PostMapping("/{code}/reveal")
+    public RoomResponse reveal(@PathVariable String code, @RequestParam Integer listenerId) {
+        Room room = presentedBy(code, listenerId);
+        if (!roomTimer.reveal(room, room.getPosition())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Aucune musique à révéler");
+        }
+        return RoomResponse.from(room);
+    }
+
+    @PostMapping("/{code}/next")
+    public RoomResponse next(@PathVariable String code, @RequestParam Integer listenerId) {
+        Room room = presentedBy(code, listenerId);
+        if (!roomTimer.next(room, room.getPosition())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique n'a pas encore été révélée");
         }
         return RoomResponse.from(room);
     }
@@ -229,11 +248,22 @@ public class RoomController {
         return room;
     }
 
+    private Room presentedBy(String code, Integer listenerId) {
+        Room room = room(code);
+        if (!room.getHostId().equals(listenerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Seule la personne qui anime la salle peut faire ça");
+        }
+        if (room.getMode() != RoomMode.PRESENTATION) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La salle n'est pas en mode présentation");
+        }
+        return room;
+    }
+
     private RoomRound answered(Room room, Integer listenerId, RoomRound round) {
         if (round.done()) {
             recordKnowledge(listenerId, round.trackId(), round.gameFound());
             roomEvents.publish(room);
-            if (room.everyoneDone()) {
+            if (room.getMode() == RoomMode.MULTI && room.everyoneDone()) {
                 roomTimer.reveal(room, round.position());
             }
         }

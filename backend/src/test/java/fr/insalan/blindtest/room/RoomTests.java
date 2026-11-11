@@ -27,7 +27,7 @@ class RoomTests {
 
     private Room room(ScoringMode scoringMode) {
         Room room = new Room("ABCD", 1, "Stellar Blade", 2, new RoomPlayer(NYX, "Nyx"),
-            RoomVisibility.PUBLIC, SoundMode.EVERY_DEVICE, scoringMode, 30, 2);
+            RoomVisibility.PUBLIC, RoomMode.MULTI, true, scoringMode, 30, 2);
         room.join(new RoomPlayer(RAVEN, "Raven"));
         return room;
     }
@@ -177,6 +177,28 @@ class RoomTests {
 
         room.reveal(0);
         assertThrows(IllegalStateException.class, () -> room.pass(NYX, MUSIC_STARTS));
+    }
+
+    @Test
+    void answersCloseWhenTheTimeIsUp() {
+        Room room = room(ScoringMode.SPEED);
+        room.start(tracks, NOW);
+
+        assertEquals(500, room.guess(NYX, DAWN_GAME, null, MUSIC_STARTS.plusSeconds(30).minusMillis(1)).roundPoints());
+        assertThrows(IllegalStateException.class, () -> room.pass(RAVEN, MUSIC_STARTS.plusSeconds(30)));
+    }
+
+    @Test
+    void thePresenterDoesNotPlay() {
+        Room room = new Room("ABCD", 1, "Stellar Blade", 2, new RoomPlayer(NYX, "Nyx"),
+            RoomVisibility.PUBLIC, RoomMode.PRESENTATION, true, ScoringMode.SPEED, 30, 2);
+
+        assertFalse(room.join(new RoomPlayer(NYX, "Nyx")));
+        assertTrue(room.join(new RoomPlayer(RAVEN, "Raven")));
+        assertFalse(room.hasPlayer(NYX));
+        assertEquals(NYX, room.getHostId());
+        assertEquals("Nyx", room.getHostName());
+        assertEquals(1, room.players().size());
     }
 
     @Test

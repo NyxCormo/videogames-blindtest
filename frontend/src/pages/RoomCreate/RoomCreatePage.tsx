@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { fetchBlindtests, type Blindtest } from '../../api/blindtests'
-import { createRoom, type RoomVisibility, type ScoringMode, type SoundMode } from '../../api/rooms'
+import { createRoom, type RoomMode, type RoomVisibility, type ScoringMode } from '../../api/rooms'
 import { ChoiceGroup, type Choice } from '../../components/ChoiceGroup/ChoiceGroup'
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { Select } from '../../components/Select/Select'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
-import { SCORING_LABELS, SOUND_LABELS, VISIBILITY_LABELS } from '../Room/roomLabels'
+import { MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from '../Room/roomLabels'
 import './RoomCreatePage.css'
 
 const VISIBILITY_CHOICES: Choice<RoomVisibility>[] = [
@@ -14,9 +14,14 @@ const VISIBILITY_CHOICES: Choice<RoomVisibility>[] = [
   { value: 'PRIVATE', label: VISIBILITY_LABELS.PRIVATE, hint: 'La salle se rejoint uniquement avec son code.' },
 ]
 
-const SOUND_CHOICES: Choice<SoundMode>[] = [
-  { value: 'EVERY_DEVICE', label: SOUND_LABELS.EVERY_DEVICE, hint: 'Chaque joueur entend la musique sur son téléphone ou son ordinateur.' },
-  { value: 'MAIN_SCREEN', label: SOUND_LABELS.MAIN_SCREEN, hint: 'La musique passe sur un seul écran, par exemple branché à des enceintes.' },
+const MODE_CHOICES: Choice<RoomMode>[] = [
+  { value: 'MULTI', label: MODE_LABELS.MULTI, hint: 'Chaque joueur entend la musique sur son appareil. Révélation et musique suivante automatiques.' },
+  { value: 'PRESENTATION', label: MODE_LABELS.PRESENTATION, hint: "La musique passe seulement sur l'écran de la personne qui crée la salle. Elle anime sans jouer, révèle et lance la musique suivante quand elle veut." },
+]
+
+const PLAYBACK_CHOICES: Choice<keyof typeof PLAYBACK_LABELS>[] = [
+  { value: 'FREE', label: PLAYBACK_LABELS.FREE, hint: 'Chaque joueur peut mettre en pause, revenir en arrière ou avancer dans la musique.' },
+  { value: 'SYNCED', label: PLAYBACK_LABELS.SYNCED, hint: 'La musique avance au même rythme pour tous, seul le volume se règle.' },
 ]
 
 const SCORING_CHOICES: Choice<ScoringMode>[] = [
@@ -31,7 +36,8 @@ export function RoomCreatePage() {
   const [blindtests, setBlindtests] = useState<Blindtest[] | null>(null)
   const [blindtestId, setBlindtestId] = useState(searchParams.get('blindtest') ?? '')
   const [visibility, setVisibility] = useState<RoomVisibility>('PUBLIC')
-  const [soundMode, setSoundMode] = useState<SoundMode>('EVERY_DEVICE')
+  const [mode, setMode] = useState<RoomMode>('MULTI')
+  const [playback, setPlayback] = useState<keyof typeof PLAYBACK_LABELS>('FREE')
   const [scoringMode, setScoringMode] = useState<ScoringMode>('SPEED')
   const [answerSeconds, setAnswerSeconds] = useState(30)
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +65,14 @@ export function RoomCreatePage() {
     if (!listener) return
     setError(null)
     setSubmitting(true)
-    createRoom(listener.id, { blindtestId: Number(blindtestId), visibility, soundMode, scoringMode, answerSeconds })
+    createRoom(listener.id, {
+      blindtestId: Number(blindtestId),
+      visibility,
+      mode,
+      playersCanSeek: playback === 'FREE',
+      scoringMode,
+      answerSeconds,
+    })
       .then((room) => navigate(`/rooms/${room.code}`))
       .catch((err: Error) => {
         setError(err.message)
@@ -87,7 +100,10 @@ export function RoomCreatePage() {
             />
           </div>
           <ChoiceGroup legend="Visibilité" choices={VISIBILITY_CHOICES} value={visibility} onChange={setVisibility} />
-          <ChoiceGroup legend="Son" choices={SOUND_CHOICES} value={soundMode} onChange={setSoundMode} />
+          <ChoiceGroup legend="Mode" choices={MODE_CHOICES} value={mode} onChange={setMode} />
+          {mode === 'MULTI' && (
+            <ChoiceGroup legend="Lecture" choices={PLAYBACK_CHOICES} value={playback} onChange={setPlayback} />
+          )}
           <ChoiceGroup legend="Points" choices={SCORING_CHOICES} value={scoringMode} onChange={setScoringMode} />
           <label className="room-create-field">
             Temps de réponse (secondes)

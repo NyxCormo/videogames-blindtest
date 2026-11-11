@@ -5,6 +5,7 @@ type Props = {
   src: string
   startsAt: number
   offset: number
+  free: boolean
 }
 
 function playInSync(audio: HTMLAudioElement, startsAt: number, offset: number): Promise<void> {
@@ -16,7 +17,7 @@ function playInSync(audio: HTMLAudioElement, startsAt: number, offset: number): 
   return audio.play()
 }
 
-export function RoomAudio({ src, startsAt, offset }: Props) {
+export function RoomAudio({ src, startsAt, offset, free }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [volume, setVolume] = useState(loadStoredVolume)
   const [blocked, setBlocked] = useState(false)
@@ -46,30 +47,34 @@ export function RoomAudio({ src, startsAt, offset }: Props) {
     playInSync(audio, startsAt, offset).catch(() => setBlocked(true))
   }
 
-  function handleVolume(value: number) {
-    setVolume(value)
-    storeVolume(value)
-  }
-
   return (
     <div className="room-audio">
-      <audio ref={audioRef} src={src} preload="auto" loop />
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="auto"
+        loop
+        controls={free}
+        onVolumeChange={(event) => storeVolume(event.currentTarget.volume)}
+      />
       {blocked && (
         <button type="button" className="button-primary" onClick={handleUnblock}>
           Activer le son
         </button>
       )}
-      <label>
-        Volume
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={volume}
-          onChange={(event) => handleVolume(Number(event.target.value))}
-        />
-      </label>
+      {!free && (
+        <label>
+          Volume
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={volume}
+            onChange={(event) => setVolume(Number(event.target.value))}
+          />
+        </label>
+      )}
     </div>
   )
 }

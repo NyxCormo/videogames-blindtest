@@ -1,13 +1,18 @@
-import type { RoomPhase, RoomVisibility, ScoringMode, SoundMode } from '../../api/rooms'
+import type { RoomMode, RoomPhase, RoomVisibility, ScoringMode } from '../../api/rooms'
 
 export const VISIBILITY_LABELS: Record<RoomVisibility, string> = {
   PUBLIC: 'Publique',
   PRIVATE: 'Privée',
 }
 
-export const SOUND_LABELS: Record<SoundMode, string> = {
-  EVERY_DEVICE: 'Sur chaque appareil',
-  MAIN_SCREEN: 'Sur un écran principal',
+export const MODE_LABELS: Record<RoomMode, string> = {
+  MULTI: 'Multi',
+  PRESENTATION: 'Présentation',
+}
+
+export const PLAYBACK_LABELS = {
+  FREE: 'Libre',
+  SYNCED: 'Synchronisée',
 }
 
 export const SCORING_LABELS: Record<ScoringMode, string> = {

@@ -5,7 +5,8 @@ import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { plural } from '../../plural'
 import { RoomGame } from './RoomGame'
-import { SCORING_LABELS, SOUND_LABELS, VISIBILITY_LABELS } from './roomLabels'
+import { MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from './roomLabels'
+import { RoomPresenter } from './RoomPresenter'
 import { RoomScoreboard } from './RoomScoreboard'
 import { useRoomEvents } from './useRoomEvents'
 import { useClockOffset } from './useServerClock'
@@ -60,8 +61,8 @@ export function RoomPage() {
     return <p>Connexion à la salle...</p>
   }
 
-  const host = room.players.find((player) => player.listenerId === room.hostId)
   const isHost = room.hostId === listener.id
+  const presenting = isHost && room.mode === 'PRESENTATION'
 
   function handleStart() {
     if (!listener) return
@@ -103,9 +104,18 @@ export function RoomPage() {
             <dd>{room.answerSeconds} s</dd>
           </div>
           <div>
-            <dt>Son</dt>
-            <dd>{SOUND_LABELS[room.soundMode]}</dd>
+            <dt>Mode</dt>
+            <dd>
+              {MODE_LABELS[room.mode]}
+              {room.mode === 'PRESENTATION' && `, animée par ${room.hostName}`}
+            </dd>
           </div>
+          {room.mode === 'MULTI' && (
+            <div>
+              <dt>Lecture</dt>
+              <dd>{room.playersCanSeek ? PLAYBACK_LABELS.FREE : PLAYBACK_LABELS.SYNCED}</dd>
+            </div>
+          )}
           <div>
             <dt>Points</dt>
             <dd>{SCORING_LABELS[room.scoringMode]}</dd>
@@ -128,20 +138,29 @@ export function RoomPage() {
               Lancer la partie
             </button>
           ) : (
-            <p>En attente du lancement par {host?.name}.</p>
+            <p>En attente du lancement par {room.hostName}.</p>
           )}
           {startError && <p role="alert">{startError}</p>}
         </section>
       )}
-      {room.currentTrack && (
-        <RoomGame
-          key={room.currentTrack.position}
-          room={room}
-          track={room.currentTrack}
-          listenerId={listener.id}
-          offset={offset}
-        />
-      )}
+      {room.currentTrack &&
+        (presenting ? (
+          <RoomPresenter
+            key={room.currentTrack.position}
+            room={room}
+            track={room.currentTrack}
+            listenerId={listener.id}
+            offset={offset}
+          />
+        ) : (
+          <RoomGame
+            key={room.currentTrack.position}
+            room={room}
+            track={room.currentTrack}
+            listenerId={listener.id}
+            offset={offset}
+          />
+        ))}
       {room.phase === 'FINISHED' && <p>La partie est terminée.</p>}
       {isHost && room.phase !== 'FINISHED' && (
         <div className="room-stop">
@@ -167,6 +186,7 @@ export function RoomPage() {
       {room.phase === 'WAITING' ? (
         <>
           <h2>Joueurs ({room.players.length})</h2>
+          {room.players.length === 0 && <p>Aucun joueur pour l'instant.</p>}
           <ul className="room-players">
             {room.players.map((player) => (
               <li key={player.listenerId}>

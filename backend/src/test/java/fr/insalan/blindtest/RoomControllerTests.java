@@ -85,15 +85,17 @@ class RoomControllerTests extends IntegrationTest {
         mockMvc.perform(post("/api/rooms").param("listenerId", host.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"blindtestId": %d, "visibility": "PRIVATE", "soundMode": "MAIN_SCREEN", "scoringMode": "FIRST_COME", "answerSeconds": 20}
+                    {"blindtestId": %d, "visibility": "PRIVATE", "mode": "MULTI", "playersCanSeek": false, "scoringMode": "FIRST_COME", "answerSeconds": 20}
                     """.formatted(blindtest.getId())))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.code").value(matchesPattern("[A-HJ-NP-Z]{4}")))
             .andExpect(jsonPath("$.blindtestName").value("Stellar Blade"))
             .andExpect(jsonPath("$.trackCount").value(1))
             .andExpect(jsonPath("$.hostId").value(host.getId()))
+            .andExpect(jsonPath("$.hostName").value("Nyx"))
             .andExpect(jsonPath("$.visibility").value("PRIVATE"))
-            .andExpect(jsonPath("$.soundMode").value("MAIN_SCREEN"))
+            .andExpect(jsonPath("$.mode").value("MULTI"))
+            .andExpect(jsonPath("$.playersCanSeek").value(false))
             .andExpect(jsonPath("$.scoringMode").value("FIRST_COME"))
             .andExpect(jsonPath("$.answerSeconds").value(20))
             .andExpect(jsonPath("$.players[0].name").value("Nyx"));
@@ -106,7 +108,8 @@ class RoomControllerTests extends IntegrationTest {
                 .content("{\"blindtestId\": " + blindtest.getId() + "}"))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.visibility").value("PUBLIC"))
-            .andExpect(jsonPath("$.soundMode").value("EVERY_DEVICE"))
+            .andExpect(jsonPath("$.mode").value("MULTI"))
+            .andExpect(jsonPath("$.playersCanSeek").value(true))
             .andExpect(jsonPath("$.scoringMode").value("SPEED"))
             .andExpect(jsonPath("$.answerSeconds").value(30));
     }
@@ -284,6 +287,47 @@ class RoomControllerTests extends IntegrationTest {
     }
 
     @Test
+    void inPresentationTheHostRevealsAndMovesOnByHand() throws Exception {
+        String code = createRoom("PUBLIC", "PRESENTATION");
+        mockMvc.perform(post("/api/rooms/" + code + "/players").param("listenerId", host.getId().toString()))
+            .andExpect(jsonPath("$.players.length()").value(0));
+        Listener raven = join(code, "Raven");
+        musicAlreadyPlaying(code);
+
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", host.getId().toString()))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.phase").value("PLAYING"));
+
+        mockMvc.perform(post("/api/rooms/" + code + "/reveal").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/rooms/" + code + "/next").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(post("/api/rooms/" + code + "/reveal").param("listenerId", host.getId().toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.phase").value("REVEAL"))
+            .andExpect(jsonPath("$.currentTrack.reveal.trackName").value("Dawn"));
+        mockMvc.perform(post("/api/rooms/" + code + "/reveal").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(post("/api/rooms/" + code + "/next").param("listenerId", host.getId().toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.phase").value("FINISHED"));
+    }
+
+    @Test
+    void aMultiRoomIsNotDrivenByHand() throws Exception {
+        String code = createRoom("PUBLIC");
+        musicAlreadyPlaying(code);
+
+        mockMvc.perform(post("/api/rooms/" + code + "/reveal").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.phase").value("PLAYING"));
+    }
+
+    @Test
     void finishedRoomsAreNotListedAndCannotBeJoined() throws Exception {
         String code = createRoom("PUBLIC");
         Room room = musicAlreadyPlaying(code);
@@ -346,9 +390,13 @@ class RoomControllerTests extends IntegrationTest {
     }
 
     private String createRoom(String visibility) throws Exception {
+        return createRoom(visibility, "MULTI");
+    }
+
+    private String createRoom(String visibility, String mode) throws Exception {
         String body = mockMvc.perform(post("/api/rooms").param("listenerId", host.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"blindtestId\": " + blindtest.getId() + ", \"visibility\": \"" + visibility + "\"}"))
+                .content("{\"blindtestId\": " + blindtest.getId() + ", \"visibility\": \"" + visibility + "\", \"mode\": \"" + mode + "\"}"))
             .andExpect(status().isCreated())
             .andReturn().getResponse().getContentAsString();
         JsonNode room = objectMapper.readTree(body);

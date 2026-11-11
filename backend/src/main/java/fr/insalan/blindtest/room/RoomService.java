@@ -24,14 +24,15 @@ public class RoomService {
         long trackCount,
         RoomPlayer host,
         RoomVisibility visibility,
-        SoundMode soundMode,
+        RoomMode mode,
+        boolean playersCanSeek,
         ScoringMode scoringMode,
         int answerSeconds,
         int maxAttempts
     ) {
         while (true) {
             String code = newCode();
-            Room room = new Room(code, blindtestId, blindtestName, trackCount, host, visibility, soundMode, scoringMode, answerSeconds, maxAttempts);
+            Room room = new Room(code, blindtestId, blindtestName, trackCount, host, visibility, mode, playersCanSeek, scoringMode, answerSeconds, maxAttempts);
             if (rooms.putIfAbsent(code, room) == null) {
                 return room;
             }

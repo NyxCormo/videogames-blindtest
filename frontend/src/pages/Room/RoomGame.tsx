@@ -37,10 +37,11 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
   const startsAt = Date.parse(track.startsAt)
   const endsAt = Date.parse(track.endsAt)
   const started = useServerReached(startsAt, offset)
+  const ended = useServerReached(endsAt, offset)
   const reveal = track.reveal
   const me = room.players.find((player) => player.listenerId === listenerId)
   const doneCount = room.players.filter((player) => player.done).length
-  const answering = started && round !== null && !round.done
+  const answering = started && !ended && round !== null && !round.done
 
   useEffect(() => {
     const controller = new AbortController()
@@ -86,12 +87,12 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
         <p className="progress">
           Musique {track.position + 1} sur {room.trackCount}
         </p>
-        {room.soundMode === 'EVERY_DEVICE' && track.audioLink && (
-          <RoomAudio src={track.audioLink} startsAt={startsAt} offset={offset} />
+        {room.mode === 'MULTI' && track.audioLink && (
+          <RoomAudio src={track.audioLink} startsAt={startsAt} offset={offset} free={room.playersCanSeek} />
         )}
       </div>
-      {room.soundMode === 'MAIN_SCREEN' && <p className="muted">Le son passe sur l'écran principal.</p>}
-      {room.soundMode === 'EVERY_DEVICE' && !track.audioLink && <p role="alert">Pas de lien audio pour cette musique.</p>}
+      {room.mode === 'PRESENTATION' && <p className="muted">Le son passe sur l'écran de {room.hostName}.</p>}
+      {room.mode === 'MULTI' && !track.audioLink && <p role="alert">Pas de lien audio pour cette musique.</p>}
 
       {reveal ? (
         <>
@@ -118,9 +119,11 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
             }
           />
           <p className="room-next">
-            {track.position + 1 < room.trackCount
-              ? 'Musique suivante dans quelques secondes.'
-              : 'Fin de la partie dans quelques secondes.'}
+            {room.mode === 'PRESENTATION'
+              ? `En attente de ${room.hostName}.`
+              : track.position + 1 < room.trackCount
+                ? 'Musique suivante dans quelques secondes.'
+                : 'Fin de la partie dans quelques secondes.'}
           </p>
         </>
       ) : (
@@ -145,6 +148,7 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
                     Je passe
                   </button>
                 )}
+                {ended && !round?.done && <p className="room-ended">Temps de réponse écoulé.</p>}
                 {round?.done && (
                   <div className="room-done" role="status">
                     {round.gameFound ? (

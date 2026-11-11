@@ -2,7 +2,7 @@ import type { Reveal } from './blindtests'
 import { request } from './http'
 
 export type RoomVisibility = 'PUBLIC' | 'PRIVATE'
-export type SoundMode = 'EVERY_DEVICE' | 'MAIN_SCREEN'
+export type RoomMode = 'MULTI' | 'PRESENTATION'
 export type ScoringMode = 'SPEED' | 'FIRST_COME'
 export type RoomPhase = 'WAITING' | 'PLAYING' | 'REVEAL' | 'FINISHED'
 
@@ -30,8 +30,10 @@ export type Room = {
   blindtestName: string
   trackCount: number
   hostId: number
+  hostName: string
   visibility: RoomVisibility
-  soundMode: SoundMode
+  mode: RoomMode
+  playersCanSeek: boolean
   scoringMode: ScoringMode
   answerSeconds: number
   maxAttempts: number
@@ -45,7 +47,8 @@ export type Room = {
 export type RoomSettings = {
   blindtestId: number
   visibility: RoomVisibility
-  soundMode: SoundMode
+  mode: RoomMode
+  playersCanSeek: boolean
   scoringMode: ScoringMode
   answerSeconds: number
 }
@@ -76,6 +79,16 @@ export async function startRoom(code: string, listenerId: number): Promise<Room>
 
 export async function stopRoom(code: string, listenerId: number): Promise<Room> {
   const response = await request(`/api/rooms/${code}/stop?listenerId=${listenerId}`, { method: 'POST' })
+  return response.json()
+}
+
+export async function revealInRoom(code: string, listenerId: number): Promise<Room> {
+  const response = await request(`/api/rooms/${code}/reveal?listenerId=${listenerId}`, { method: 'POST' })
+  return response.json()
+}
+
+export async function nextInRoom(code: string, listenerId: number): Promise<Room> {
+  const response = await request(`/api/rooms/${code}/next?listenerId=${listenerId}`, { method: 'POST' })
   return response.json()
 }
 

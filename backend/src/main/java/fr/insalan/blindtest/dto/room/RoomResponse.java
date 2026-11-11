@@ -4,10 +4,10 @@ import java.time.Instant;
 import java.util.List;
 
 import fr.insalan.blindtest.room.Room;
+import fr.insalan.blindtest.room.RoomMode;
 import fr.insalan.blindtest.room.RoomPhase;
 import fr.insalan.blindtest.room.RoomVisibility;
 import fr.insalan.blindtest.room.ScoringMode;
-import fr.insalan.blindtest.room.SoundMode;
 
 public record RoomResponse(
     String code,
@@ -15,8 +15,10 @@ public record RoomResponse(
     String blindtestName,
     long trackCount,
     Integer hostId,
+    String hostName,
     RoomVisibility visibility,
-    SoundMode soundMode,
+    RoomMode mode,
+    boolean playersCanSeek,
     ScoringMode scoringMode,
     int answerSeconds,
     int maxAttempts,
@@ -34,8 +36,10 @@ public record RoomResponse(
                 room.getBlindtestName(),
                 room.getTrackCount(),
                 room.getHostId(),
+                room.getHostName(),
                 room.getVisibility(),
-                room.getSoundMode(),
+                room.getMode(),
+                room.isPlayersCanSeek(),
                 room.getScoringMode(),
                 room.getAnswerSeconds(),
                 room.getMaxAttempts(),
