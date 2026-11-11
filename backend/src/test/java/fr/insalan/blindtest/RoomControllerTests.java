@@ -264,6 +264,26 @@ class RoomControllerTests extends IntegrationTest {
     }
 
     @Test
+    void onlyTheHostStopsTheGame() throws Exception {
+        String code = createRoom("PUBLIC");
+        Listener raven = join(code, "Raven");
+        musicAlreadyPlaying(code);
+
+        mockMvc.perform(post("/api/rooms/" + code + "/stop").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/rooms/" + code + "/stop").param("listenerId", host.getId().toString()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.phase").value("FINISHED"))
+            .andExpect(jsonPath("$.currentTrack").value(nullValue()));
+        mockMvc.perform(post("/api/rooms/" + code + "/stop").param("listenerId", host.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isConflict());
+        mockMvc.perform(get("/api/rooms"))
+            .andExpect(jsonPath("$[*].code").value(not(hasItem(code))));
+    }
+
+    @Test
     void finishedRoomsAreNotListedAndCannotBeJoined() throws Exception {
         String code = createRoom("PUBLIC");
         Room room = musicAlreadyPlaying(code);

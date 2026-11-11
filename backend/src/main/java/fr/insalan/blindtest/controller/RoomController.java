@@ -154,6 +154,18 @@ public class RoomController {
         return RoomResponse.from(room);
     }
 
+    @PostMapping("/{code}/stop")
+    public RoomResponse stop(@PathVariable String code, @RequestParam Integer listenerId) {
+        Room room = room(code);
+        if (!room.getHostId().equals(listenerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Seule la personne qui a créé la salle peut arrêter la partie");
+        }
+        if (!roomTimer.stop(room)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La partie est déjà terminée");
+        }
+        return RoomResponse.from(room);
+    }
+
     @GetMapping("/{code}/round")
     public RoomRound round(@PathVariable String code, @RequestParam Integer listenerId) {
         return room(code, listenerId).round(listenerId);

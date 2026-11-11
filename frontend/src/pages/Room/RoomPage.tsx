@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { joinRoom, startRoom } from '../../api/rooms'
+import { joinRoom, startRoom, stopRoom } from '../../api/rooms'
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { plural } from '../../plural'
@@ -17,6 +17,8 @@ export function RoomPage() {
   const [joinError, setJoinError] = useState<{ code: string; message: string } | null>(null)
   const [starting, setStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
+  const [confirmStop, setConfirmStop] = useState(false)
+  const [stopError, setStopError] = useState<string | null>(null)
   const { room, connection } = useRoomEvents(joinedCode === roomCode ? roomCode : null)
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export function RoomPage() {
   }
 
   const host = room.players.find((player) => player.listenerId === room.hostId)
+  const isHost = room.hostId === listener.id
 
   function handleStart() {
     if (!listener) return
@@ -63,6 +66,13 @@ export function RoomPage() {
     startRoom(roomCode, listener.id)
       .catch((err: Error) => setStartError(err.message))
       .finally(() => setStarting(false))
+  }
+
+  function handleStop() {
+    if (!listener) return
+    setConfirmStop(false)
+    setStopError(null)
+    stopRoom(roomCode, listener.id).catch((err: Error) => setStopError(err.message))
   }
 
   return (
@@ -107,7 +117,7 @@ export function RoomPage() {
             Pour rejoindre : le code <strong>{room.code}</strong> sur la page <Link to="/rooms">Salles</Link>, ou le
             lien <span className="room-url">{`${window.location.origin}/rooms/${room.code}`}</span>
           </p>
-          {room.hostId === listener.id ? (
+          {isHost ? (
             <button type="button" className="button button-primary button-large" onClick={handleStart} disabled={starting}>
               Lancer la partie
             </button>
@@ -123,6 +133,26 @@ export function RoomPage() {
         </p>
       )}
       {room.phase === 'FINISHED' && <p>La partie est terminée.</p>}
+      {isHost && room.phase !== 'FINISHED' && (
+        <div className="room-stop">
+          {confirmStop ? (
+            <>
+              <span>La partie s'arrête pour tout le monde, avec les points déjà révélés.</span>
+              <button type="button" onClick={handleStop}>
+                Arrêter quand même
+              </button>
+              <button type="button" onClick={() => setConfirmStop(false)}>
+                Annuler
+              </button>
+            </>
+          ) : (
+            <button type="button" onClick={() => setConfirmStop(true)}>
+              Arrêter la partie
+            </button>
+          )}
+        </div>
+      )}
+      {stopError && <p role="alert">{stopError}</p>}
 
       <h2>Joueurs ({room.players.length})</h2>
       <ul className="room-players">

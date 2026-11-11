@@ -10,7 +10,7 @@ import { SCORING_LABELS, SOUND_LABELS, VISIBILITY_LABELS } from '../Room/roomLab
 import './RoomCreatePage.css'
 
 const VISIBILITY_CHOICES: Choice<RoomVisibility>[] = [
-  { value: 'PUBLIC', label: VISIBILITY_LABELS.PUBLIC, hint: 'La salle apparaît dans la liste des salles.' },
+  { value: 'PUBLIC', label: VISIBILITY_LABELS.PUBLIC, hint: 'La salle apparaît dans la liste des salles et dans un bandeau sur tout le site.' },
   { value: 'PRIVATE', label: VISIBILITY_LABELS.PRIVATE, hint: 'La salle se rejoint uniquement avec son code.' },
 ]
 

@@ -74,3 +74,11 @@
   font-size: 0.8rem;
   font-weight: 600;
 }
+
+.room-stop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0;
+}

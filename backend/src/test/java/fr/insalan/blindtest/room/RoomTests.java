@@ -89,6 +89,33 @@ class RoomTests {
     }
 
     @Test
+    void stoppingKeepsTheRevealedPointsOnly() {
+        Room room = room(ScoringMode.FIRST_COME);
+        room.start(tracks, NOW);
+        room.guess(NYX, DAWN_GAME, null, MUSIC_STARTS);
+        room.reveal(0);
+        room.next(0, NOW.plusSeconds(40));
+        room.guess(NYX, 101, null, NOW.plusSeconds(45));
+
+        assertTrue(room.stop());
+        assertEquals(RoomPhase.FINISHED, room.getPhase());
+        assertNull(room.currentTrack());
+        assertEquals(1000, room.round(NYX).score());
+        assertFalse(room.reveal(1));
+        assertFalse(room.next(1, NOW.plusSeconds(60)));
+        assertFalse(room.stop());
+    }
+
+    @Test
+    void aWaitingRoomCanBeStopped() {
+        Room room = room(ScoringMode.SPEED);
+
+        assertTrue(room.stop());
+        assertEquals(RoomPhase.FINISHED, room.getPhase());
+        assertThrows(IllegalStateException.class, () -> room.start(tracks, NOW));
+    }
+
+    @Test
     void speedPointsGoFrom1000To500WithTheTimeLeft() {
         Room room = room(ScoringMode.SPEED);
         room.start(tracks, NOW);

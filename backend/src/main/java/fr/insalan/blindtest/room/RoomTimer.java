@@ -40,6 +40,15 @@ public class RoomTimer implements DisposableBean {
         scheduleReveal(room);
     }
 
+    public boolean stop(Room room) {
+        if (!room.stop()) {
+            return false;
+        }
+        roomEvents.publish(room);
+        scheduleClose(room);
+        return true;
+    }
+
     public void reveal(Room room, int position) {
         if (room.reveal(position)) {
             roomEvents.publish(room);
@@ -58,9 +67,13 @@ public class RoomTimer implements DisposableBean {
             if (room.getPhase() == RoomPhase.PLAYING) {
                 scheduleReveal(room);
             } else {
-                schedule(Instant.now().plus(CLOSE_AFTER_END), () -> close(room));
+                scheduleClose(room);
             }
         }
+    }
+
+    private void scheduleClose(Room room) {
+        schedule(Instant.now().plus(CLOSE_AFTER_END), () -> close(room));
     }
 
     private void close(Room room) {

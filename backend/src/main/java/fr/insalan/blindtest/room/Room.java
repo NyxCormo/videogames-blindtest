@@ -138,6 +138,15 @@ public class Room {
         return true;
     }
 
+    public synchronized boolean stop() {
+        if (phase == RoomPhase.FINISHED) {
+            return false;
+        }
+        phase = RoomPhase.FINISHED;
+        version++;
+        return true;
+    }
+
     private void play(int position, Instant now) {
         phase = RoomPhase.PLAYING;
         this.position = position;

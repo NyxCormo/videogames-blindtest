@@ -73,3 +73,8 @@ export async function startRoom(code: string, listenerId: number): Promise<Room>
   const response = await request(`/api/rooms/${code}/start?listenerId=${listenerId}`, { method: 'POST' })
   return response.json()
 }
+
+export async function stopRoom(code: string, listenerId: number): Promise<Room> {
+  const response = await request(`/api/rooms/${code}/stop?listenerId=${listenerId}`, { method: 'POST' })
+  return response.json()
+}
