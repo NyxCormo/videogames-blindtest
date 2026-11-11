@@ -210,7 +210,7 @@ class RoomControllerTests extends IntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"franchiseId\": " + dawn.getGame().getFranchise().getId() + "}"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.franchiseFound").value(true))
+            .andExpect(jsonPath("$.foundFranchiseId").value(dawn.getGame().getFranchise().getId()))
             .andExpect(jsonPath("$.roundPoints").value(250))
             .andExpect(jsonPath("$.done").value(false));
         mockMvc.perform(post("/api/rooms/" + code + "/guess").param("listenerId", host.getId().toString())

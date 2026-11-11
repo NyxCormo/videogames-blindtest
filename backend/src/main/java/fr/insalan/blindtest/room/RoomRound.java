@@ -6,7 +6,7 @@ public record RoomRound(
     int score,
     int roundPoints,
     int attemptsRemaining,
-    boolean franchiseFound,
+    Integer foundFranchiseId,
     boolean gameFound,
     boolean bonusFound,
     boolean done

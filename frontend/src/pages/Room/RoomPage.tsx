@@ -4,8 +4,11 @@ import { joinRoom, startRoom, stopRoom } from '../../api/rooms'
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { plural } from '../../plural'
+import { RoomGame } from './RoomGame'
 import { SCORING_LABELS, SOUND_LABELS, VISIBILITY_LABELS } from './roomLabels'
+import { RoomScoreboard } from './RoomScoreboard'
 import { useRoomEvents } from './useRoomEvents'
+import { useClockOffset } from './useServerClock'
 import './RoomPage.css'
 
 export function RoomPage() {
@@ -20,6 +23,7 @@ export function RoomPage() {
   const [confirmStop, setConfirmStop] = useState(false)
   const [stopError, setStopError] = useState<string | null>(null)
   const { room, connection } = useRoomEvents(joinedCode === roomCode ? roomCode : null)
+  const offset = useClockOffset()
 
   useEffect(() => {
     if (listenerId === undefined) return
@@ -86,30 +90,32 @@ export function RoomPage() {
         </p>
       )}
 
-      <dl className="room-settings">
-        <div>
-          <dt>Blindtest</dt>
-          <dd>
-            {room.blindtestName} ({plural(room.trackCount, 'musique', 'musiques')})
-          </dd>
-        </div>
-        <div>
-          <dt>Temps de réponse</dt>
-          <dd>{room.answerSeconds} s</dd>
-        </div>
-        <div>
-          <dt>Son</dt>
-          <dd>{SOUND_LABELS[room.soundMode]}</dd>
-        </div>
-        <div>
-          <dt>Points</dt>
-          <dd>{SCORING_LABELS[room.scoringMode]}</dd>
-        </div>
-        <div>
-          <dt>Visibilité</dt>
-          <dd>{VISIBILITY_LABELS[room.visibility]}</dd>
-        </div>
-      </dl>
+      {room.phase === 'WAITING' && (
+        <dl className="room-settings">
+          <div>
+            <dt>Blindtest</dt>
+            <dd>
+              {room.blindtestName} ({plural(room.trackCount, 'musique', 'musiques')})
+            </dd>
+          </div>
+          <div>
+            <dt>Temps de réponse</dt>
+            <dd>{room.answerSeconds} s</dd>
+          </div>
+          <div>
+            <dt>Son</dt>
+            <dd>{SOUND_LABELS[room.soundMode]}</dd>
+          </div>
+          <div>
+            <dt>Points</dt>
+            <dd>{SCORING_LABELS[room.scoringMode]}</dd>
+          </div>
+          <div>
+            <dt>Visibilité</dt>
+            <dd>{VISIBILITY_LABELS[room.visibility]}</dd>
+          </div>
+        </dl>
+      )}
 
       {room.phase === 'WAITING' && (
         <section className="room-waiting">
@@ -128,9 +134,13 @@ export function RoomPage() {
         </section>
       )}
       {room.currentTrack && (
-        <p>
-          Partie en cours : musique {room.currentTrack.position + 1} sur {room.trackCount}.
-        </p>
+        <RoomGame
+          key={room.currentTrack.position}
+          room={room}
+          track={room.currentTrack}
+          listenerId={listener.id}
+          offset={offset}
+        />
       )}
       {room.phase === 'FINISHED' && <p>La partie est terminée.</p>}
       {isHost && room.phase !== 'FINISHED' && (
@@ -154,15 +164,24 @@ export function RoomPage() {
       )}
       {stopError && <p role="alert">{stopError}</p>}
 
-      <h2>Joueurs ({room.players.length})</h2>
-      <ul className="room-players">
-        {room.players.map((player) => (
-          <li key={player.listenerId}>
-            {player.name}
-            {player.listenerId === room.hostId && <span className="room-badge">Hôte</span>}
-          </li>
-        ))}
-      </ul>
+      {room.phase === 'WAITING' ? (
+        <>
+          <h2>Joueurs ({room.players.length})</h2>
+          <ul className="room-players">
+            {room.players.map((player) => (
+              <li key={player.listenerId}>
+                {player.name}
+                {player.listenerId === room.hostId && <span className="room-badge">Hôte</span>}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h2>Classement</h2>
+          <RoomScoreboard room={room} listenerId={listener.id} />
+        </>
+      )}
     </div>
   )
 }

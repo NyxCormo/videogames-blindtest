@@ -14,8 +14,8 @@ import type { Franchise } from '../../api/franchises'
 import type { Game } from '../../api/games'
 import type { Track } from '../../api/tracks'
 import { loadStoredVolume, storeVolume } from '../../audioPreferences'
+import { AttemptsLeft } from '../../components/AttemptsLeft/AttemptsLeft'
 import { GameGuessForm } from '../../components/GameGuessForm/GameGuessForm'
-import { CrossIcon } from '../../components/icons'
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { ReportButton } from '../../components/ReportButton/ReportButton'
 import { Stat } from '../../components/Stat/Stat'
@@ -213,26 +213,7 @@ export function BlindtestPlayPage() {
               />
               {!reveal && (
                 <>
-                  <p className="blindtest-attempts">
-                    <span className="blindtest-dots" aria-hidden="true">
-                      {Array.from({ length: session.maxAttempts }, (_, index) => (
-                        <span
-                          key={index}
-                          className={`blindtest-dot${index < session.attemptsRemaining ? ' blindtest-dot-left' : ''}`}
-                        />
-                      ))}
-                    </span>
-                    {plural(session.attemptsRemaining, 'essai restant', 'essais restants')}
-                  </p>
-                  {misses.length > 0 && (
-                    <ul className="blindtest-misses" role="alert">
-                      {misses.map((miss, index) => (
-                        <li key={index}>
-                          <CrossIcon /> {miss}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <AttemptsLeft remaining={session.attemptsRemaining} max={session.maxAttempts} misses={misses} />
                   <button type="button" onClick={handlePass} disabled={submitting}>
                     Je passe
                   </button>

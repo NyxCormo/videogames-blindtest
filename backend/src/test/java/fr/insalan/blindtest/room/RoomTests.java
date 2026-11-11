@@ -141,7 +141,7 @@ class RoomTests {
         room.start(tracks, NOW);
 
         RoomRound franchise = room.guessFranchise(NYX, DAWN_FRANCHISE, MUSIC_STARTS);
-        assertTrue(franchise.franchiseFound());
+        assertEquals(DAWN_FRANCHISE, franchise.foundFranchiseId());
         assertEquals(250, franchise.roundPoints());
         assertEquals(1, franchise.attemptsRemaining());
         assertFalse(franchise.done());

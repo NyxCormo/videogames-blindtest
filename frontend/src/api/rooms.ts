@@ -78,3 +78,44 @@ export async function stopRoom(code: string, listenerId: number): Promise<Room> 
   const response = await request(`/api/rooms/${code}/stop?listenerId=${listenerId}`, { method: 'POST' })
   return response.json()
 }
+
+// Forme du JSON renvoyé par /api/rooms/{code}/round et par les réponses (voir RoomRound côté backend)
+export type RoomRound = {
+  position: number
+  trackId: number | null
+  score: number
+  roundPoints: number
+  attemptsRemaining: number
+  foundFranchiseId: number | null
+  gameFound: boolean
+  bonusFound: boolean
+  done: boolean
+}
+
+export async function fetchRound(code: string, listenerId: number, signal?: AbortSignal): Promise<RoomRound> {
+  const response = await request(`/api/rooms/${code}/round?listenerId=${listenerId}`, { signal })
+  return response.json()
+}
+
+export async function guessInRoom(code: string, listenerId: number, gameId: number, trackId: number | null): Promise<RoomRound> {
+  const response = await request(`/api/rooms/${code}/guess?listenerId=${listenerId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ gameId, trackId }),
+  })
+  return response.json()
+}
+
+export async function guessFranchiseInRoom(code: string, listenerId: number, franchiseId: number): Promise<RoomRound> {
+  const response = await request(`/api/rooms/${code}/guess-franchise?listenerId=${listenerId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ franchiseId }),
+  })
+  return response.json()
+}
+
+export async function passInRoom(code: string, listenerId: number): Promise<RoomRound> {
+  const response = await request(`/api/rooms/${code}/pass?listenerId=${listenerId}`, { method: 'POST' })
+  return response.json()
+}

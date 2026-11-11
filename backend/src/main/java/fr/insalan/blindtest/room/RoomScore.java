@@ -53,14 +53,14 @@ class RoomScore {
         passed = false;
     }
 
-    RoomRound round(int position, Integer trackId, int maxAttempts) {
+    RoomRound round(int position, Integer trackId, Integer franchiseId, int maxAttempts) {
         return new RoomRound(
             position,
             trackId,
             score,
             roundPoints,
             Math.max(0, maxAttempts - attemptsUsed),
-            franchiseFound,
+            franchiseFound ? franchiseId : null,
             gameFound,
             bonusFound,
             done(maxAttempts)

@@ -108,7 +108,10 @@ public class Room {
 
     public synchronized RoomRound round(Integer listenerId) {
         RoomTrack track = currentTrack();
-        return scores.get(listenerId).round(position, track == null ? null : track.trackId(), maxAttempts);
+        if (track == null) {
+            return scores.get(listenerId).round(position, null, null, maxAttempts);
+        }
+        return scores.get(listenerId).round(position, track.trackId(), track.franchiseId(), maxAttempts);
     }
 
     public synchronized boolean everyoneDone() {
