@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
 import { fetchPublicRooms, type Room } from '../../api/rooms'
 import { UsersIcon } from '../icons'
-import { roomBanner } from './roomBanner'
+import { roomBanner } from './bannerContent'
 import './RoomBanner.css'
 
 const REFRESH_MS = 15_000

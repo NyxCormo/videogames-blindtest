@@ -169,7 +169,6 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
           {answering && (
             <div className="track-search">
               <GameGuessForm
-                key={round.attemptsRemaining}
                 foundFranchiseId={round.foundFranchiseId}
                 onSubmit={handleGuess}
                 onGuessFranchise={handleGuessFranchise}

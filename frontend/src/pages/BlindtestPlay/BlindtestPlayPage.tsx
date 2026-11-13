@@ -253,7 +253,7 @@ export function BlindtestPlayPage() {
         ) : (
           <div className="track-search">
             <GameGuessForm
-              key={`${session.trackId}-${session.attemptsRemaining}`}
+              key={session.trackId}
               foundFranchiseId={session.foundFranchiseId}
               onSubmit={handleGuess}
               onGuessFranchise={handleGuessFranchise}

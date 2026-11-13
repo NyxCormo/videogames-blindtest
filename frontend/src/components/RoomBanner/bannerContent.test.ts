@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Room } from '../../api/rooms'
-import { roomBanner } from './roomBanner'
+import { roomBanner } from './bannerContent'
 
 const room: Room = {
   code: 'ABCD',
