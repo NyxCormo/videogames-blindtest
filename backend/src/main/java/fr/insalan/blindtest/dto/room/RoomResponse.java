@@ -3,9 +3,11 @@ package fr.insalan.blindtest.dto.room;
 import java.time.Instant;
 import java.util.List;
 
+import fr.insalan.blindtest.dto.blindtest.RevealResponse;
 import fr.insalan.blindtest.room.Room;
 import fr.insalan.blindtest.room.RoomMode;
 import fr.insalan.blindtest.room.RoomPhase;
+import fr.insalan.blindtest.room.RoomTrack;
 import fr.insalan.blindtest.room.RoomVisibility;
 import fr.insalan.blindtest.room.ScoringMode;
 
@@ -26,7 +28,8 @@ public record RoomResponse(
     long version,
     RoomPhase phase,
     List<RoomPlayerResponse> players,
-    CurrentTrackResponse currentTrack
+    CurrentTrackResponse currentTrack,
+    List<RevealResponse> playedTracks
 ) {
     public static RoomResponse from(Room room) {
         synchronized (room) {
@@ -47,7 +50,8 @@ public record RoomResponse(
                 room.getVersion(),
                 room.getPhase(),
                 players(room),
-                CurrentTrackResponse.from(room)
+                CurrentTrackResponse.from(room),
+                playedTracks(room)
             );
         }
     }
@@ -55,7 +59,17 @@ public record RoomResponse(
     private static List<RoomPlayerResponse> players(Room room) {
         boolean revealed = room.getPhase() == RoomPhase.REVEAL;
         return room.players().stream()
-            .map(player -> RoomPlayerResponse.from(player, room.round(player.listenerId()), revealed))
+            .map(player -> RoomPlayerResponse.from(
+                player, room.round(player.listenerId()), room.totals(player.listenerId()), revealed))
+            .toList();
+    }
+
+    private static List<RevealResponse> playedTracks(Room room) {
+        if (room.getPhase() != RoomPhase.FINISHED) {
+            return List.of();
+        }
+        return room.revealedTracks().stream()
+            .map(RoomTrack::answer)
             .toList();
     }
 }

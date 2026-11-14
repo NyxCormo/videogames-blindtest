@@ -36,6 +36,7 @@ public class Room {
     private Instant startsAt;
     private Instant endsAt;
     private int gameFinders;
+    private int revealedCount;
 
     public Room(
         String code,
@@ -122,6 +123,14 @@ public class Room {
         return scores.get(listenerId).round(position, track.trackId(), track.franchiseId(), maxAttempts);
     }
 
+    public synchronized RoomTotals totals(Integer listenerId) {
+        return scores.get(listenerId).totals();
+    }
+
+    public synchronized List<RoomTrack> revealedTracks() {
+        return tracks.subList(0, revealedCount);
+    }
+
     public synchronized boolean everyoneDone() {
         return phase == RoomPhase.PLAYING && scores.values().stream().allMatch(score -> score.done(maxAttempts));
     }
@@ -131,6 +140,7 @@ public class Room {
             return false;
         }
         phase = RoomPhase.REVEAL;
+        revealedCount = position + 1;
         scores.values().forEach(RoomScore::endRound);
         version++;
         return true;

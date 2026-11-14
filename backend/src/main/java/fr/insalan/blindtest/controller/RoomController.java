@@ -127,7 +127,7 @@ public class RoomController {
     public RoomResponse join(@PathVariable String code, @RequestParam Integer listenerId) {
         Room room = room(code);
         if (room.getPhase() == RoomPhase.FINISHED) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "La partie est terminée");
+            return RoomResponse.from(room);
         }
         if (room.join(player(listenerId))) {
             roomEvents.publish(room);

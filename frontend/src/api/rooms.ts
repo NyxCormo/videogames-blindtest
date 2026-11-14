@@ -13,6 +13,9 @@ export type RoomPlayer = {
   score: number
   done: boolean
   roundPoints: number | null
+  gamesFound: number
+  franchisesFound: number
+  bonusesFound: number
 }
 
 export type CurrentTrack = {
@@ -42,6 +45,7 @@ export type Room = {
   phase: RoomPhase
   players: RoomPlayer[]
   currentTrack: CurrentTrack | null
+  playedTracks: Reveal[]
 }
 
 export type RoomSettings = {

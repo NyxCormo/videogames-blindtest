@@ -7,6 +7,7 @@ import { plural } from '../../plural'
 import { RoomGame } from './RoomGame'
 import { MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from './roomLabels'
 import { RoomPresenter } from './RoomPresenter'
+import { RoomResults } from './RoomResults'
 import { RoomScoreboard } from './RoomScoreboard'
 import { useRoomEvents } from './useRoomEvents'
 import { useClockOffset } from './useServerClock'
@@ -47,7 +48,7 @@ export function RoomPage() {
 
   const error = joinError?.code === roomCode ? joinError.message : null
 
-  if (error || connection === 'closed') {
+  if (error || (connection === 'closed' && room?.phase !== 'FINISHED')) {
     return (
       <>
         <h1>Salle {roomCode}</h1>
@@ -161,7 +162,9 @@ export function RoomPage() {
             offset={offset}
           />
         ))}
-      {room.phase === 'FINISHED' && <p>La partie est terminée.</p>}
+      {room.phase === 'FINISHED' && (
+        <RoomResults room={room} listenerId={listener.id} closed={connection === 'closed'} />
+      )}
       {isHost && room.phase !== 'FINISHED' && (
         <div className="room-stop">
           {confirmStop ? (
@@ -197,10 +200,12 @@ export function RoomPage() {
           </ul>
         </>
       ) : (
-        <>
-          <h2>Classement</h2>
-          <RoomScoreboard room={room} listenerId={listener.id} />
-        </>
+        room.phase !== 'FINISHED' && (
+          <>
+            <h2>Classement</h2>
+            <RoomScoreboard room={room} listenerId={listener.id} />
+          </>
+        )
       )}
     </div>
   )

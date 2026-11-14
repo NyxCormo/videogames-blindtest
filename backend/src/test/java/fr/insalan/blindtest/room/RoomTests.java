@@ -180,6 +180,25 @@ class RoomTests {
     }
 
     @Test
+    void totalsAndPlayedTracksCountOnlyRevealedTracks() {
+        Room room = room(ScoringMode.SPEED);
+        room.start(tracks, NOW);
+        room.guess(NYX, DAWN_GAME, 10, MUSIC_STARTS);
+        room.guessFranchise(RAVEN, DAWN_FRANCHISE, MUSIC_STARTS);
+        assertEquals(new RoomTotals(0, 0, 0), room.totals(NYX));
+        assertEquals(List.of(), room.revealedTracks());
+
+        room.reveal(0);
+        room.next(0, NOW.plusSeconds(40));
+        room.guess(NYX, 101, null, NOW.plusSeconds(45));
+        room.stop();
+
+        assertEquals(new RoomTotals(1, 0, 1), room.totals(NYX));
+        assertEquals(new RoomTotals(0, 1, 0), room.totals(RAVEN));
+        assertEquals(List.of(tracks.get(0)), room.revealedTracks());
+    }
+
+    @Test
     void answersCloseWhenTheTimeIsUp() {
         Room room = room(ScoringMode.SPEED);
         room.start(tracks, NOW);

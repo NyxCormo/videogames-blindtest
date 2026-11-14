@@ -18,8 +18,11 @@ const room: Room = {
   createdAt: '2026-11-11T20:00:00Z',
   version: 0,
   phase: 'WAITING',
-  players: [{ listenerId: 1, name: 'Nyx', score: 0, done: false, roundPoints: null }],
+  players: [
+    { listenerId: 1, name: 'Nyx', score: 0, done: false, roundPoints: null, gamesFound: 0, franchisesFound: 0, bonusesFound: 0 },
+  ],
   currentTrack: null,
+  playedTracks: [],
 }
 const other: Room = { ...room, code: 'EFGH', phase: 'PLAYING' }
 

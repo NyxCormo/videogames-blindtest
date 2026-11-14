@@ -19,6 +19,7 @@ const room: Room = {
   version: 3,
   phase: 'WAITING',
   players: [],
+  playedTracks: [],
   currentTrack: null,
 }
 

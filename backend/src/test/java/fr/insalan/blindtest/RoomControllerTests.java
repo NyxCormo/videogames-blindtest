@@ -328,7 +328,30 @@ class RoomControllerTests extends IntegrationTest {
     }
 
     @Test
-    void finishedRoomsAreNotListedAndCannotBeJoined() throws Exception {
+    void theFinishedRoomListsThePlayedTracksAndTheTotals() throws Exception {
+        String code = createRoom("PRIVATE");
+        musicAlreadyPlaying(code);
+
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.playedTracks.length()").value(0));
+        mockMvc.perform(post("/api/rooms/" + code + "/guess").param("listenerId", host.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"gameId\": " + dawn.getGame().getId() + ", \"trackId\": " + dawn.getId() + "}"))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.phase").value("REVEAL"))
+            .andExpect(jsonPath("$.playedTracks.length()").value(0));
+        mockMvc.perform(post("/api/rooms/" + code + "/stop").param("listenerId", host.getId().toString()))
+            .andExpect(jsonPath("$.players[0].gamesFound").value(1))
+            .andExpect(jsonPath("$.players[0].franchisesFound").value(0))
+            .andExpect(jsonPath("$.players[0].bonusesFound").value(1))
+            .andExpect(jsonPath("$.playedTracks.length()").value(1))
+            .andExpect(jsonPath("$.playedTracks[0].trackName").value("Dawn"))
+            .andExpect(jsonPath("$.playedTracks[0].gameName").value("Stellar Blade"));
+    }
+
+    @Test
+    void finishedRoomsAreNotListedAndOnlyShowTheirResults() throws Exception {
         String code = createRoom("PUBLIC");
         Room room = musicAlreadyPlaying(code);
         room.reveal(0);
@@ -338,7 +361,9 @@ class RoomControllerTests extends IntegrationTest {
         mockMvc.perform(get("/api/rooms"))
             .andExpect(jsonPath("$[*].code").value(not(hasItem(code))));
         mockMvc.perform(post("/api/rooms/" + code + "/players").param("listenerId", raven.getId().toString()))
-            .andExpect(status().isConflict());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.phase").value("FINISHED"))
+            .andExpect(jsonPath("$.players.length()").value(1));
     }
 
     @Test

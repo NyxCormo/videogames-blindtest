@@ -210,3 +210,132 @@
 .room-scoreboard-score {
   font-weight: 600;
 }
+
+.room-results h3 {
+  margin-top: 2rem;
+}
+
+.room-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.room-podium-step {
+  display: flex;
+  flex: 0 1 9rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.room-podium-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+
+.room-podium-score {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.room-podium-block {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding-top: 0.5rem;
+  border: 2px solid var(--border);
+  border-bottom: none;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: var(--surface);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.room-podium-1 {
+  order: 2;
+}
+
+.room-podium-1 .room-podium-block {
+  height: 7rem;
+  border-width: 3px;
+  border-color: var(--accent);
+}
+
+.room-podium-2 {
+  order: 1;
+}
+
+.room-podium-2 .room-podium-block {
+  height: 5rem;
+}
+
+.room-podium-3 {
+  order: 3;
+}
+
+.room-podium-3 .room-podium-block {
+  height: 3.5rem;
+}
+
+.room-results-me {
+  font-weight: 600;
+  text-align: center;
+}
+
+.room-results-table td:not(:nth-child(2)),
+.room-results-table th:not(:nth-child(2)) {
+  font-variant-numeric: tabular-nums;
+}
+
+.room-results-me-row td {
+  font-weight: 700;
+}
+
+.room-played {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.room-played li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.room-played img,
+.room-played-nocover {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  object-fit: cover;
+}
+
+.room-played-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.room-results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}

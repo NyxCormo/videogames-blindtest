@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { RoomPlayer } from '../../api/rooms'
-import { ranking } from './ranking'
+import { rankLabel, ranking } from './ranking'
 
 function player(listenerId: number, name: string, score: number): RoomPlayer {
-  return { listenerId, name, score, done: false, roundPoints: null }
+  return { listenerId, name, score, done: false, roundPoints: null, gamesFound: 0, franchisesFound: 0, bonusesFound: 0 }
 }
 
 describe('ranking', () => {
@@ -16,5 +16,11 @@ describe('ranking', () => {
   it('gives the same rank to equal scores', () => {
     const ranked = ranking([player(1, 'Eve', 1000), player(2, 'Lily', 1000), player(3, 'Raven', 0)])
     expect(ranked.map((entry) => entry.rank)).toEqual([1, 1, 3])
+  })
+})
+
+describe('rankLabel', () => {
+  it('writes the place in French', () => {
+    expect([1, 2, 3, 11].map(rankLabel)).toEqual(['1er', '2e', '3e', '11e'])
   })
 })

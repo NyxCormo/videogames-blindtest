@@ -12,6 +12,9 @@ class RoomScore {
     private boolean gameFound;
     private boolean bonusFound;
     private boolean passed;
+    private int gamesFound;
+    private int franchisesFound;
+    private int bonusesFound;
 
     void findGame(int points, boolean bonus) {
         gameFound = true;
@@ -42,6 +45,18 @@ class RoomScore {
 
     void endRound() {
         score += roundPoints;
+        if (gameFound) {
+            gamesFound++;
+        } else if (franchiseFound) {
+            franchisesFound++;
+        }
+        if (bonusFound) {
+            bonusesFound++;
+        }
+    }
+
+    RoomTotals totals() {
+        return new RoomTotals(gamesFound, franchisesFound, bonusesFound);
     }
 
     void newRound() {
