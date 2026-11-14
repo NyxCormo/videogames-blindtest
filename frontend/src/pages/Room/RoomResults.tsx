@@ -21,7 +21,7 @@ export function RoomResults({ room, listenerId, closed }: Props) {
       <p className="muted">
         {played === 0
           ? 'Partie arrêtée avant la fin de la première musique.'
-          : played < room.trackCount
+          : !room.infinite && played < room.trackCount
             ? `Partie arrêtée après ${plural(played, 'musique', 'musiques')} sur ${room.trackCount}.`
             : `${plural(played, 'musique jouée', 'musiques jouées')}.`}
         {closed && ' La salle est fermée.'}
@@ -104,8 +104,11 @@ export function RoomResults({ room, listenerId, closed }: Props) {
       )}
 
       <div className="room-results-actions">
-        <Link className="button button-primary" to={`/rooms/new?blindtest=${room.blindtestId}`}>
-          Rejouer ce blindtest
+        <Link
+          className="button button-primary"
+          to={room.infinite ? '/rooms/new?infinite' : `/rooms/new?blindtest=${room.blindtestId}`}
+        >
+          {room.infinite ? 'Relancer une salle infinie' : 'Rejouer ce blindtest'}
         </Link>
         <Link className="button" to="/rooms">
           Retour aux salles

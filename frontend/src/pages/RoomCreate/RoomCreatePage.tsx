@@ -1,13 +1,25 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { fetchBlindtests, type Blindtest } from '../../api/blindtests'
-import { createRoom, type RoomMode, type RoomVisibility, type ScoringMode } from '../../api/rooms'
+import { createRoom, type DrawMode, type RoomMode, type RoomVisibility, type ScoringMode } from '../../api/rooms'
 import { ChoiceGroup, type Choice } from '../../components/ChoiceGroup/ChoiceGroup'
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { Select } from '../../components/Select/Select'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
-import { MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from '../Room/roomLabels'
+import { DRAW_LABELS, MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from '../Room/roomLabels'
 import './RoomCreatePage.css'
+
+type Source = 'BLINDTEST' | 'INFINITE'
+
+const SOURCE_CHOICES: Choice<Source>[] = [
+  { value: 'BLINDTEST', label: 'Un blindtest', hint: "Les musiques d'un blindtest existant, dans son ordre." },
+  { value: 'INFINITE', label: 'Infini', hint: 'Une musique tirée dans toute la base à chaque tour, sans fin. Les musiques ajoutées pendant la partie peuvent sortir.' },
+]
+
+const DRAW_CHOICES: Choice<DrawMode>[] = [
+  { value: 'TRACK', label: DRAW_LABELS.TRACK, hint: 'Toutes les musiques ont la même chance : une franchise avec beaucoup de musiques sort plus souvent.' },
+  { value: 'FRANCHISE', label: DRAW_LABELS.FRANCHISE, hint: 'Chaque franchise a la même chance, quel que soit son nombre de musiques.' },
+]
 
 const VISIBILITY_CHOICES: Choice<RoomVisibility>[] = [
   { value: 'PUBLIC', label: VISIBILITY_LABELS.PUBLIC, hint: 'La salle apparaît dans la liste des salles et dans un bandeau sur tout le site.' },
@@ -34,7 +46,11 @@ export function RoomCreatePage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [blindtests, setBlindtests] = useState<Blindtest[] | null>(null)
+  const [source, setSource] = useState<Source>(searchParams.has('infinite') ? 'INFINITE' : 'BLINDTEST')
   const [blindtestId, setBlindtestId] = useState(searchParams.get('blindtest') ?? '')
+  const [drawMode, setDrawMode] = useState<DrawMode>('TRACK')
+  const [franchiseGap, setFranchiseGap] = useState(10)
+  const [maxAttempts, setMaxAttempts] = useState(5)
   const [visibility, setVisibility] = useState<RoomVisibility>('PUBLIC')
   const [mode, setMode] = useState<RoomMode>('MULTI')
   const [playback, setPlayback] = useState<keyof typeof PLAYBACK_LABELS>('FREE')
@@ -65,8 +81,13 @@ export function RoomCreatePage() {
     if (!listener) return
     setError(null)
     setSubmitting(true)
+    const infinite = source === 'INFINITE'
     createRoom(listener.id, {
-      blindtestId: Number(blindtestId),
+      blindtestId: infinite ? null : Number(blindtestId),
+      infinite,
+      maxAttempts: infinite ? maxAttempts : null,
+      drawMode: infinite ? drawMode : null,
+      franchiseGap: infinite ? franchiseGap : null,
       visibility,
       mode,
       playersCanSeek: playback === 'FREE',
@@ -83,22 +104,53 @@ export function RoomCreatePage() {
   return (
     <>
       <h1>Créer une salle</h1>
-      {blindtests !== null && blindtests.length === 0 && (
-        <p>
-          Aucun blindtest pour l'instant. <Link to="/blindtests/new">Créer un blindtest</Link>
-        </p>
-      )}
-      {blindtests !== null && blindtests.length > 0 && (
+      {blindtests !== null && (
         <form onSubmit={handleSubmit} className="room-create">
-          <div className="room-create-field">
-            Blindtest
-            <Select
-              ariaLabel="Blindtest"
-              options={blindtests.map((blindtest) => ({ value: String(blindtest.id), label: blindtest.name }))}
-              value={blindtestId}
-              onChange={setBlindtestId}
-            />
-          </div>
+          <ChoiceGroup legend="Musiques" choices={SOURCE_CHOICES} value={source} onChange={setSource} />
+          {source === 'BLINDTEST' &&
+            (blindtests.length === 0 ? (
+              <p>
+                Aucun blindtest pour l'instant. <Link to="/blindtests/new">Créer un blindtest</Link>
+              </p>
+            ) : (
+              <div className="room-create-field">
+                Blindtest
+                <Select
+                  ariaLabel="Blindtest"
+                  options={blindtests.map((blindtest) => ({ value: String(blindtest.id), label: blindtest.name }))}
+                  value={blindtestId}
+                  onChange={setBlindtestId}
+                />
+              </div>
+            ))}
+          {source === 'INFINITE' && (
+            <>
+              <ChoiceGroup legend="Tirage" choices={DRAW_CHOICES} value={drawMode} onChange={setDrawMode} />
+              <label className="room-create-field">
+                Délai entre 2 musiques d'une même franchise
+                <input
+                  type="number"
+                  min={0}
+                  max={50}
+                  value={franchiseGap}
+                  onChange={(event) => setFranchiseGap(Number(event.target.value))}
+                  required
+                />
+                <span className="room-create-hint">0 : une franchise peut revenir tout de suite.</span>
+              </label>
+              <label className="room-create-field">
+                Essais par musique
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={maxAttempts}
+                  onChange={(event) => setMaxAttempts(Number(event.target.value))}
+                  required
+                />
+              </label>
+            </>
+          )}
           <ChoiceGroup legend="Visibilité" choices={VISIBILITY_CHOICES} value={visibility} onChange={setVisibility} />
           <ChoiceGroup legend="Mode" choices={MODE_CHOICES} value={mode} onChange={setMode} />
           {mode === 'MULTI' && (
@@ -117,7 +169,11 @@ export function RoomCreatePage() {
             />
           </label>
           {error && <p role="alert">{error}</p>}
-          <button type="submit" className="button button-primary" disabled={submitting}>
+          <button
+            type="submit"
+            className="button button-primary"
+            disabled={submitting || (source === 'BLINDTEST' && blindtests.length === 0)}
+          >
             Créer la salle
           </button>
         </form>

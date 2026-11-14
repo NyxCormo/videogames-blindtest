@@ -355,6 +355,60 @@ class RoomControllerTests extends IntegrationTest {
     }
 
     @Test
+    void anInfiniteRoomAlsoDrawsTracksAddedDuringTheGame() throws Exception {
+        dawn.setAudioLink("/api/tracks/" + dawn.getId() + "/audio");
+        tracks.save(dawn);
+        Track raven = tracks.save(new Track("Raven", dawn.getGame()));
+
+        String body = mockMvc.perform(post("/api/rooms").param("listenerId", host.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"infinite": true, "mode": "PRESENTATION", "maxAttempts": 3, "drawMode": "FRANCHISE", "franchiseGap": 0}
+                    """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.infinite").value(true))
+            .andExpect(jsonPath("$.blindtestId").value(nullValue()))
+            .andExpect(jsonPath("$.blindtestName").value("Salle infinie"))
+            .andExpect(jsonPath("$.maxAttempts").value(3))
+            .andExpect(jsonPath("$.drawMode").value("FRANCHISE"))
+            .andExpect(jsonPath("$.franchiseGap").value(0))
+            .andReturn().getResponse().getContentAsString();
+        String code = objectMapper.readTree(body).get("code").asString();
+
+        mockMvc.perform(post("/api/rooms/" + code + "/start").param("listenerId", host.getId().toString()))
+            .andExpect(jsonPath("$.currentTrack.trackId").value(dawn.getId()));
+        mockMvc.perform(post("/api/rooms/" + code + "/reveal").param("listenerId", host.getId().toString()));
+        raven.setAudioLink("/api/tracks/" + raven.getId() + "/audio");
+        tracks.save(raven);
+        mockMvc.perform(post("/api/rooms/" + code + "/next").param("listenerId", host.getId().toString()))
+            .andExpect(jsonPath("$.phase").value("PLAYING"))
+            .andExpect(jsonPath("$.currentTrack.position").value(1))
+            .andExpect(jsonPath("$.currentTrack.trackId").value(raven.getId()));
+    }
+
+    @Test
+    void refusesInvalidInfiniteRooms() throws Exception {
+        mockMvc.perform(post("/api/rooms").param("listenerId", host.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"infinite\": true, \"maxAttempts\": 0}"))
+            .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/rooms").param("listenerId", host.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"infinite\": true, \"franchiseGap\": 51}"))
+            .andExpect(status().isBadRequest());
+        String code = objectMapper.readTree(mockMvc.perform(post("/api/rooms").param("listenerId", host.getId().toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"infinite\": true}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.maxAttempts").value(5))
+            .andExpect(jsonPath("$.drawMode").value("TRACK"))
+            .andExpect(jsonPath("$.franchiseGap").value(10))
+            .andReturn().getResponse().getContentAsString()).get("code").asString();
+        mockMvc.perform(post("/api/rooms/" + code + "/start").param("listenerId", host.getId().toString()))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void theFinishedRoomListsThePlayedTracksAndTheTotals() throws Exception {
         String code = createRoom("PRIVATE");
         musicAlreadyPlaying(code);

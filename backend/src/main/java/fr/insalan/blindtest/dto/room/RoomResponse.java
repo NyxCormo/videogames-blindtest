@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import fr.insalan.blindtest.dto.blindtest.RevealResponse;
+import fr.insalan.blindtest.room.DrawMode;
 import fr.insalan.blindtest.room.Room;
 import fr.insalan.blindtest.room.RoomMode;
 import fr.insalan.blindtest.room.RoomPhase;
@@ -24,6 +25,9 @@ public record RoomResponse(
     ScoringMode scoringMode,
     int answerSeconds,
     int maxAttempts,
+    boolean infinite,
+    DrawMode drawMode,
+    Integer franchiseGap,
     Instant createdAt,
     long version,
     RoomPhase phase,
@@ -46,6 +50,9 @@ public record RoomResponse(
                 room.getScoringMode(),
                 room.getAnswerSeconds(),
                 room.getMaxAttempts(),
+                room.isInfinite(),
+                room.isInfinite() ? room.getInfinite().drawMode() : null,
+                room.isInfinite() ? room.getInfinite().franchiseGap() : null,
                 room.getCreatedAt(),
                 room.getVersion(),
                 room.getPhase(),

@@ -3,6 +3,7 @@ package fr.insalan.blindtest.room;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -30,6 +31,7 @@ public class Room {
     private final ScoringMode scoringMode;
     private final int answerSeconds;
     private final int maxAttempts;
+    private final InfiniteSettings infinite;
     private final Instant createdAt = Instant.now();
     private final Map<Integer, RoomPlayer> players = new LinkedHashMap<>();
     private final Map<Integer, RoomScore> scores = new LinkedHashMap<>();
@@ -37,12 +39,13 @@ public class Room {
     private final Set<Integer> present = new HashSet<>();
     private long version;
     private RoomPhase phase = RoomPhase.WAITING;
-    private List<RoomTrack> tracks = List.of();
+    private final List<RoomTrack> tracks = new ArrayList<>();
     private int position = -1;
     private Instant startsAt;
     private Instant endsAt;
     private int gameFinders;
     private int revealedCount;
+    private Instant startedAt;
 
     public Room(
         String code,
@@ -55,7 +58,8 @@ public class Room {
         boolean playersCanSeek,
         ScoringMode scoringMode,
         int answerSeconds,
-        int maxAttempts
+        int maxAttempts,
+        InfiniteSettings infinite
     ) {
         this.code = code;
         this.blindtestId = blindtestId;
@@ -68,6 +72,7 @@ public class Room {
         this.scoringMode = scoringMode;
         this.answerSeconds = answerSeconds;
         this.maxAttempts = maxAttempts;
+        this.infinite = infinite;
     }
 
     public synchronized boolean join(RoomPlayer player, Instant now) {
@@ -94,7 +99,6 @@ public class Room {
     }
 
     public synchronized boolean leave(Integer listenerId) {
-        lastSeen.remove(listenerId);
         if (!present.remove(listenerId)) {
             return false;
         }
@@ -128,7 +132,8 @@ public class Room {
         if (phase != RoomPhase.WAITING) {
             throw new IllegalStateException("La partie a déjà commencé");
         }
-        this.tracks = List.copyOf(tracks);
+        this.tracks.addAll(tracks);
+        startedAt = now;
         play(0, now);
     }
 
@@ -168,7 +173,22 @@ public class Room {
     }
 
     public synchronized List<RoomTrack> revealedTracks() {
-        return tracks.subList(0, revealedCount);
+        return List.copyOf(tracks.subList(0, revealedCount));
+    }
+
+    public synchronized List<RoomTrack> recentTracks(int count) {
+        return List.copyOf(tracks.subList(Math.max(0, tracks.size() - count), tracks.size()));
+    }
+
+    public synchronized boolean abandoned(Instant now, Duration limit) {
+        if ((phase != RoomPhase.PLAYING && phase != RoomPhase.REVEAL) || !present.isEmpty()) {
+            return false;
+        }
+        Instant lastActivity = lastSeen.values().stream()
+            .max(Comparator.naturalOrder())
+            .filter(seen -> seen.isAfter(startedAt))
+            .orElse(startedAt);
+        return Duration.between(lastActivity, now).compareTo(limit) >= 0;
     }
 
     public synchronized boolean everyoneDone() {
@@ -189,8 +209,15 @@ public class Room {
     }
 
     public synchronized boolean next(int position, Instant now) {
+        return next(position, now, null);
+    }
+
+    public synchronized boolean next(int position, Instant now, RoomTrack upcoming) {
         if (phase != RoomPhase.REVEAL || this.position != position) {
             return false;
+        }
+        if (upcoming != null) {
+            tracks.add(upcoming);
         }
         if (position + 1 < tracks.size()) {
             play(position + 1, now);
@@ -304,6 +331,14 @@ public class Room {
 
     public int getMaxAttempts() {
         return maxAttempts;
+    }
+
+    public InfiniteSettings getInfinite() {
+        return infinite;
+    }
+
+    public boolean isInfinite() {
+        return infinite != null;
     }
 
     public Instant getCreatedAt() {

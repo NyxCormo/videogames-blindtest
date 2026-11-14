@@ -1,4 +1,4 @@
-import type { RoomMode, RoomPhase, RoomVisibility, ScoringMode } from '../../api/rooms'
+import type { DrawMode, Room, RoomMode, RoomPhase, RoomVisibility, ScoringMode } from '../../api/rooms'
 
 export const VISIBILITY_LABELS: Record<RoomVisibility, string> = {
   PUBLIC: 'Publique',
@@ -13,6 +13,15 @@ export const MODE_LABELS: Record<RoomMode, string> = {
 export const PLAYBACK_LABELS = {
   FREE: 'Libre',
   SYNCED: 'Synchronisée',
+}
+
+export const DRAW_LABELS: Record<DrawMode, string> = {
+  TRACK: 'Musique au hasard',
+  FRANCHISE: 'Franchise, puis jeu, puis musique',
+}
+
+export function trackProgress(room: Room, position: number): string {
+  return room.infinite ? `Musique ${position + 1}` : `Musique ${position + 1} sur ${room.trackCount}`
 }
 
 export const SCORING_LABELS: Record<ScoringMode, string> = {

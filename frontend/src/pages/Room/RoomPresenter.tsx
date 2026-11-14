@@ -4,6 +4,7 @@ import { CheckIcon } from '../../components/icons'
 import { GameCover, MysteryCover, TrackCard, TrackFacts } from '../../components/TrackCard/TrackCard'
 import { Countdown } from './Countdown'
 import { RoomAudio } from './RoomAudio'
+import { trackProgress } from './roomLabels'
 import { useServerReached } from './useServerClock'
 
 type Props = {
@@ -23,7 +24,7 @@ export function RoomPresenter({ room, track, listenerId, offset }: Props) {
   const reveal = track.reveal
   const presentPlayers = room.players.filter((player) => player.present)
   const doneCount = presentPlayers.filter((player) => player.done).length
-  const isLast = track.position + 1 >= room.trackCount
+  const isLast = !room.infinite && track.position + 1 >= room.trackCount
 
   function send(action: (code: string, listenerId: number) => Promise<Room>) {
     setSending(true)
@@ -37,7 +38,7 @@ export function RoomPresenter({ room, track, listenerId, offset }: Props) {
     <section className="room-game">
       <div className="room-game-bar">
         <p className="progress">
-          Musique {track.position + 1} sur {room.trackCount}
+          {trackProgress(room, track.position)}
         </p>
         {track.audioLink && <RoomAudio src={track.audioLink} startsAt={startsAt} offset={offset} free />}
       </div>

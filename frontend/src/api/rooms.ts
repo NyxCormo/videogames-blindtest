@@ -3,6 +3,7 @@ import { request } from './http'
 
 export type RoomVisibility = 'PUBLIC' | 'PRIVATE'
 export type RoomMode = 'MULTI' | 'PRESENTATION'
+export type DrawMode = 'TRACK' | 'FRANCHISE'
 export type ScoringMode = 'SPEED' | 'FIRST_COME'
 export type RoomPhase = 'WAITING' | 'PLAYING' | 'REVEAL' | 'FINISHED'
 
@@ -31,7 +32,7 @@ export type CurrentTrack = {
 
 export type Room = {
   code: string
-  blindtestId: number
+  blindtestId: number | null
   blindtestName: string
   trackCount: number
   hostId: number
@@ -42,6 +43,9 @@ export type Room = {
   scoringMode: ScoringMode
   answerSeconds: number
   maxAttempts: number
+  infinite: boolean
+  drawMode: DrawMode | null
+  franchiseGap: number | null
   createdAt: string
   version: number
   phase: RoomPhase
@@ -51,7 +55,11 @@ export type Room = {
 }
 
 export type RoomSettings = {
-  blindtestId: number
+  blindtestId: number | null
+  infinite: boolean
+  maxAttempts: number | null
+  drawMode: DrawMode | null
+  franchiseGap: number | null
   visibility: RoomVisibility
   mode: RoomMode
   playersCanSeek: boolean

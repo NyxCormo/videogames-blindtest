@@ -20,6 +20,7 @@ import { useNotification } from '../../context/NotificationContext'
 import { plural } from '../../plural'
 import { Countdown } from './Countdown'
 import { RoomAudio } from './RoomAudio'
+import { trackProgress } from './roomLabels'
 import { useServerReached } from './useServerClock'
 
 type Props = {
@@ -86,7 +87,7 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
     <section className="room-game">
       <div className="room-game-bar">
         <p className="progress">
-          Musique {track.position + 1} sur {room.trackCount}
+          {trackProgress(room, track.position)}
         </p>
         {room.mode === 'MULTI' && track.audioLink && (
           <RoomAudio src={track.audioLink} startsAt={startsAt} offset={offset} free={room.playersCanSeek} />
@@ -122,7 +123,7 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
           <p className="room-next">
             {room.mode === 'PRESENTATION'
               ? `En attente de ${room.hostName}.`
-              : track.position + 1 < room.trackCount
+              : room.infinite || track.position + 1 < room.trackCount
                 ? 'Musique suivante dans quelques secondes.'
                 : 'Fin de la partie dans quelques secondes.'}
           </p>

@@ -18,16 +18,19 @@ public class RoomTimer implements DisposableBean {
     private static final Logger log = LoggerFactory.getLogger(RoomTimer.class);
     private static final Duration REVEAL_TIME = Duration.ofSeconds(6);
     private static final Duration PRESENCE_CHECK = Duration.ofSeconds(5);
+    private static final Duration EMPTY_INFINITE_ROOM = Duration.ofMinutes(10);
     private static final Duration CLOSE_AFTER_END = Duration.ofMinutes(10);
     private static final Duration CLOSE_IF_NOT_STARTED = Duration.ofHours(3);
 
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     private final RoomService roomService;
     private final RoomEvents roomEvents;
+    private final InfinitePicker infinitePicker;
 
-    public RoomTimer(RoomService roomService, RoomEvents roomEvents) {
+    public RoomTimer(RoomService roomService, RoomEvents roomEvents, InfinitePicker infinitePicker) {
         this.roomService = roomService;
         this.roomEvents = roomEvents;
+        this.infinitePicker = infinitePicker;
         long period = PRESENCE_CHECK.toMillis();
         executor.scheduleAtFixedRate(this::checkPresence, period, period, TimeUnit.MILLISECONDS);
     }
@@ -84,6 +87,9 @@ public class RoomTimer implements DisposableBean {
                 if (room.checkPresence(now)) {
                     presenceChanged(room);
                 }
+                if (room.isInfinite() && room.abandoned(now, EMPTY_INFINITE_ROOM)) {
+                    stop(room);
+                }
             }
         } catch (RuntimeException e) {
             log.warn("Vérification de la présence impossible : {}", e.getMessage());
@@ -91,7 +97,8 @@ public class RoomTimer implements DisposableBean {
     }
 
     public boolean next(Room room, int position) {
-        if (!room.next(position, Instant.now())) {
+        RoomTrack upcoming = room.isInfinite() ? infinitePicker.pick(room) : null;
+        if (!room.next(position, Instant.now(), upcoming)) {
             return false;
         }
         roomEvents.publish(room);

@@ -29,11 +29,12 @@ public class RoomService {
         boolean playersCanSeek,
         ScoringMode scoringMode,
         int answerSeconds,
-        int maxAttempts
+        int maxAttempts,
+        InfiniteSettings infinite
     ) {
         while (true) {
             String code = newCode();
-            Room room = new Room(code, blindtestId, blindtestName, trackCount, host, visibility, mode, playersCanSeek, scoringMode, answerSeconds, maxAttempts);
+            Room room = new Room(code, blindtestId, blindtestName, trackCount, host, visibility, mode, playersCanSeek, scoringMode, answerSeconds, maxAttempts, infinite);
             if (rooms.putIfAbsent(code, room) == null) {
                 room.join(host, Instant.now());
                 return room;

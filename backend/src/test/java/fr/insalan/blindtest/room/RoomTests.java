@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
@@ -27,7 +28,7 @@ class RoomTests {
 
     private Room room(ScoringMode scoringMode) {
         Room room = new Room("ABCD", 1, "Stellar Blade", 2, new RoomPlayer(NYX, "Nyx"),
-            RoomVisibility.PUBLIC, RoomMode.MULTI, true, scoringMode, 30, 2);
+            RoomVisibility.PUBLIC, RoomMode.MULTI, true, scoringMode, 30, 2, null);
         room.join(new RoomPlayer(NYX, "Nyx"), NOW);
         room.join(new RoomPlayer(RAVEN, "Raven"), NOW);
         return room;
@@ -247,6 +248,38 @@ class RoomTests {
     }
 
     @Test
+    void anInfiniteRoomGoesOnWithTheUpcomingTrack() {
+        Room room = new Room("ABCD", null, "Salle infinie", 0, new RoomPlayer(NYX, "Nyx"),
+            RoomVisibility.PUBLIC, RoomMode.MULTI, true, ScoringMode.SPEED, 30, 2, new InfiniteSettings(DrawMode.TRACK, 10));
+        room.join(new RoomPlayer(NYX, "Nyx"), NOW);
+        room.start(List.of(tracks.get(0)), NOW);
+        room.reveal(0);
+
+        assertTrue(room.next(0, NOW.plusSeconds(40), tracks.get(1)));
+        assertEquals(RoomPhase.PLAYING, room.getPhase());
+        assertEquals(11, room.currentTrack().trackId());
+        assertEquals(tracks, room.recentTracks(5));
+        assertEquals(List.of(tracks.get(1)), room.recentTracks(1));
+    }
+
+    @Test
+    void aStartedRoomIsAbandonedTenMinutesAfterTheLastPlayerLeft() {
+        Room room = room(ScoringMode.SPEED);
+        room.start(tracks, NOW);
+        Duration limit = Duration.ofMinutes(10);
+        assertFalse(room.abandoned(NOW.plus(limit), limit));
+
+        room.seen(NYX, NOW.plusSeconds(60));
+        room.leave(NYX);
+        room.leave(RAVEN);
+
+        assertFalse(room.abandoned(NOW.plusSeconds(60).plus(limit).minusMillis(1), limit));
+        assertTrue(room.abandoned(NOW.plusSeconds(60).plus(limit), limit));
+        room.seen(RAVEN, NOW.plus(limit));
+        assertFalse(room.abandoned(NOW.plus(limit).plus(limit), limit));
+    }
+
+    @Test
     void answersCloseWhenTheTimeIsUp() {
         Room room = room(ScoringMode.SPEED);
         room.start(tracks, NOW);
@@ -258,7 +291,7 @@ class RoomTests {
     @Test
     void thePresenterDoesNotPlay() {
         Room room = new Room("ABCD", 1, "Stellar Blade", 2, new RoomPlayer(NYX, "Nyx"),
-            RoomVisibility.PUBLIC, RoomMode.PRESENTATION, true, ScoringMode.SPEED, 30, 2);
+            RoomVisibility.PUBLIC, RoomMode.PRESENTATION, true, ScoringMode.SPEED, 30, 2, null);
 
         assertFalse(room.join(new RoomPlayer(NYX, "Nyx"), NOW));
         assertTrue(room.join(new RoomPlayer(RAVEN, "Raven"), NOW));

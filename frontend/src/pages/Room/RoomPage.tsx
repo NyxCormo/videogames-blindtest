@@ -5,7 +5,7 @@ import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
 import { plural } from '../../plural'
 import { RoomGame } from './RoomGame'
-import { MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from './roomLabels'
+import { DRAW_LABELS, MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from './roomLabels'
 import { RoomPresenter } from './RoomPresenter'
 import { RoomResults } from './RoomResults'
 import { RoomScoreboard } from './RoomScoreboard'
@@ -98,12 +98,29 @@ export function RoomPage() {
 
       {room.phase === 'WAITING' && (
         <dl className="room-settings">
-          <div>
-            <dt>Blindtest</dt>
-            <dd>
-              {room.blindtestName} ({plural(room.trackCount, 'musique', 'musiques')})
-            </dd>
-          </div>
+          {room.infinite && room.drawMode !== null && room.franchiseGap !== null ? (
+            <>
+              <div>
+                <dt>Musiques</dt>
+                <dd>Infini, {DRAW_LABELS[room.drawMode].toLowerCase()}</dd>
+              </div>
+              <div>
+                <dt>Délai par franchise</dt>
+                <dd>{room.franchiseGap === 0 ? 'Aucun' : plural(room.franchiseGap, 'musique', 'musiques')}</dd>
+              </div>
+              <div>
+                <dt>Essais</dt>
+                <dd>{room.maxAttempts}</dd>
+              </div>
+            </>
+          ) : (
+            <div>
+              <dt>Blindtest</dt>
+              <dd>
+                {room.blindtestName} ({plural(room.trackCount, 'musique', 'musiques')})
+              </dd>
+            </div>
+          )}
           <div>
             <dt>Temps de réponse</dt>
             <dd>{room.answerSeconds} s</dd>
