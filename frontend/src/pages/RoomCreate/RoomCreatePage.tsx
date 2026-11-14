@@ -6,6 +6,7 @@ import { ChoiceGroup, type Choice } from '../../components/ChoiceGroup/ChoiceGro
 import { LoginPrompt } from '../../components/LoginPrompt/LoginPrompt'
 import { Select } from '../../components/Select/Select'
 import { useCurrentListener } from '../../context/CurrentListenerContext'
+import { plural } from '../../plural'
 import { DRAW_LABELS, MODE_LABELS, PLAYBACK_LABELS, SCORING_LABELS, VISIBILITY_LABELS } from '../Room/roomLabels'
 import './RoomCreatePage.css'
 
@@ -76,6 +77,11 @@ export function RoomCreatePage() {
     return <LoginPrompt message="Un pseudo est nécessaire pour créer une salle." />
   }
 
+  function openDetails(event: FormEvent<HTMLInputElement>) {
+    const details = event.currentTarget.closest('details')
+    if (details) details.open = true
+  }
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!listener) return
@@ -106,68 +112,104 @@ export function RoomCreatePage() {
       <h1>Créer une salle</h1>
       {blindtests !== null && (
         <form onSubmit={handleSubmit} className="room-create">
-          <ChoiceGroup legend="Musiques" choices={SOURCE_CHOICES} value={source} onChange={setSource} />
-          {source === 'BLINDTEST' &&
-            (blindtests.length === 0 ? (
-              <p>
-                Aucun blindtest pour l'instant. <Link to="/blindtests/new">Créer un blindtest</Link>
-              </p>
-            ) : (
-              <div className="room-create-field">
-                Blindtest
-                <Select
-                  ariaLabel="Blindtest"
-                  options={blindtests.map((blindtest) => ({ value: String(blindtest.id), label: blindtest.name }))}
-                  value={blindtestId}
-                  onChange={setBlindtestId}
-                />
+          <section className="room-create-section">
+            <h2>Musiques</h2>
+            <ChoiceGroup legend="Origine" choices={SOURCE_CHOICES} value={source} onChange={setSource} />
+            {source === 'BLINDTEST' &&
+              (blindtests.length === 0 ? (
+                <p>
+                  Aucun blindtest pour l'instant. <Link to="/blindtests/new">Créer un blindtest</Link>
+                </p>
+              ) : (
+                <div className="room-create-field">
+                  Blindtest
+                  <Select
+                    ariaLabel="Blindtest"
+                    options={blindtests.map((blindtest) => ({ value: String(blindtest.id), label: blindtest.name }))}
+                    value={blindtestId}
+                    onChange={setBlindtestId}
+                  />
+                </div>
+              ))}
+            {source === 'INFINITE' && (
+              <>
+                <ChoiceGroup legend="Tirage" choices={DRAW_CHOICES} value={drawMode} onChange={setDrawMode} />
+                <details className="room-create-more">
+                  <summary>
+                    Délai et essais
+                    <span className="room-create-summary">
+                      {franchiseGap === 0 ? 'aucun délai' : `délai de ${plural(franchiseGap, 'musique', 'musiques')}`},{' '}
+                      {plural(maxAttempts, 'essai', 'essais')}
+                    </span>
+                  </summary>
+                  <div className="room-create-more-body">
+                    <label className="room-create-field">
+                      Délai entre 2 musiques d'une même franchise
+                      <input
+                        type="number"
+                        min={0}
+                        max={50}
+                        value={franchiseGap}
+                        onChange={(event) => setFranchiseGap(Number(event.target.value))}
+                        onInvalid={openDetails}
+                        required
+                      />
+                      <span className="room-create-hint">0 : une franchise peut revenir tout de suite.</span>
+                    </label>
+                    <label className="room-create-field">
+                      Essais par musique
+                      <input
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={maxAttempts}
+                        onChange={(event) => setMaxAttempts(Number(event.target.value))}
+                        onInvalid={openDetails}
+                        required
+                      />
+                    </label>
+                  </div>
+                </details>
+              </>
+            )}
+          </section>
+
+          <section className="room-create-section">
+            <h2>Partie</h2>
+            <ChoiceGroup legend="Mode" choices={MODE_CHOICES} value={mode} onChange={setMode} />
+            <ChoiceGroup legend="Points" choices={SCORING_CHOICES} value={scoringMode} onChange={setScoringMode} />
+            <details className="room-create-more">
+              <summary>
+                {mode === 'MULTI' ? 'Temps et lecture' : 'Temps de réponse'}
+                <span className="room-create-summary">
+                  {answerSeconds} s{mode === 'MULTI' && `, lecture ${PLAYBACK_LABELS[playback].toLowerCase()}`}
+                </span>
+              </summary>
+              <div className="room-create-more-body">
+                <label className="room-create-field">
+                  Temps de réponse (secondes)
+                  <input
+                    type="number"
+                    min={10}
+                    max={120}
+                    value={answerSeconds}
+                    onChange={(event) => setAnswerSeconds(Number(event.target.value))}
+                    onInvalid={openDetails}
+                    required
+                  />
+                </label>
+                {mode === 'MULTI' && (
+                  <ChoiceGroup legend="Lecture" choices={PLAYBACK_CHOICES} value={playback} onChange={setPlayback} />
+                )}
               </div>
-            ))}
-          {source === 'INFINITE' && (
-            <>
-              <ChoiceGroup legend="Tirage" choices={DRAW_CHOICES} value={drawMode} onChange={setDrawMode} />
-              <label className="room-create-field">
-                Délai entre 2 musiques d'une même franchise
-                <input
-                  type="number"
-                  min={0}
-                  max={50}
-                  value={franchiseGap}
-                  onChange={(event) => setFranchiseGap(Number(event.target.value))}
-                  required
-                />
-                <span className="room-create-hint">0 : une franchise peut revenir tout de suite.</span>
-              </label>
-              <label className="room-create-field">
-                Essais par musique
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={maxAttempts}
-                  onChange={(event) => setMaxAttempts(Number(event.target.value))}
-                  required
-                />
-              </label>
-            </>
-          )}
-          <ChoiceGroup legend="Visibilité" choices={VISIBILITY_CHOICES} value={visibility} onChange={setVisibility} />
-          <ChoiceGroup legend="Mode" choices={MODE_CHOICES} value={mode} onChange={setMode} />
-          {mode === 'MULTI' && (
-            <ChoiceGroup legend="Lecture" choices={PLAYBACK_CHOICES} value={playback} onChange={setPlayback} />
-          )}
-          <ChoiceGroup legend="Points" choices={SCORING_CHOICES} value={scoringMode} onChange={setScoringMode} />
-          <label className="room-create-field">
-            Temps de réponse (secondes)
-            <input
-              type="number"
-              min={10}
-              max={120}
-              value={answerSeconds}
-              onChange={(event) => setAnswerSeconds(Number(event.target.value))}
-              required
-            />
-          </label>
+            </details>
+          </section>
+
+          <section className="room-create-section">
+            <h2>Accès</h2>
+            <ChoiceGroup legend="Visibilité" choices={VISIBILITY_CHOICES} value={visibility} onChange={setVisibility} />
+          </section>
+
           {error && <p role="alert">{error}</p>}
           <button
             type="submit"

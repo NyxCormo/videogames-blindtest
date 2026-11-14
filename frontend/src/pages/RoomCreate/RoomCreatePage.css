@@ -2,7 +2,21 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  max-width: 28rem;
+  max-width: 34rem;
+}
+
+.room-create-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.room-create-section h2 {
+  margin: 0;
+  font-size: 1.15rem;
 }
 
 .room-create-field {
@@ -14,6 +28,33 @@
 .room-create-hint {
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+.room-create-more summary {
+  cursor: pointer;
+}
+
+.room-create-summary {
+  margin-left: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.room-create-summary::before {
+  content: '(';
+}
+
+.room-create-summary::after {
+  content: ')';
+}
+
+.room-create-more-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 0.75rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border);
 }
 
 .room-create button[type='submit'] {

@@ -191,8 +191,17 @@
 }
 
 .room-scoreboard-name {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.room-scoreboard-heard {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
 }
 
 .room-scoreboard-done {
