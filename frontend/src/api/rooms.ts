@@ -13,9 +13,11 @@ export type RoomPlayer = {
   score: number
   done: boolean
   roundPoints: number | null
+  present: boolean
   gamesFound: number
   franchisesFound: number
   bonusesFound: number
+  tracksHeard: number
 }
 
 export type CurrentTrack = {
@@ -84,6 +86,14 @@ export async function startRoom(code: string, listenerId: number): Promise<Room>
 export async function stopRoom(code: string, listenerId: number): Promise<Room> {
   const response = await request(`/api/rooms/${code}/stop?listenerId=${listenerId}`, { method: 'POST' })
   return response.json()
+}
+
+export async function sendPresence(code: string, listenerId: number): Promise<void> {
+  await request(`/api/rooms/${code}/presence?listenerId=${listenerId}`, { method: 'POST' })
+}
+
+export function leaveRoom(code: string, listenerId: number): void {
+  navigator.sendBeacon(`/api/rooms/${code}/leave?listenerId=${listenerId}`)
 }
 
 export async function revealInRoom(code: string, listenerId: number): Promise<Room> {

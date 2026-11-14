@@ -328,6 +328,33 @@ class RoomControllerTests extends IntegrationTest {
     }
 
     @Test
+    void theTrackIsRevealedWhenTheLastPlayerStillAnsweringLeaves() throws Exception {
+        String code = createRoom("PRIVATE");
+        Listener raven = join(code, "Raven");
+        musicAlreadyPlaying(code);
+
+        mockMvc.perform(post("/api/rooms/" + code + "/pass").param("listenerId", host.getId().toString()))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.phase").value("PLAYING"))
+            .andExpect(jsonPath("$.players[1].present").value(true));
+        mockMvc.perform(post("/api/rooms/" + code + "/leave").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.phase").value("REVEAL"))
+            .andExpect(jsonPath("$.players[1].present").value(false))
+            .andExpect(jsonPath("$.players[1].tracksHeard").value(0))
+            .andExpect(jsonPath("$.players[0].tracksHeard").value(1));
+
+        mockMvc.perform(post("/api/rooms/" + code + "/presence").param("listenerId", raven.getId().toString()))
+            .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/rooms/" + code))
+            .andExpect(jsonPath("$.players[1].present").value(true));
+        mockMvc.perform(post("/api/rooms/" + code + "/presence").param("listenerId", String.valueOf(raven.getId() + 1000)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
     void theFinishedRoomListsThePlayedTracksAndTheTotals() throws Exception {
         String code = createRoom("PRIVATE");
         musicAlreadyPlaying(code);

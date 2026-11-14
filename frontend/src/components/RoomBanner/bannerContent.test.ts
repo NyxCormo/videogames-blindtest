@@ -19,7 +19,7 @@ const room: Room = {
   version: 0,
   phase: 'WAITING',
   players: [
-    { listenerId: 1, name: 'Nyx', score: 0, done: false, roundPoints: null, gamesFound: 0, franchisesFound: 0, bonusesFound: 0 },
+    { listenerId: 1, name: 'Nyx', score: 0, done: false, roundPoints: null, present: true, gamesFound: 0, franchisesFound: 0, bonusesFound: 0, tracksHeard: 0 },
   ],
   currentTrack: null,
   playedTracks: [],

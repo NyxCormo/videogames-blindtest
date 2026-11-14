@@ -21,7 +21,8 @@ export function RoomPresenter({ room, track, listenerId, offset }: Props) {
   const started = useServerReached(startsAt, offset)
   const ended = useServerReached(endsAt, offset)
   const reveal = track.reveal
-  const doneCount = room.players.filter((player) => player.done).length
+  const presentPlayers = room.players.filter((player) => player.present)
+  const doneCount = presentPlayers.filter((player) => player.done).length
   const isLast = track.position + 1 >= room.trackCount
 
   function send(action: (code: string, listenerId: number) => Promise<Room>) {
@@ -71,15 +72,15 @@ export function RoomPresenter({ room, track, listenerId, offset }: Props) {
               )}
               <div className="room-done" role="status">
                 {ended && <p>Temps de réponse écoulé.</p>}
-                {room.players.length === 0 ? (
-                  <p>Aucun joueur dans la salle.</p>
-                ) : doneCount === room.players.length ? (
+                {presentPlayers.length === 0 ? (
+                  <p>Aucun joueur présent.</p>
+                ) : doneCount === presentPlayers.length ? (
                   <p>
                     <CheckIcon /> Tout le monde a répondu
                   </p>
                 ) : (
                   <p>
-                    Joueurs ayant fini : {doneCount} sur {room.players.length}
+                    Joueurs présents ayant fini : {doneCount} sur {presentPlayers.length}
                   </p>
                 )}
               </div>

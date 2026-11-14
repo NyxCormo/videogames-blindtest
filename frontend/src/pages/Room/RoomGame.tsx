@@ -40,7 +40,8 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
   const ended = useServerReached(endsAt, offset)
   const reveal = track.reveal
   const me = room.players.find((player) => player.listenerId === listenerId)
-  const doneCount = room.players.filter((player) => player.done).length
+  const presentPlayers = room.players.filter((player) => player.present)
+  const doneCount = presentPlayers.filter((player) => player.done).length
   const answering = started && !ended && round !== null && !round.done
 
   useEffect(() => {
@@ -159,7 +160,7 @@ export function RoomGame({ room, track, listenerId, offset }: Props) {
                       <p>Plus de réponse possible sur cette musique.</p>
                     )}
                     <p>
-                      Joueurs ayant fini : {doneCount} sur {room.players.length}
+                      Joueurs présents ayant fini : {doneCount} sur {presentPlayers.length}
                     </p>
                   </div>
                 )}

@@ -1,5 +1,6 @@
 package fr.insalan.blindtest.room;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class RoomService {
             String code = newCode();
             Room room = new Room(code, blindtestId, blindtestName, trackCount, host, visibility, mode, playersCanSeek, scoringMode, answerSeconds, maxAttempts);
             if (rooms.putIfAbsent(code, room) == null) {
+                room.join(host, Instant.now());
                 return room;
             }
         }
@@ -49,6 +51,10 @@ public class RoomService {
             .filter(room -> room.getPhase() != RoomPhase.FINISHED)
             .sorted(Comparator.comparing(Room::getCreatedAt).reversed())
             .toList();
+    }
+
+    public List<Room> all() {
+        return List.copyOf(rooms.values());
     }
 
     public void remove(String code) {

@@ -129,7 +129,7 @@ public class RoomController {
         if (room.getPhase() == RoomPhase.FINISHED) {
             return RoomResponse.from(room);
         }
-        if (room.join(player(listenerId))) {
+        if (room.join(player(listenerId), Instant.now())) {
             roomEvents.publish(room);
         }
         return RoomResponse.from(room);
@@ -183,6 +183,24 @@ public class RoomController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La musique n'a pas encore été révélée");
         }
         return RoomResponse.from(room);
+    }
+
+    @PostMapping("/{code}/presence")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void presence(@PathVariable String code, @RequestParam Integer listenerId) {
+        Room room = room(code, listenerId);
+        if (room.seen(listenerId, Instant.now())) {
+            roomTimer.presenceChanged(room);
+        }
+    }
+
+    @PostMapping("/{code}/leave")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void leave(@PathVariable String code, @RequestParam Integer listenerId) {
+        Room room = room(code);
+        if (room.leave(listenerId)) {
+            roomTimer.presenceChanged(room);
+        }
     }
 
     @GetMapping("/{code}/round")
@@ -243,7 +261,7 @@ public class RoomController {
     private Room room(String code, Integer listenerId) {
         Room room = room(code);
         if (!room.hasPlayer(listenerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il faut rejoindre la salle pour répondre");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Il faut d'abord rejoindre la salle");
         }
         return room;
     }
@@ -263,9 +281,7 @@ public class RoomController {
         if (round.done()) {
             recordKnowledge(listenerId, round.trackId(), round.gameFound());
             roomEvents.publish(room);
-            if (room.getMode() == RoomMode.MULTI && room.everyoneDone()) {
-                roomTimer.reveal(room, round.position());
-            }
+            roomTimer.revealIfEveryoneDone(room);
         }
         return round;
     }

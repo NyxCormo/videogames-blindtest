@@ -10,6 +10,7 @@ import { RoomPresenter } from './RoomPresenter'
 import { RoomResults } from './RoomResults'
 import { RoomScoreboard } from './RoomScoreboard'
 import { useRoomEvents } from './useRoomEvents'
+import { usePresence } from './usePresence'
 import { useClockOffset } from './useServerClock'
 import './RoomPage.css'
 
@@ -26,6 +27,9 @@ export function RoomPage() {
   const [stopError, setStopError] = useState<string | null>(null)
   const { room, connection } = useRoomEvents(joinedCode === roomCode ? roomCode : null)
   const offset = useClockOffset()
+  const inGame =
+    room !== null && room.phase !== 'FINISHED' && room.players.some((player) => player.listenerId === listenerId)
+  usePresence(roomCode, listenerId, inGame)
 
   useEffect(() => {
     if (listenerId === undefined) return
@@ -195,6 +199,7 @@ export function RoomPage() {
               <li key={player.listenerId}>
                 {player.name}
                 {player.listenerId === room.hostId && <span className="room-badge">Hôte</span>}
+                {!player.present && <span className="room-absent">absent</span>}
               </li>
             ))}
           </ul>

@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import type { Room } from '../../api/rooms'
 import { CoverThumbnail } from '../../components/CoverThumbnail/CoverThumbnail'
 import { plural } from '../../plural'
-import { rankLabel, ranking } from './ranking'
+import { rankLabel, ranking, successRate } from './ranking'
 
 type Props = {
   room: Room
@@ -56,6 +56,8 @@ export function RoomResults({ room, listenerId, closed }: Props) {
                   <th>Jeux</th>
                   <th>Franchises seules</th>
                   <th>Bonus</th>
+                  <th>Écoutées</th>
+                  <th>Réussite</th>
                 </tr>
               </thead>
               <tbody>
@@ -67,6 +69,8 @@ export function RoomResults({ room, listenerId, closed }: Props) {
                     <td>{player.gamesFound}</td>
                     <td>{player.franchisesFound}</td>
                     <td>{player.bonusesFound}</td>
+                    <td>{player.tracksHeard}</td>
+                    <td>{successRate(player.gamesFound, player.tracksHeard)}</td>
                   </tr>
                 ))}
               </tbody>

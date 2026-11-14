@@ -28,7 +28,8 @@ class RoomTests {
     private Room room(ScoringMode scoringMode) {
         Room room = new Room("ABCD", 1, "Stellar Blade", 2, new RoomPlayer(NYX, "Nyx"),
             RoomVisibility.PUBLIC, RoomMode.MULTI, true, scoringMode, 30, 2);
-        room.join(new RoomPlayer(RAVEN, "Raven"));
+        room.join(new RoomPlayer(NYX, "Nyx"), NOW);
+        room.join(new RoomPlayer(RAVEN, "Raven"), NOW);
         return room;
     }
 
@@ -79,7 +80,7 @@ class RoomTests {
     void theVersionGrowsWithEachChange() {
         Room room = room(ScoringMode.SPEED);
         long joined = room.getVersion();
-        room.join(new RoomPlayer(RAVEN, "Raven"));
+        room.join(new RoomPlayer(RAVEN, "Raven"), NOW);
         assertEquals(joined, room.getVersion());
 
         room.start(tracks, NOW);
@@ -127,7 +128,7 @@ class RoomTests {
     @Test
     void firstComePointsDependOnTheOrder() {
         Room room = room(ScoringMode.FIRST_COME);
-        room.join(new RoomPlayer(3, "Lily"));
+        room.join(new RoomPlayer(3, "Lily"), NOW);
         room.start(tracks, NOW);
 
         assertEquals(1000, room.guess(RAVEN, DAWN_GAME, null, MUSIC_STARTS.plusSeconds(20)).roundPoints());
@@ -185,7 +186,7 @@ class RoomTests {
         room.start(tracks, NOW);
         room.guess(NYX, DAWN_GAME, 10, MUSIC_STARTS);
         room.guessFranchise(RAVEN, DAWN_FRANCHISE, MUSIC_STARTS);
-        assertEquals(new RoomTotals(0, 0, 0), room.totals(NYX));
+        assertEquals(new RoomTotals(0, 0, 0, 0), room.totals(NYX));
         assertEquals(List.of(), room.revealedTracks());
 
         room.reveal(0);
@@ -193,9 +194,56 @@ class RoomTests {
         room.guess(NYX, 101, null, NOW.plusSeconds(45));
         room.stop();
 
-        assertEquals(new RoomTotals(1, 0, 1), room.totals(NYX));
-        assertEquals(new RoomTotals(0, 1, 0), room.totals(RAVEN));
+        assertEquals(new RoomTotals(1, 0, 1, 1), room.totals(NYX));
+        assertEquals(new RoomTotals(0, 1, 0, 1), room.totals(RAVEN));
         assertEquals(List.of(tracks.get(0)), room.revealedTracks());
+    }
+
+    @Test
+    void aPlayerIsAbsentAfterTheTimeoutOrWhenLeaving() {
+        Room room = room(ScoringMode.SPEED);
+        assertFalse(room.seen(NYX, NOW.plusSeconds(20)));
+
+        assertFalse(room.checkPresence(NOW.plusSeconds(24)));
+        assertTrue(room.checkPresence(NOW.plusSeconds(25)));
+        assertTrue(room.isPresent(NYX));
+        assertFalse(room.isPresent(RAVEN));
+
+        assertTrue(room.leave(NYX));
+        assertFalse(room.leave(NYX));
+        assertFalse(room.isPresent(NYX));
+        assertTrue(room.seen(NYX, NOW.plusSeconds(30)));
+        assertFalse(room.seen(NYX, NOW.plusSeconds(31)));
+        assertFalse(room.seen(99, NOW));
+    }
+
+    @Test
+    void onlyPresentPlayersAreWaitedFor() {
+        Room room = room(ScoringMode.SPEED);
+        room.start(tracks, NOW);
+        room.pass(NYX, MUSIC_STARTS);
+        assertFalse(room.everyoneDone());
+
+        room.leave(RAVEN);
+        assertTrue(room.everyoneDone());
+
+        room.leave(NYX);
+        assertFalse(room.everyoneDone());
+    }
+
+    @Test
+    void aTrackIsHeardWhenPresentOrAfterAnswering() {
+        Room room = room(ScoringMode.SPEED);
+        room.join(new RoomPlayer(3, "Lily"), NOW);
+        room.start(tracks, NOW);
+        room.pass(RAVEN, MUSIC_STARTS);
+        room.leave(RAVEN);
+        room.leave(3);
+        room.reveal(0);
+
+        assertEquals(1, room.totals(NYX).tracksHeard());
+        assertEquals(1, room.totals(RAVEN).tracksHeard());
+        assertEquals(0, room.totals(3).tracksHeard());
     }
 
     @Test
@@ -212,8 +260,8 @@ class RoomTests {
         Room room = new Room("ABCD", 1, "Stellar Blade", 2, new RoomPlayer(NYX, "Nyx"),
             RoomVisibility.PUBLIC, RoomMode.PRESENTATION, true, ScoringMode.SPEED, 30, 2);
 
-        assertFalse(room.join(new RoomPlayer(NYX, "Nyx")));
-        assertTrue(room.join(new RoomPlayer(RAVEN, "Raven")));
+        assertFalse(room.join(new RoomPlayer(NYX, "Nyx"), NOW));
+        assertTrue(room.join(new RoomPlayer(RAVEN, "Raven"), NOW));
         assertFalse(room.hasPlayer(NYX));
         assertEquals(NYX, room.getHostId());
         assertEquals("Nyx", room.getHostName());

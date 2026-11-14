@@ -339,3 +339,12 @@
   gap: 0.75rem;
   margin-top: 2rem;
 }
+
+.room-absent {
+  padding: 0 0.5rem;
+  border: 1px dashed var(--muted);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}

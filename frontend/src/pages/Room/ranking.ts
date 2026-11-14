@@ -11,3 +11,7 @@ export function ranking(players: RoomPlayer[]): RankedPlayer[] {
 export function rankLabel(rank: number): string {
   return rank === 1 ? '1er' : `${rank}e`
 }
+
+export function successRate(gamesFound: number, tracksHeard: number): string {
+  return tracksHeard === 0 ? '–' : `${Math.round((gamesFound / tracksHeard) * 100)} %`
+}

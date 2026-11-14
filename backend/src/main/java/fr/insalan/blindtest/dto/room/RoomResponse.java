@@ -60,7 +60,11 @@ public record RoomResponse(
         boolean revealed = room.getPhase() == RoomPhase.REVEAL;
         return room.players().stream()
             .map(player -> RoomPlayerResponse.from(
-                player, room.round(player.listenerId()), room.totals(player.listenerId()), revealed))
+                player,
+                room.round(player.listenerId()),
+                room.totals(player.listenerId()),
+                room.isPresent(player.listenerId()),
+                revealed))
             .toList();
     }
 

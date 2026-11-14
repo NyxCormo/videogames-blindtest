@@ -14,6 +14,7 @@ export function RoomScoreboard({ room, listenerId }: Props) {
         <li key={player.listenerId} className={player.listenerId === listenerId ? 'room-scoreboard-me' : undefined}>
           <span className="room-scoreboard-rank">{player.rank}</span>
           <span className="room-scoreboard-name">{player.name}</span>
+          {!player.present && <span className="room-absent">absent</span>}
           {room.phase === 'PLAYING' && player.done && (
             <span className="room-scoreboard-done">
               <CheckIcon /> fini

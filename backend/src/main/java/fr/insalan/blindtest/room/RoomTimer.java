@@ -7,13 +7,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RoomTimer implements DisposableBean {
 
+    private static final Logger log = LoggerFactory.getLogger(RoomTimer.class);
     private static final Duration REVEAL_TIME = Duration.ofSeconds(6);
+    private static final Duration PRESENCE_CHECK = Duration.ofSeconds(5);
     private static final Duration CLOSE_AFTER_END = Duration.ofMinutes(10);
     private static final Duration CLOSE_IF_NOT_STARTED = Duration.ofHours(3);
 
@@ -24,6 +28,8 @@ public class RoomTimer implements DisposableBean {
     public RoomTimer(RoomService roomService, RoomEvents roomEvents) {
         this.roomService = roomService;
         this.roomEvents = roomEvents;
+        long period = PRESENCE_CHECK.toMillis();
+        executor.scheduleAtFixedRate(this::checkPresence, period, period, TimeUnit.MILLISECONDS);
     }
 
     public void closeIfNeverStarted(Room room) {
@@ -58,6 +64,30 @@ public class RoomTimer implements DisposableBean {
             schedule(Instant.now().plus(REVEAL_TIME), () -> next(room, position));
         }
         return true;
+    }
+
+    public void presenceChanged(Room room) {
+        roomEvents.publish(room);
+        revealIfEveryoneDone(room);
+    }
+
+    public void revealIfEveryoneDone(Room room) {
+        if (room.getMode() == RoomMode.MULTI && room.everyoneDone()) {
+            reveal(room, room.getPosition());
+        }
+    }
+
+    private void checkPresence() {
+        try {
+            Instant now = Instant.now();
+            for (Room room : roomService.all()) {
+                if (room.checkPresence(now)) {
+                    presenceChanged(room);
+                }
+            }
+        } catch (RuntimeException e) {
+            log.warn("Vérification de la présence impossible : {}", e.getMessage());
+        }
     }
 
     public boolean next(Room room, int position) {

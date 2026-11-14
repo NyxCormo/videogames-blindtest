@@ -3,13 +3,17 @@ package fr.insalan.blindtest.room;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Room {
 
     public static final Duration LEAD_TIME = Duration.ofSeconds(4);
+    public static final Duration PRESENCE_TIMEOUT = Duration.ofSeconds(25);
 
     private static final int[] FIRST_COME_POINTS = {1000, 800, 600, 400, 200};
     private static final int SPEED_MAX_POINTS = 1000;
@@ -29,6 +33,8 @@ public class Room {
     private final Instant createdAt = Instant.now();
     private final Map<Integer, RoomPlayer> players = new LinkedHashMap<>();
     private final Map<Integer, RoomScore> scores = new LinkedHashMap<>();
+    private final Map<Integer, Instant> lastSeen = new HashMap<>();
+    private final Set<Integer> present = new HashSet<>();
     private long version;
     private RoomPhase phase = RoomPhase.WAITING;
     private List<RoomTrack> tracks = List.of();
@@ -62,22 +68,56 @@ public class Room {
         this.scoringMode = scoringMode;
         this.answerSeconds = answerSeconds;
         this.maxAttempts = maxAttempts;
-        if (mode == RoomMode.MULTI) {
-            players.put(host.listenerId(), host);
-            scores.put(host.listenerId(), new RoomScore());
-        }
     }
 
-    public synchronized boolean join(RoomPlayer player) {
+    public synchronized boolean join(RoomPlayer player, Instant now) {
         if (mode == RoomMode.PRESENTATION && player.listenerId().equals(host.listenerId())) {
             return false;
         }
-        if (players.putIfAbsent(player.listenerId(), player) != null) {
+        boolean added = players.putIfAbsent(player.listenerId(), player) == null;
+        if (added) {
+            scores.put(player.listenerId(), new RoomScore());
+        }
+        boolean back = markSeen(player.listenerId(), now);
+        if (added || back) {
+            version++;
+        }
+        return added || back;
+    }
+
+    public synchronized boolean seen(Integer listenerId, Instant now) {
+        if (!players.containsKey(listenerId) || !markSeen(listenerId, now)) {
             return false;
         }
-        scores.put(player.listenerId(), new RoomScore());
         version++;
         return true;
+    }
+
+    public synchronized boolean leave(Integer listenerId) {
+        lastSeen.remove(listenerId);
+        if (!present.remove(listenerId)) {
+            return false;
+        }
+        version++;
+        return true;
+    }
+
+    public synchronized boolean checkPresence(Instant now) {
+        boolean changed = present.removeIf(listenerId ->
+            Duration.between(lastSeen.get(listenerId), now).compareTo(PRESENCE_TIMEOUT) >= 0);
+        if (changed) {
+            version++;
+        }
+        return changed;
+    }
+
+    public synchronized boolean isPresent(Integer listenerId) {
+        return present.contains(listenerId);
+    }
+
+    private boolean markSeen(Integer listenerId, Instant now) {
+        lastSeen.put(listenerId, now);
+        return present.add(listenerId);
     }
 
     public synchronized boolean hasPlayer(Integer listenerId) {
@@ -132,7 +172,9 @@ public class Room {
     }
 
     public synchronized boolean everyoneDone() {
-        return phase == RoomPhase.PLAYING && scores.values().stream().allMatch(score -> score.done(maxAttempts));
+        return phase == RoomPhase.PLAYING
+            && !present.isEmpty()
+            && present.stream().allMatch(listenerId -> scores.get(listenerId).done(maxAttempts));
     }
 
     public synchronized boolean reveal(int position) {
@@ -141,7 +183,7 @@ public class Room {
         }
         phase = RoomPhase.REVEAL;
         revealedCount = position + 1;
-        scores.values().forEach(RoomScore::endRound);
+        scores.forEach((listenerId, score) -> score.endRound(present.contains(listenerId)));
         version++;
         return true;
     }
