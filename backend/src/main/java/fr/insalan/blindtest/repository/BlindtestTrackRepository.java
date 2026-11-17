@@ -1,5 +1,6 @@
 package fr.insalan.blindtest.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,6 +28,16 @@ public interface BlindtestTrackRepository extends JpaRepository<BlindtestTrack, 
         @Param("blindtestId") Integer blindtestId,
         @Param("position") int position
     );
+
+    @Query("""
+            SELECT bt FROM BlindtestTrack bt
+            JOIN FETCH bt.track t
+            JOIN FETCH t.game g
+            JOIN FETCH g.franchise f
+            WHERE bt.id.blindtestId = :blindtestId
+            ORDER BY bt.id.position
+            """)
+    List<BlindtestTrack> findWithTrackByBlindtestId(@Param("blindtestId") Integer blindtestId);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = "UPDATE blindtest_track SET track_id = :targetId WHERE track_id = :sourceId", nativeQuery = true)

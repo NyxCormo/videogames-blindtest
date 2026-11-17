@@ -19,7 +19,7 @@ type Props = {
 
 export function GameGuessForm({ foundFranchiseId, onSubmit, onGuessFranchise, disabled = false }: Props) {
   const { notify } = useNotification()
-  const [mode, setMode] = useState<Mode>('game')
+  const [chosenMode, setChosenMode] = useState<Mode>('game')
   const [games, setGames] = useState<Game[]>([])
   const [game, setGame] = useState<Game | null>(null)
   const [tracks, setTracks] = useState<Track[]>([])
@@ -69,6 +69,8 @@ export function GameGuessForm({ foundFranchiseId, onSubmit, onGuessFranchise, di
   // Une fois la franchise trouvée, la case "Jeu" ne propose plus que ses jeux (aide sans donner la réponse).
   const foundFranchise = franchises.find((item) => item.id === foundFranchiseId) ?? null
   const gamesToSearch = foundFranchise ? games.filter((item) => item.franchiseId === foundFranchise.id) : games
+  // L'onglet "Franchise" n'a plus rien à proposer une fois la franchise trouvée.
+  const mode: Mode = foundFranchise ? 'game' : chosenMode
   const ready = mode === 'game' ? game !== null : franchise !== null
 
   function selectGame(selected: Game) {
@@ -88,24 +90,32 @@ export function GameGuessForm({ foundFranchiseId, onSubmit, onGuessFranchise, di
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (mode === 'game' && game) onSubmit(game, track)
-    if (mode === 'franchise' && franchise) onGuessFranchise(franchise)
+    // Le formulaire reste monté entre deux essais (pour garder l'onglet choisi) : on vide la saisie à la main.
+    if (mode === 'game' && game) {
+      onSubmit(game, track)
+      clearGame()
+    }
+    if (mode === 'franchise' && franchise) {
+      onGuessFranchise(franchise)
+      setFranchise(null)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="game-guess-form">
-      <Tabs
-        tabs={[
-          { id: 'game', label: 'Jeu' },
-          { id: 'franchise', label: 'Franchise' },
-        ]}
-        active={mode}
-        onChange={(id) => setMode(id === 'franchise' ? 'franchise' : 'game')}
-      />
-      {foundFranchise && (
+      {foundFranchise ? (
         <p className="franchise-found">
           <CheckIcon /> Franchise trouvée : {foundFranchise.name}
         </p>
+      ) : (
+        <Tabs
+          tabs={[
+            { id: 'game', label: 'Jeu' },
+            { id: 'franchise', label: 'Franchise' },
+          ]}
+          active={mode}
+          onChange={(id) => setChosenMode(id === 'franchise' ? 'franchise' : 'game')}
+        />
       )}
       {mode === 'game' ? (
         <>

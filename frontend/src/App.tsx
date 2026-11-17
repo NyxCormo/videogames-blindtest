@@ -11,6 +11,9 @@ import { BlindtestListPage } from './pages/BlindtestList/BlindtestListPage'
 import { BlindtestPlayPage } from './pages/BlindtestPlay/BlindtestPlayPage'
 import { DiscoverPage } from './pages/Discover/DiscoverPage'
 import { HomePage } from './pages/Home/HomePage'
+import { RoomPage } from './pages/Room/RoomPage'
+import { RoomCreatePage } from './pages/RoomCreate/RoomCreatePage'
+import { RoomListPage } from './pages/RoomList/RoomListPage'
 import { TrackDetailPage } from './pages/TrackDetail/TrackDetailPage'
 import { TracksPage } from './pages/Tracks/TracksPage'
 
@@ -30,6 +33,9 @@ function App() {
             <Route path="/blindtests/new" element={<BlindtestCreatePage />} />
             <Route path="/blindtests/:id/play" element={<BlindtestPlayPage />} />
             <Route path="/blindtests/:id/leaderboard" element={<BlindtestLeaderboardPage />} />
+            <Route path="/rooms" element={<RoomListPage />} />
+            <Route path="/rooms/new" element={<RoomCreatePage />} />
+            <Route path="/rooms/:code" element={<RoomPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/knowledge" element={<Navigate to="/discover" replace />} />
             <Route path="/knowledge/discover" element={<Navigate to="/discover" replace />} />

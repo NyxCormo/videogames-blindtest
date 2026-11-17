@@ -1,0 +1,18 @@
+.room-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+  border-left: 0.4rem solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg));
+  font-weight: 600;
+}
+
+.room-banner span {
+  flex: 1 1 12rem;
+}
+
+.room-banner a {
+  font-weight: 700;
+}

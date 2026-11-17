@@ -29,47 +29,6 @@
   gap: 0.75rem;
 }
 
-.blindtest-attempts {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin: 0;
-  color: var(--muted);
-}
-
-.blindtest-dots {
-  display: flex;
-  gap: 0.3rem;
-}
-
-.blindtest-dot {
-  width: 0.7rem;
-  height: 0.7rem;
-  border: 2px solid var(--muted);
-  border-radius: 50%;
-}
-
-.blindtest-dot-left {
-  border-color: var(--text);
-  background: var(--text);
-}
-
-.blindtest-misses {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: var(--danger);
-}
-
-.blindtest-misses li {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
 .bonus {
   color: var(--muted);
   font-weight: 600;
